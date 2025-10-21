@@ -82,7 +82,7 @@
             padding: 5px 12px;
             font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
         }
-        /* This is the new style for "On Call" teachers */
+        /* Style for "On Call" teachers */
         .teacher-list li.on-call {
             background-color: #2ea44f;
             color: #ffffff;
@@ -194,9 +194,9 @@
             // --- Logic Function 1: Availability at a specific moment ---
 
             function getAvailabilityAtTime(dateTime) {
-                const onDutyTeachers = new Set();
-                const busyTeachers = new Set();
+                const workingTeachers = new Set();
                 const onCallTeachers = new Set();
+                const busyTeachers = new Set();
                 
                 const checkWeek = getWeekNumber(dateTime);
                 const checkDay = dayMap[dateTime.getDay()];
@@ -220,9 +220,13 @@
                         const teachers = parseTeachers(lesson[columnMap['teacher']]);
                         
                         if (subject === ARBETSTID_SUBJECT) {
-                            teachers.forEach(t => onDutyTeachers.add(t));
+                            teachers.forEach(t => workingTeachers.add(t));
                         } else if (subject === ON_CALL_SUBJECT) {
-                            teachers.forEach(t => onCallTeachers.add(t));
+                            // "On call" counts as WORKING and also adds them to the ON_CALL set
+                            teachers.forEach(t => {
+                                workingTeachers.add(t);
+                                onCallTeachers.add(t);
+                            });
                         } else {
                             // Any other lesson makes them busy
                             teachers.forEach(t => busyTeachers.add(t));
@@ -230,17 +234,19 @@
                     }
                 });
 
-                // Available = On Duty BUT NOT Busy
-                const availableTeachers = [...onDutyTeachers].filter(teacher => !busyTeachers.has(teacher));
-                return { available: availableTeachers.sort(), onCall: onCallTeachers };
+                // Available = Working (Arbetstid OR On Call) BUT NOT Busy
+                const availableTeacherNames = [...workingTeachers].filter(teacher => !busyTeachers.has(teacher));
+                
+                // Return the final list, and the set of on-call teachers for highlighting
+                return { available: availableTeacherNames.sort(), onCall: onCallTeachers };
             }
 
             // --- Logic Function 2: Availability for a time range ---
 
             function getAvailabilityForRange(checkDate, checkStartMinutes, checkEndMinutes) {
-                const onDutyTeachers = new Set();
-                const busyTeachers = new Set();
+                const workingTeachers = new Set();
                 const onCallTeachers = new Set();
+                const busyTeachers = new Set();
 
                 const checkWeek = getWeekNumber(checkDate);
                 const checkDay = dayMap[checkDate.getDay()];
@@ -256,30 +262,37 @@
                     const lessonLength = parseInt(lesson[columnMap['length']], 10);
                     const lessonEnd = lessonStart + lessonLength;
                     const subject = lesson[columnMap['subject']];
-
-                    // Check for overlap with the query range
+                    const teachers = parseTeachers(lesson[columnMap['teacher']]);
+                    
+                    // Check if lesson *contains* the query range
+                    const containsQuery = (lessonStart <= checkStartMinutes && lessonEnd >= checkEndMinutes);
+                    
+                    // Check if lesson *overlaps* the query range
                     const overlapsQuery = (lessonStart < checkEndMinutes && lessonEnd > checkStartMinutes);
 
-                    if (overlapsQuery) {
-                        const teachers = parseTeachers(lesson[columnMap['teacher']]);
-                        
-                        if (subject === ARBETSTID_SUBJECT) {
-                            // Teacher is "On Duty" if Arbetstid FULLY CONTAINS the query range
-                            if (lessonStart <= checkStartMinutes && lessonEnd >= checkEndMinutes) {
-                                teachers.forEach(t => onDutyTeachers.add(t));
-                            }
-                        } else if (subject === ON_CALL_SUBJECT) {
-                            // Teacher is "On Call" if it overlaps AT ALL
-                            teachers.forEach(t => onCallTeachers.add(t));
-                        } else {
-                            // Teacher is "Busy" if any other lesson overlaps AT ALL
-                            teachers.forEach(t => busyTeachers.add(t));
+                    if (subject === ARBETSTID_SUBJECT) {
+                        // Must be working for the *entire* duration
+                        if (containsQuery) {
+                            teachers.forEach(t => workingTeachers.add(t));
                         }
+                    } else if (subject === ON_CALL_SUBJECT) {
+                        // Must be "on call" for the *entire* duration
+                        if (containsQuery) {
+                            teachers.forEach(t => {
+                                workingTeachers.add(t);
+                                onCallTeachers.add(t);
+                            });
+                        }
+                    } else if (overlapsQuery) {
+                        // Is "Busy" if any other lesson *overlaps at all*
+                        teachers.forEach(t => busyTeachers.add(t));
                     }
                 });
 
-                const availableTeachers = [...onDutyTeachers].filter(teacher => !busyTeachers.has(teacher));
-                return { available: availableTeachers.sort(), onCall: onCallTeachers };
+                // Available = Working for the whole range AND NOT Busy at any point in the range
+                const availableTeacherNames = [...workingTeachers].filter(teacher => !busyTeachers.has(teacher));
+                
+                return { available: availableTeacherNames.sort(), onCall: onCallTeachers };
             }
 
             // --- Display Function ---
@@ -288,7 +301,7 @@
                 listElement.innerHTML = ''; // Clear previous results
                 
                 if (availableTeachers.length === 0) {
-                    statusElement.textContent = 'No teachers are available (on duty and not in a lesson) for this time.';
+                    statusElement.textContent = 'No teachers are available (working and not in a lesson) for this time.';
                     statusElement.classList.remove('error');
                 } else {
                     availableTeachers.forEach(teacher => {
@@ -329,8 +342,7 @@
 
                     lessons = lines.slice(1).map(line => line.split('\t'));
                     
-                    // Populate allTeachers Set from Arbetstid rows only (or all rows?)
-                    // Let's stick to all teachers mentioned anywhere.
+                    // Populate allTeachers Set
                     lessons.forEach(lesson => {
                         const teachers = parseTeachers(lesson[columnMap['teacher']]);
                         teachers.forEach(teacher => allTeachers.add(teacher));
