@@ -110,3 +110,290 @@
             <input type="date" id="date-input">
         </div>
         <div class="input-grid">
+            <div class="input-group">
+                <label for="time-from-input">Time (From):</label>
+                <input type="time" id="time-from-input">
+            </div>
+            <div class="input-group">
+                <label for="time-to-input">Time (To):</label>
+                <input type="time" id="time-to-input">
+            </div>
+        </div>
+        <button id="check-button">Check Availability</button>
+        
+        <div id="status-custom" class="status" style="display:none;"></div>
+        <div id="results-custom" class="results">
+            <ul id="teachers-custom" class="teacher-list"></ul>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let lessons = [];
+            let allTeachers = new Set();
+            let columnMap = {};
+            const dayMap = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+            // --- CONFIGURATION ---
+            // Edit these strings to match your Lessons.txt file exactly
+            const ARBETSTID_SUBJECT = "Arbetstid";
+            const ON_CALL_SUBJECT = "On call substitution";
+            // ---------------------
+
+            // --- Get DOM Elements ---
+            const statusNow = document.getElementById('status-now');
+            const teachersNowList = document.getElementById('teachers-now');
+            const statusCustom = document.getElementById('status-custom');
+            const teachersCustomList = document.getElementById('teachers-custom');
+            const checkButton = document.getElementById('check-button');
+            const dateInput = document.getElementById('date-input');
+            const timeFromInput = document.getElementById('time-from-input');
+            const timeToInput = document.getElementById('time-to-input');
+
+            // --- Helper Functions ---
+
+            function getWeekNumber(d) {
+                d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+                d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+                var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+                var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+                return weekNo;
+            }
+
+            function timeToMinutes(timeStr) {
+                timeStr = timeStr.replace(':', '');
+                if (timeStr.length < 4) timeStr = '0' + timeStr;
+                const hours = parseInt(timeStr.substring(0, 2), 10);
+                const minutes = parseInt(timeStr.substring(2, 4), 10);
+                return (hours * 60) + minutes;
+            }
+
+            function parseRealWeeks(weekString) {
+                const weeks = new Set();
+                if (!weekString) return weeks;
+                weekString.split(',').forEach(range => {
+                    const parts = range.trim().split('-');
+                    if (parts.length === 1) {
+                        weeks.add(parseInt(parts[0], 10));
+                    } else if (parts.length === 2) {
+                        const start = parseInt(parts[0], 10);
+                        const end = parseInt(parts[1], 10);
+                        for (let i = start; i <= end; i++) {
+                            weeks.add(i);
+                        }
+                    }
+                });
+                return weeks;
+            }
+
+            function parseTeachers(teacherString) {
+                if (!teacherString) return [];
+                return teacherString.split(',').map(t => t.trim()).filter(t => t.length > 0);
+            }
+            
+            // --- Logic Function 1: Availability at a specific moment ---
+
+            function getAvailabilityAtTime(dateTime) {
+                const workingTeachers = new Set();
+                const onCallTeachers = new Set();
+                const busyTeachers = new Set();
+                
+                const checkWeek = getWeekNumber(dateTime);
+                const checkDay = dayMap[dateTime.getDay()];
+                const checkTimeInMinutes = (dateTime.getHours() * 60) + dateTime.getMinutes();
+                
+                lessons.forEach(lesson => {
+                    // *** FIX: Trim whitespace from day and subject ***
+                    const lessonDay = lesson[columnMap['day']].trim();
+                    const lessonWeeks = parseRealWeeks(lesson[columnMap['realweeks']]);
+
+                    if (lessonDay !== checkDay || !lessonWeeks.has(checkWeek)) {
+                        return; // Skip if wrong day or week
+                    }
+
+                    const lessonStart = timeToMinutes(lesson[columnMap['starttime']]);
+                    const lessonLength = parseInt(lesson[columnMap['length']], 10);
+                    const lessonEnd = lessonStart + lessonLength;
+                    const subject = lesson[columnMap['subject']].trim(); // *** FIX ***
+
+                    // Check if the lesson is happening right now
+                    if (checkTimeInMinutes >= lessonStart && checkTimeInMinutes < lessonEnd) {
+                        const teachers = parseTeachers(lesson[columnMap['teacher']]);
+                        
+                        if (subject === ARBETSTID_SUBJECT) {
+                            teachers.forEach(t => workingTeachers.add(t));
+                        } else if (subject === ON_CALL_SUBJECT) {
+                            teachers.forEach(t => {
+                                workingTeachers.add(t);
+                                onCallTeachers.add(t);
+                            });
+                        } else {
+                            teachers.forEach(t => busyTeachers.add(t));
+                        }
+                    }
+                });
+
+                const availableTeacherNames = [...workingTeachers].filter(teacher => !busyTeachers.has(teacher));
+                return { available: availableTeacherNames.sort(), onCall: onCallTeachers };
+            }
+
+            // --- Logic Function 2: Availability for a time range ---
+
+            function getAvailabilityForRange(checkDate, checkStartMinutes, checkEndMinutes) {
+                const workingTeachers = new Set();
+                const onCallTeachers = new Set();
+                const busyTeachers = new Set();
+
+                const checkWeek = getWeekNumber(checkDate);
+                const checkDay = dayMap[checkDate.getDay()];
+
+                lessons.forEach(lesson => {
+                    // *** FIX: Trim whitespace from day and subject ***
+                    const lessonDay = lesson[columnMap['day']].trim();
+                    const lessonWeeks = parseRealWeeks(lesson[columnMap['realweeks']]);
+                    if (lessonDay !== checkDay || !lessonWeeks.has(checkWeek)) {
+                        return; // Skip if wrong day or week
+                    }
+
+                    const lessonStart = timeToMinutes(lesson[columnMap['starttime']]);
+                    const lessonLength = parseInt(lesson[columnMap['length']], 10);
+                    const lessonEnd = lessonStart + lessonLength;
+                    const subject = lesson[columnMap['subject']].trim(); // *** FIX ***
+                    const teachers = parseTeachers(lesson[columnMap['teacher']]);
+                    
+                    const containsQuery = (lessonStart <= checkStartMinutes && lessonEnd >= checkEndMinutes);
+                    const overlapsQuery = (lessonStart < checkEndMinutes && lessonEnd > checkStartMinutes);
+
+                    if (subject === ARBETSTID_SUBJECT) {
+                        if (containsQuery) {
+                            teachers.forEach(t => workingTeachers.add(t));
+                        }
+                    } else if (subject === ON_CALL_SUBJECT) {
+                        if (containsQuery) {
+                            teachers.forEach(t => {
+                                workingTeachers.add(t);
+                                onCallTeachers.add(t);
+                            });
+                        }
+                    } else if (overlapsQuery) {
+                        teachers.forEach(t => busyTeachers.add(t));
+                    }
+                });
+
+                const availableTeacherNames = [...workingTeachers].filter(teacher => !busyTeachers.has(teacher));
+                return { available: availableTeacherNames.sort(), onCall: onCallTeachers };
+            }
+
+            // --- Display Function ---
+
+            function displayResults(availableTeachers, onCallTeachers, listElement, statusElement) {
+                listElement.innerHTML = ''; // Clear previous results
+                
+                if (availableTeachers.length === 0) {
+                    statusElement.textContent = 'No teachers are available (working and not in a lesson) for this time.';
+                    statusElement.classList.remove('error');
+                } else {
+                    availableTeachers.forEach(teacher => {
+                        const li = document.createElement('li');
+                        li.textContent = teacher;
+                        if (onCallTeachers.has(teacher)) {
+                            li.classList.add('on-call');
+                        }
+                        listElement.appendChild(li);
+                    });
+                }
+            }
+            
+            // --- Initialization ---
+
+            async function loadData() {
+                try {
+                    const response = await fetch('Lessons.txt');
+                    if (!response.ok) throw new Error(`Failed to fetch Lessons.txt. Make sure it's in the same directory.`);
+                    
+                    const text = await response.text();
+                    const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+                    if (lines.length < 2) throw new Error('Lesson file is empty or invalid.');
+
+                    // Process header
+                    const header = lines[0].split('\t');
+                    header.forEach((col, index) => {
+                        columnMap[col.trim()] = index; // Trim headers
+                    });
+                    
+                    const requiredCols = ['subject', 'teacher', 'day', 'starttime', 'length', 'realweeks'];
+                    for (const col of requiredCols) {
+                        if (columnMap[col] === undefined) {
+                            throw new Error(`Missing required column in Lessons.txt: ${col}`);
+                        }
+                    }
+
+                    lessons = lines.slice(1).map(line => line.split('\t'));
+                    
+                    // Populate allTeachers Set
+                    lessons.forEach(lesson => {
+                        const teachers = parseTeachers(lesson[columnMap['teacher']]);
+                        teachers.forEach(teacher => allTeachers.add(teacher));
+                    });
+                    
+                    statusNow.textContent = `Schedule loaded. Checking for: ${new Date().toLocaleString()}`;
+                    
+                    const now = new Date();
+                    const { available, onCall } = getAvailabilityAtTime(now);
+                    displayResults(available, onCall, teachersNowList, statusNow);
+                    
+                    dateInput.valueAsDate = now;
+                    timeFromInput.value = now.toTimeString().substring(0, 5);
+                    const later = new Date(now.getTime() + 60 * 60 * 1000); 
+                    timeToInput.value = later.toTimeString().substring(0, 5);
+
+                } catch (error) {
+                    statusNow.textContent = `Error: ${error.message}`;
+                    statusNow.classList.add('error');
+                    console.error(error);
+F                }
+            }
+
+            // --- Event Listeners ---
+
+            checkButton.addEventListener('click', () => {
+                const dateVal = dateInput.value;
+                const timeFromVal = timeFromInput.value;
+                const timeToVal = timeToInput.value;
+
+                teachersCustomList.innerHTML = '';
+                statusCustom.classList.remove('error');
+                
+                if (!dateVal || !timeFromVal || !timeToVal) {
+                    statusCustom.textContent = 'Please select a date and both a "From" and "To" time.';
+                    statusCustom.style.display = 'block';
+                    statusCustom.classList.add('error');
+                    return;
+                }
+
+                const startMinutes = timeToMinutes(timeFromVal);
+                const endMinutes = timeToMinutes(timeToVal);
+
+                if (endMinutes <= startMinutes) {
+                    statusCustom.textContent = 'The "To" time must be after the "From" time.';
+                    statusCustom.style.display = 'block';
+                    statusCustom.classList.add('error');
+This                    return;
+                }
+                
+                const [year, month, day] = dateVal.split('-').map(Number);
+                const checkDate = new Date(year, month - 1, day);
+                
+                const { available, onCall } = getAvailabilityForRange(checkDate, startMinutes, endMinutes);
+                
+                statusCustom.textContent = `Showing teachers free from ${timeFromVal} to ${timeToVal} on ${checkDate.toLocaleDateString()}:`;
+                statusCustom.style.display = 'block';
+                displayResults(available, onCall, teachersCustomList, statusCustom);
+            });
+
+            // Start the application
+            loadData();
+        });
+    </script>
+</body>
+</html>
