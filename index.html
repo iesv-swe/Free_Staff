@@ -135,7 +135,6 @@
             const dayMap = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
             // --- CONFIGURATION ---
-            // Edit these strings to match your Lessons.txt file exactly
             const ARBETSTID_SUBJECT = "Arbetstid";
             const ON_CALL_SUBJECT = "On call substitution";
             // ---------------------
@@ -203,20 +202,18 @@
                 const checkTimeInMinutes = (dateTime.getHours() * 60) + dateTime.getMinutes();
                 
                 lessons.forEach(lesson => {
-                    // *** FIX: Trim whitespace from day and subject ***
                     const lessonDay = lesson[columnMap['day']].trim();
                     const lessonWeeks = parseRealWeeks(lesson[columnMap['realweeks']]);
 
                     if (lessonDay !== checkDay || !lessonWeeks.has(checkWeek)) {
-                        return; // Skip if wrong day or week
+                        return;
                     }
 
                     const lessonStart = timeToMinutes(lesson[columnMap['starttime']]);
                     const lessonLength = parseInt(lesson[columnMap['length']], 10);
                     const lessonEnd = lessonStart + lessonLength;
-                    const subject = lesson[columnMap['subject']].trim(); // *** FIX ***
+                    const subject = lesson[columnMap['subject']].trim();
 
-                    // Check if the lesson is happening right now
                     if (checkTimeInMinutes >= lessonStart && checkTimeInMinutes < lessonEnd) {
                         const teachers = parseTeachers(lesson[columnMap['teacher']]);
                         
@@ -248,17 +245,16 @@
                 const checkDay = dayMap[checkDate.getDay()];
 
                 lessons.forEach(lesson => {
-                    // *** FIX: Trim whitespace from day and subject ***
                     const lessonDay = lesson[columnMap['day']].trim();
                     const lessonWeeks = parseRealWeeks(lesson[columnMap['realweeks']]);
                     if (lessonDay !== checkDay || !lessonWeeks.has(checkWeek)) {
-                        return; // Skip if wrong day or week
+                        return;
                     }
 
                     const lessonStart = timeToMinutes(lesson[columnMap['starttime']]);
                     const lessonLength = parseInt(lesson[columnMap['length']], 10);
                     const lessonEnd = lessonStart + lessonLength;
-                    const subject = lesson[columnMap['subject']].trim(); // *** FIX ***
+                    const subject = lesson[columnMap['subject']].trim();
                     const teachers = parseTeachers(lesson[columnMap['teacher']]);
                     
                     const containsQuery = (lessonStart <= checkStartMinutes && lessonEnd >= checkEndMinutes);
@@ -287,7 +283,7 @@
             // --- Display Function ---
 
             function displayResults(availableTeachers, onCallTeachers, listElement, statusElement) {
-                listElement.innerHTML = ''; // Clear previous results
+                listElement.innerHTML = '';
                 
                 if (availableTeachers.length === 0) {
                     statusElement.textContent = 'No teachers are available (working and not in a lesson) for this time.';
@@ -315,10 +311,9 @@
                     const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
                     if (lines.length < 2) throw new Error('Lesson file is empty or invalid.');
 
-                    // Process header
                     const header = lines[0].split('\t');
                     header.forEach((col, index) => {
-                        columnMap[col.trim()] = index; // Trim headers
+                        columnMap[col.trim()] = index;
                     });
                     
                     const requiredCols = ['subject', 'teacher', 'day', 'starttime', 'length', 'realweeks'];
@@ -330,7 +325,6 @@
 
                     lessons = lines.slice(1).map(line => line.split('\t'));
                     
-                    // Populate allTeachers Set
                     lessons.forEach(lesson => {
                         const teachers = parseTeachers(lesson[columnMap['teacher']]);
                         teachers.forEach(teacher => allTeachers.add(teacher));
@@ -351,7 +345,7 @@
                     statusNow.textContent = `Error: ${error.message}`;
                     statusNow.classList.add('error');
                     console.error(error);
-F                }
+                } // *** FIX: Removed stray 'F' here ***
             }
 
             // --- Event Listeners ---
@@ -378,7 +372,7 @@ F                }
                     statusCustom.textContent = 'The "To" time must be after the "From" time.';
                     statusCustom.style.display = 'block';
                     statusCustom.classList.add('error');
-This                    return;
+                    return; // *** FIX: Removed stray 'This' here ***
                 }
                 
                 const [year, month, day] = dateVal.split('-').map(Number);
