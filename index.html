@@ -82,7 +82,6 @@
             padding: 5px 12px;
             font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
         }
-        /* Style for "On Call" teachers */
         .teacher-list li.on-call {
             background-color: #2ea44f;
             color: #ffffff;
@@ -135,8 +134,9 @@
             const dayMap = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
             // --- CONFIGURATION ---
-            const ARBETSTID_SUBJECT = "Arbetstid";
-            const ON_CALL_SUBJECT = "On call substitution";
+            // We now use lowercase for matching, as we convert all subjects to lowercase.
+            const ARBETSTID_SUBJECT = "arbetstid";
+            const ON_CALL_SUBJECT = "on call substitution";
             // ---------------------
 
             // --- Get DOM Elements ---
@@ -212,7 +212,9 @@
                     const lessonStart = timeToMinutes(lesson[columnMap['starttime']]);
                     const lessonLength = parseInt(lesson[columnMap['length']], 10);
                     const lessonEnd = lessonStart + lessonLength;
-                    const subject = lesson[columnMap['subject']].trim();
+                    
+                    // *** FIX: Convert subject to lowercase ***
+                    const subject = lesson[columnMap['subject']].trim().toLowerCase();
 
                     if (checkTimeInMinutes >= lessonStart && checkTimeInMinutes < lessonEnd) {
                         const teachers = parseTeachers(lesson[columnMap['teacher']]);
@@ -254,7 +256,9 @@
                     const lessonStart = timeToMinutes(lesson[columnMap['starttime']]);
                     const lessonLength = parseInt(lesson[columnMap['length']], 10);
                     const lessonEnd = lessonStart + lessonLength;
-                    const subject = lesson[columnMap['subject']].trim();
+
+                    // *** FIX: Convert subject to lowercase ***
+                    const subject = lesson[columnMap['subject']].trim().toLowerCase();
                     const teachers = parseTeachers(lesson[columnMap['teacher']]);
                     
                     const containsQuery = (lessonStart <= checkStartMinutes && lessonEnd >= checkEndMinutes);
@@ -345,7 +349,7 @@
                     statusNow.textContent = `Error: ${error.message}`;
                     statusNow.classList.add('error');
                     console.error(error);
-                } // *** FIX: Removed stray 'F' here ***
+                }
             }
 
             // --- Event Listeners ---
@@ -372,7 +376,7 @@
                     statusCustom.textContent = 'The "To" time must be after the "From" time.';
                     statusCustom.style.display = 'block';
                     statusCustom.classList.add('error');
-                    return; // *** FIX: Removed stray 'This' here ***
+                    return;
                 }
                 
                 const [year, month, day] = dateVal.split('-').map(Number);
