@@ -129,7 +129,6 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             let lessons = [];
-            let allTeachers = new Set();
             let columnMap = {};
             const dayMap = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -137,6 +136,11 @@
             // We now use lowercase for matching, as we convert all subjects to lowercase.
             const ARBETSTID_SUBJECT = "arbetstid";
             const ON_CALL_SUBJECT = "on call substitution";
+
+            // *** NEW SECTION ***
+            // Add any teacher initials you want to exclude from the results here.
+            const EXCLUDE_TEACHER_LIST = ["BaSh", "AnHo", "DaWr"]; // e.g., ["MaBe", "JoSm"]
+            const EXCLUDE_TEACHERS_SET = new Set(EXCLUDE_TEACHER_LIST);
             // ---------------------
 
             // --- Get DOM Elements ---
@@ -212,8 +216,6 @@
                     const lessonStart = timeToMinutes(lesson[columnMap['starttime']]);
                     const lessonLength = parseInt(lesson[columnMap['length']], 10);
                     const lessonEnd = lessonStart + lessonLength;
-                    
-                    // *** FIX: Convert subject to lowercase ***
                     const subject = lesson[columnMap['subject']].trim().toLowerCase();
 
                     if (checkTimeInMinutes >= lessonStart && checkTimeInMinutes < lessonEnd) {
@@ -256,8 +258,6 @@
                     const lessonStart = timeToMinutes(lesson[columnMap['starttime']]);
                     const lessonLength = parseInt(lesson[columnMap['length']], 10);
                     const lessonEnd = lessonStart + lessonLength;
-
-                    // *** FIX: Convert subject to lowercase ***
                     const subject = lesson[columnMap['subject']].trim().toLowerCase();
                     const teachers = parseTeachers(lesson[columnMap['teacher']]);
                     
@@ -284,16 +284,20 @@
                 return { available: availableTeacherNames.sort(), onCall: onCallTeachers };
             }
 
-            // --- Display Function ---
+            // --- Display Function (NOW INCLUDES FILTERING) ---
 
             function displayResults(availableTeachers, onCallTeachers, listElement, statusElement) {
-                listElement.innerHTML = '';
+                listElement.innerHTML = ''; // Clear previous results
+
+                // --- NEW FILTERING STEP ---
+                const filteredTeachers = availableTeachers.filter(teacher => !EXCLUDE_TEACHERS_SET.has(teacher));
+                // --------------------------
                 
-                if (availableTeachers.length === 0) {
+                if (filteredTeachers.length === 0) { // Check the filtered list
                     statusElement.textContent = 'No teachers are available (working and not in a lesson) for this time.';
                     statusElement.classList.remove('error');
                 } else {
-                    availableTeachers.forEach(teacher => {
+                    filteredTeachers.forEach(teacher => { // Iterate over the filtered list
                         const li = document.createElement('li');
                         li.textContent = teacher;
                         if (onCallTeachers.has(teacher)) {
@@ -329,10 +333,7 @@
 
                     lessons = lines.slice(1).map(line => line.split('\t'));
                     
-                    lessons.forEach(lesson => {
-                        const teachers = parseTeachers(lesson[columnMap['teacher']]);
-                        teachers.forEach(teacher => allTeachers.add(teacher));
-                    });
+                    // No need to populate allTeachers set, it's not used.
                     
                     statusNow.textContent = `Schedule loaded. Checking for: ${new Date().toLocaleString()}`;
                     
@@ -349,7 +350,7 @@
                     statusNow.textContent = `Error: ${error.message}`;
                     statusNow.classList.add('error');
                     console.error(error);
-                }
+F                }
             }
 
             // --- Event Listeners ---
@@ -373,7 +374,7 @@
                 const endMinutes = timeToMinutes(timeToVal);
 
                 if (endMinutes <= startMinutes) {
-                    statusCustom.textContent = 'The "To" time must be after the "From" time.';
+                    statusCustom.textContent = 'The "To" time must be after the "From"time.';
                     statusCustom.style.display = 'block';
                     statusCustom.classList.add('error');
                     return;
