@@ -124,8 +124,6 @@
             border: 1px solid #e0a800;
             color: #212529;
         }
-        
-        /* --- UPDATED: Re-added month buttons --- */
         .month-buttons {
             display: flex;
             flex-wrap: wrap;
@@ -137,8 +135,6 @@
             margin-top: 0;
             padding: 5px 8px;
         }
-        /* --- END UPDATE --- */
-
         #totals-display {
             background-color: #f6f8fa;
             border: 1px solid #d1d5da;
@@ -274,14 +270,11 @@
             const minutesInput = document.getElementById('minutes-input');
             const saveMinutesButton = document.getElementById('save-minutes-button');
             const saveStatus = document.getElementById('save-status');
-            
-            // --- UPDATED: Re-added/removed elements ---
-            const yearDisplay = document.getElementById('year-display'); // Re-added
-            const monthButtonsContainer = document.getElementById('month-buttons'); // Re-added
+            const yearDisplay = document.getElementById('year-display');
+            const monthButtonsContainer = document.getElementById('month-buttons');
             const totalsDisplay = document.getElementById('totals-display');
             const exportCsvButton = document.getElementById('export-csv-button');
             const clearDataButton = document.getElementById('clear-data-button');
-            // --- END UPDATE ---
 
             // --- Helper Functions ---
             
@@ -409,6 +402,7 @@
             }
 
             // --- Display Function (Availability) ---
+            // *** UPDATED: Changed red threshold to >= 180 ***
             function displayResults(availableTeachers, onCallTeachers, listElement, statusElement, monthKey) {
                 listElement.innerHTML = '';
                 const filteredTeachers = availableTeachers.filter(teacher => !EXCLUDE_TEACHERS_SET.has(teacher));
@@ -427,7 +421,7 @@
                             li.classList.add('on-call');
                         } else {
                             const minutes = monthData[teacher] || 0;
-                            if (minutes > 180) {
+                            if (minutes >= 180) { // <-- LOGIC FIX HERE
                                 li.classList.add('minutes-danger');
                             } else if (minutes >= 90) {
                                 li.classList.add('minutes-warn');
@@ -458,7 +452,6 @@
                 }
             }
 
-            // --- UPDATED: Only populates the *input* dropdown ---
             function populateStaffDropdown() {
                 const sortedTeachers = [...allTeachers].filter(teacher => !EXCLUDE_TEACHERS_SET.has(teacher)).sort();
                 
@@ -471,7 +464,6 @@
                     staffSelect.appendChild(option);
                 });
             }
-            // --- END UPDATE ---
 
             function showSaveStatus(message, isError = false) {
                 saveStatus.textContent = message;
@@ -480,7 +472,7 @@
                 setTimeout(() => { saveStatus.style.display = 'none'; }, 3000);
             }
 
-            // --- UPDATED: Re-implemented displayMonthlyTotals ---
+            // --- UPDATED: displayMonthlyTotals (changed red threshold to >= 180) ---
             function displayMonthlyTotals(year, monthIndex) {
                 const monthKey = `${year}-${String(monthIndex + 1).padStart(2, '0')}`;
                 const monthName = new Date(year, monthIndex).toLocaleString('default', { month: 'long' });
@@ -489,7 +481,6 @@
                 
                 let html = `<h3>Totals for ${monthName} ${year} (Sorted)</h3>`;
 
-                // Convert object to array: { "MaBe": 90, "JoSm": 120 } -> [ {staff: "MaBe", minutes: 90}, ... ]
                 const staffEntries = Object.entries(monthData).map(([staff, minutes]) => {
                     return { staff: staff, minutes: minutes };
                 });
@@ -497,13 +488,12 @@
                 if (staffEntries.length === 0) {
                     html += "<p>No data recorded for this month.</p>";
                 } else {
-                    // Sort array by minutes (least to most)
                     staffEntries.sort((a, b) => a.minutes - b.minutes);
 
                     html += "<ul>";
                     staffEntries.forEach(entry => {
                         let classValue = '';
-                        if (entry.minutes > 180) {
+                        if (entry.minutes >= 180) { // <-- LOGIC FIX HERE
                             classValue = 'minutes-danger';
                         } else if (entry.minutes >= 90) {
                             classValue = 'minutes-warn';
@@ -516,7 +506,6 @@
             }
             // --- END UPDATE ---
 
-            // --- UPDATED: Re-added setupMonthButtons ---
             function setupMonthButtons() {
                 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
                 monthButtonsContainer.innerHTML = '';
@@ -535,7 +524,6 @@
                     monthButtonsContainer.appendChild(button);
                 });
             }
-            // --- END UPDATE ---
 
             // --- Initialization ---
 
@@ -579,12 +567,10 @@
                     const later = new Date(now.getTime() + 60 * 60 * 1000); 
                     timeToInput.value = later.toTimeString().substring(0, 5);
 
-                    // --- UPDATED: Initialization for new display ---
                     populateStaffDropdown();
-                    setupMonthButtons(); // Re-added
+                    setupMonthButtons();
                     monthInput.value = nowMonthKey;
-                    yearDisplay.value = now.getFullYear(); // Re-added
-                    // --- END UPDATE ---
+                    yearDisplay.value = now.getFullYear();
 
                 } catch (error) {
                     statusNow.textContent = `Error: ${error.message}`;
@@ -666,16 +652,7 @@
                 minutesInput.value = '';
                 staffSelect.value = '';
                 
-                // --- UPDATED: Refresh the monthly total display ---
-                const [year, monthNum] = month.split('-').map(Number);
-                if (parseInt(yearDisplay.value, 10) === year) {
-                    // This is a bit complex, as we don't know which month is selected.
-                    // We'll just clear it and let the user re-click.
-                    // A better way: find the active button or just refresh if year matches.
-                    // Let's just clear it.
-                    totalsDisplay.innerHTML = '<p>Data saved. Click a month to refresh totals.</p>';
-                }
-                // --- END UPDATE ---
+                totalsDisplay.innerHTML = '<p>Data saved. Click a month to refresh totals.</p>';
             });
 
             exportCsvButton.addEventListener('click', () => {
@@ -710,17 +687,13 @@
                 if (confirm("Are you sure you want to delete ALL saved extra minutes data? This cannot be undone.")) {
                     localStorage.removeItem('extraMinutes');
                     showSaveStatus("All saved data has been cleared.", false);
-                    // --- UPDATED: Clear the totals display ---
                     totalsDisplay.innerHTML = '<p>All data cleared. Select a month to see totals.</p>';
-                    // --- END UPDATE ---
                 }
             });
 
-            // --- UPDATED: Re-added year listener, removed staff listener ---
             yearDisplay.addEventListener('change', () => {
                 totalsDisplay.innerHTML = '<p>Select a month to see totals.</Vp>';
             });
-            // --- END UPDATE ---
             
             // Start the application
             loadData();
