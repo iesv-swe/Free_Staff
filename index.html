@@ -14,7 +14,6 @@
             margin: 20px auto;
             padding: 20px;
         }
-        /* Style for the logo */
         .logo {
             width: 180px;
             height: auto;
@@ -137,7 +136,24 @@
         }
         #totals-display li {
             font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            list-style: none;
+            padding: 4px 8px;
+            margin: 2px 0;
+            border-radius: 4px;
         }
+        
+        /* --- NEW: STYLES FOR MINUTE TOTALS --- */
+        #totals-display li.minutes-warn {
+            background-color: #fffbdd; /* Yellow */
+            border: 1px solid #ffdc73;
+        }
+        #totals-display li.minutes-danger {
+            background-color: #ffeef0; /* Red */
+            border: 1px solid #ffc1c7;
+            font-weight: 600;
+        }
+        /* --- END NEW STYLES --- */
+
     </style>
 </head>
 <body>
@@ -172,7 +188,7 @@
         </div>
         <button id="check-button">Check Availability</button>
         <div id="status-custom" class="status" style="display:none;"></div>
-        <div id="results-custom" class="results">
+        <div id="results-custom" classm="results">
             <ul id="teachers-custom" class="teacher-list"></ul>
         </div>
     </div>
@@ -222,7 +238,6 @@
             let allTeachers = new Set();
             let columnMap = {};
             
-            // UPDATED DAYMAP (Thur)
             const dayMap = ["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"];
 
             // --- CONFIGURATION ---
@@ -437,8 +452,9 @@
                 setTimeout(() => { saveStatus.style.display = 'none'; }, 3000);
             }
 
+            // --- UPDATED: displayMonthlyTotals ---
             function displayMonthlyTotals(year, monthIndex) {
-                const monthKey = `${year}-${String(monthIndex + 1).padStart(2, '0')}`; // "2025-11"
+                const monthKey = `${year}-${String(monthIndex + 1).padStart(2, '0')}`;
                 const monthName = new Date(year, monthIndex).toLocaleString('default', { month: 'long' });
                 const allData = getSavedMinutesData();
                 const monthData = allData[monthKey] || {};
@@ -452,10 +468,17 @@
                     html += "<p>No data recorded for this month.</p>";
                 } else {
                     html += "<ul>";
-                    staffEntries.sort((a, b) => a[0].localeCompare(b[0])); // Sort by staff name
+                    staffEntries.sort((a, b) => a[0].localeCompare(b[0]));
 
                     staffEntries.forEach(([staff, minutes]) => {
-                        html += `<li>${staff}: ${minutes} minutes</li>`;
+                        let classValue = '';
+                        if (minutes > 180) {
+                            classValue = 'minutes-danger';
+                        } else if (minutes > 90) {
+                            classValue = 'minutes-warn';
+                        }
+                        
+                        html += `<li class="${classValue}">${staff}: ${minutes} minutes</li>`;
                         totalMinutes += minutes;
                     });
                     html += "</ul>";
@@ -464,6 +487,7 @@
                 html += `<hr><h4>Total for ${monthName}: ${totalMinutes} minutes</h4>`;
                 totalsDisplay.innerHTML = html;
             }
+            // --- END UPDATE ---
 
             function setupMonthButtons() {
                 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -500,7 +524,6 @@
                         columnMap[col.trim()] = index;
                     });
                     
-                    // *** TYPO FIX HERE ***
                     const requiredCols = ['subject', 'teacher', 'day', 'starttime', 'length', 'realweeks'];
                     for (const col of requiredCols) {
                         if (columnMap[col] === undefined) {
@@ -616,7 +639,7 @@
 
             exportCsvButton.addEventListener('click', () => {
                 const allData = getSavedMinutesData();
-                let csvContent = "data:text/csv;charset=utf-tran,Year-Month,Staff,Minutes\n";
+                let csvContent = "data:text/csv;charset=utf-8,Year-Month,Staff,Minutes\n";
 
                 const sortedMonths = Object.keys(allData).sort();
 
@@ -628,7 +651,7 @@
                     }
                 }
 
-                if (csvContent.length <= "data:text/csv;charset=utf-tran,Year-Month,Staff,Minutes\n".length) {
+                if (csvContent.length <= "data:text/csv;charset=utf-8,Year-Month,Staff,Minutes\n".length) {
                     alert("No data to export.");
                     return;
                 }
