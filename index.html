@@ -52,7 +52,7 @@
             background-color: #fff;
         }
         button {
-            background-color: #2ea44f;
+            background-color: #2ea44f; /* Default green */
             color: #ffffff;
             font-weight: 600;
             padding: 10px 16px;
@@ -78,6 +78,24 @@
         button.danger:hover {
             background-color: #cb2431;
         }
+        /* *** NEW: Style for explicitly green buttons *** */
+        button.success {
+             background-color: #2ea44f;
+             color: #ffffff;
+        }
+        button.success:hover {
+             background-color: #2c974b;
+        }
+        /* *** END NEW *** */
+
+        /* *** NEW: Container for the bottom buttons *** */
+        .button-group {
+            display: flex;
+            justify-content: space-between; /* Space out buttons */
+            gap: 10px; /* Add some space between */
+        }
+        /* *** END NEW *** */
+
         .results {
             margin-top: 20px;
         }
@@ -163,7 +181,6 @@
             border: 1px solid #e0a800;
             color: #212529;
         }
-        /* Style to hide the file input */
         #csv-file-input {
             display: none;
         }
@@ -241,10 +258,12 @@
             <p>Select a month to see totals.</p>
         </div>
         
-        <button id="import-csv-button" class="secondary">Import from CSV</button>
-        <input type="file" id="csv-file-input" accept=".csv">
-        <button id="export-csv-button" class="secondary">Export All Data to CSV</button>
-        <button id="clear-data-button" class="danger">Clear All Saved Data</button>
+        <div class="button-group">
+            <button id="export-csv-button" class="success">Export All Data to CSV</button> 
+            <button id="import-csv-button" class="secondary">Import from CSV</button>
+            <input type="file" id="csv-file-input" accept=".csv">
+            <button id="clear-data-button" class="danger">Clear All Saved Data</button>
+        </div>
         <div id="import-status" class="status" style="display:none; margin-top:10px;"></div>
         </div>
 
@@ -283,11 +302,9 @@
             const totalsDisplay = document.getElementById('totals-display');
             const exportCsvButton = document.getElementById('export-csv-button');
             const clearDataButton = document.getElementById('clear-data-button');
-            // *** NEW: Import elements ***
             const importCsvButton = document.getElementById('import-csv-button');
             const csvFileInput = document.getElementById('csv-file-input');
             const importStatus = document.getElementById('import-status');
-            // *** END NEW ***
 
             // --- Helper Functions ---
             
@@ -496,12 +513,11 @@
                 setTimeout(() => { saveStatus.style.display = 'none'; }, 3000);
             }
             
-            // *** NEW: Show status for import ***
             function showImportStatus(message, isError = false) {
                 importStatus.textContent = message;
                 importStatus.className = isError ? 'status error' : 'status success';
                 importStatus.style.display = 'block';
-                setTimeout(() => { importStatus.style.display = 'none'; }, 5000); // Show longer
+                setTimeout(() => { importStatus.style.display = 'none'; }, 5000);
             }
 
             function displayMonthlyTotals(year, monthIndex) {
@@ -720,15 +736,14 @@
                 totalsDisplay.innerHTML = '<p>Select a month to see totals.</p>';
             });
 
-            // *** NEW: Import logic ***
             importCsvButton.addEventListener('click', () => {
-                csvFileInput.click(); // Trigger the hidden file input
+                csvFileInput.click();
             });
 
             csvFileInput.addEventListener('change', (event) => {
                 const file = event.target.files[0];
                 if (!file) {
-                    return; // No file selected
+                    return;
                 }
 
                 const reader = new FileReader();
@@ -755,12 +770,11 @@
                                 const staff = columns[1].trim();
                                 const minutes = parseInt(columns[2].trim(), 10);
 
-                                // Basic validation
                                 if (monthKey && staff && !isNaN(minutes) && minutes >= 0) {
                                     if (!currentData[monthKey]) {
                                         currentData[monthKey] = {};
                                     }
-                                    currentData[monthKey][staff] = minutes; // Overwrite existing
+                                    currentData[monthKey][staff] = minutes;
                                     importedCount++;
                                 } else {
                                     console.warn(`Skipping invalid row ${i + 1}: ${lines[i]}`);
@@ -778,17 +792,15 @@
                         showImportStatus(`Import failed: ${error.message}`, true);
                         console.error("CSV Import Error:", error);
                     } finally {
-                        // Reset file input to allow re-uploading the same file
                         csvFileInput.value = '';
                     }
                 };
                 reader.onerror = () => {
                     showImportStatus(`Error reading file: ${reader.error}`, true);
-                    csvFileInput.value = ''; // Reset file input
+                    csvFileInput.value = '';
                 };
                 reader.readAsText(file);
             });
-            // *** END NEW ***
             
             // Start the application
             loadData();
