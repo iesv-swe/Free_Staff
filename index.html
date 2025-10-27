@@ -107,26 +107,38 @@
             padding: 5px 12px;
             font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
         }
-        /* Green (On Call) */
         .teacher-list li.on-call {
             background-color: #2ea44f;
             color: #ffffff;
             border-color: #2c974b;
             font-weight: 600;
         }
-        /* Red (Danger) */
         .teacher-list li.minutes-danger {
             background-color: #d73a49;
             color: #ffffff;
             border: 1px solid #cb2431;
             font-weight: 600;
         }
-        /* Yellow (Warning) */
         .teacher-list li.minutes-warn {
-            background-color: #fffbdd;
-            border: 1px solid #ffdc73;
+            background-color: #ffc107;
+            border: 1px solid #e0a800;
+            color: #212529;
         }
         
+        /* --- UPDATED: Re-added month buttons --- */
+        .month-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+        .month-buttons button {
+            flex-grow: 1;
+            margin-top: 0;
+            padding: 5px 8px;
+        }
+        /* --- END UPDATE --- */
+
         #totals-display {
             background-color: #f6f8fa;
             border: 1px solid #d1d5da;
@@ -144,7 +156,6 @@
             margin: 2px 0;
             border-radius: 4px;
         }
-        /* Color coding for totals list */
         #totals-display li.minutes-danger {
             background-color: #d73a49;
             color: #ffffff;
@@ -152,8 +163,9 @@
             font-weight: 600;
         }
         #totals-display li.minutes-warn {
-            background-color: #fffbdd;
-            border: 1px solid #ffdc73;
+            background-color: #ffc107;
+            border: 1px solid #e0a800;
+            color: #212529;
         }
     </style>
 </head>
@@ -220,13 +232,13 @@
     <div class="container">
         <h2>Extra Minutes Totals</h2>
         <div class="input-group">
-            <label for="staff-display-select">Select Staff Member:</label>
-            <select id="staff-display-select">
-                <option value="">-- Select Staff to View Totals --</option>
-            </select>
+            <label for="year-display">Select Year:</label>
+            <input type="number" id="year-display" value="2025">
         </div>
+        <div class="month-buttons" id="month-buttons">
+            </div>
         <div id="totals-display">
-            <p>Select a staff member above to see their monthly totals.</p>
+            <p>Select a month to see totals.</p>
         </div>
         <button id="export-csv-button" class="secondary">Export All Data to CSV</button>
         <button id="clear-data-button" class="danger">Clear All Saved Data</button>
@@ -262,10 +274,14 @@
             const minutesInput = document.getElementById('minutes-input');
             const saveMinutesButton = document.getElementById('save-minutes-button');
             const saveStatus = document.getElementById('save-status');
-            const staffDisplaySelect = document.getElementById('staff-display-select');
+            
+            // --- UPDATED: Re-added/removed elements ---
+            const yearDisplay = document.getElementById('year-display'); // Re-added
+            const monthButtonsContainer = document.getElementById('month-buttons'); // Re-added
             const totalsDisplay = document.getElementById('totals-display');
             const exportCsvButton = document.getElementById('export-csv-button');
             const clearDataButton = document.getElementById('clear-data-button');
+            // --- END UPDATE ---
 
             // --- Helper Functions ---
             
@@ -393,7 +409,6 @@
             }
 
             // --- Display Function (Availability) ---
-            // *** UPDATED: Re-added color-coding logic ***
             function displayResults(availableTeachers, onCallTeachers, listElement, statusElement, monthKey) {
                 listElement.innerHTML = '';
                 const filteredTeachers = availableTeachers.filter(teacher => !EXCLUDE_TEACHERS_SET.has(teacher));
@@ -443,21 +458,20 @@
                 }
             }
 
+            // --- UPDATED: Only populates the *input* dropdown ---
             function populateStaffDropdown() {
                 const sortedTeachers = [...allTeachers].filter(teacher => !EXCLUDE_TEACHERS_SET.has(teacher)).sort();
                 
                 staffSelect.innerHTML = '<option value="">-- Select Staff --</option>';
-                staffDisplaySelect.innerHTML = '<option value="">-- Select Staff to View Totals --</option>';
 
                 sortedTeachers.forEach(teacher => {
                     const option = document.createElement('option');
                     option.value = teacher;
                     option.textContent = teacher;
-                    
-                    staffSelect.appendChild(option.cloneNode(true));
-                    staffDisplaySelect.appendChild(option.cloneNode(true));
+                    staffSelect.appendChild(option);
                 });
             }
+            // --- END UPDATE ---
 
             function showSaveStatus(message, isError = false) {
                 saveStatus.textContent = message;
@@ -466,31 +480,26 @@
                 setTimeout(() => { saveStatus.style.display = 'none'; }, 3000);
             }
 
-            // *** UPDATED: Individual staff totals (with color logic) ***
-            function displayStaffTotals(staffName) {
-                if (!staffName) {
-                    totalsDisplay.innerHTML = '<p>Select a staff member above to see their monthly totals.</p>';
-                    return;
-                }
-
+            // --- UPDATED: Re-implemented displayMonthlyTotals ---
+            function displayMonthlyTotals(year, monthIndex) {
+                const monthKey = `${year}-${String(monthIndex + 1).padStart(2, '0')}`;
+                const monthName = new Date(year, monthIndex).toLocaleString('default', { month: 'long' });
                 const allData = getSavedMinutesData();
-                let staffEntries = [];
-
-                for (const monthKey in allData) {
-                    if (allData[monthKey][staffName]) {
-                        staffEntries.push({
-                            month: monthKey,
-                            minutes: allData[monthKey][staffName]
-                        });
-                    }
-                }
+                const monthData = allData[monthKey] || {};
                 
-                staffEntries.sort((a, b) => a.month.localeCompare(b.month));
+                let html = `<h3>Totals for ${monthName} ${year} (Sorted)</h3>`;
 
-                let html = `<h3>Totals for ${staffName}</h3>`;
+                // Convert object to array: { "MaBe": 90, "JoSm": 120 } -> [ {staff: "MaBe", minutes: 90}, ... ]
+                const staffEntries = Object.entries(monthData).map(([staff, minutes]) => {
+                    return { staff: staff, minutes: minutes };
+                });
+
                 if (staffEntries.length === 0) {
-                    html += `<p>No extra minutes recorded for ${staffName}.</p>`;
+                    html += "<p>No data recorded for this month.</p>";
                 } else {
+                    // Sort array by minutes (least to most)
+                    staffEntries.sort((a, b) => a.minutes - b.minutes);
+
                     html += "<ul>";
                     staffEntries.forEach(entry => {
                         let classValue = '';
@@ -499,12 +508,34 @@
                         } else if (entry.minutes >= 90) {
                             classValue = 'minutes-warn';
                         }
-                        html += `<li class="${classValue}">${entry.month}: ${entry.minutes} minutes</li>`;
+                        html += `<li class="${classValue}">${entry.staff}: ${entry.minutes} minutes</li>`;
                     });
                     html += "</ul>";
                 }
                 totalsDisplay.innerHTML = html;
             }
+            // --- END UPDATE ---
+
+            // --- UPDATED: Re-added setupMonthButtons ---
+            function setupMonthButtons() {
+                const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                monthButtonsContainer.innerHTML = '';
+                monthNames.forEach((name, index) => {
+                    const button = document.createElement('button');
+                    button.textContent = name;
+                    button.classList.add('secondary');
+                    button.addEventListener('click', () => {
+                        const year = parseInt(yearDisplay.value, 10);
+                        if (isNaN(year)) {
+                            totalsDisplay.innerHTML = '<p class="error">Please enter a valid year.</p>';
+                            return;
+                        }
+                        displayMonthlyTotals(year, index);
+                    });
+                    monthButtonsContainer.appendChild(button);
+                });
+            }
+            // --- END UPDATE ---
 
             // --- Initialization ---
 
@@ -539,7 +570,6 @@
                     statusNow.textContent = `Schedule loaded. Checking for: ${new Date().toLocaleString()}`;
                     
                     const now = new Date();
-                    // *** UPDATED: Pass monthKey to displayResults ***
                     const nowMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
                     const { available, onCall } = getAvailabilityAtTime(now);
                     displayResults(available, onCall, teachersNowList, statusNow, nowMonthKey);
@@ -549,8 +579,12 @@
                     const later = new Date(now.getTime() + 60 * 60 * 1000); 
                     timeToInput.value = later.toTimeString().substring(0, 5);
 
+                    // --- UPDATED: Initialization for new display ---
                     populateStaffDropdown();
+                    setupMonthButtons(); // Re-added
                     monthInput.value = nowMonthKey;
+                    yearDisplay.value = now.getFullYear(); // Re-added
+                    // --- END UPDATE ---
 
                 } catch (error) {
                     statusNow.textContent = `Error: ${error.message}`;
@@ -589,7 +623,6 @@
                 const [year, month, day] = dateVal.split('-').map(Number);
                 const checkDate = new Date(year, month - 1, day);
                 
-                // *** UPDATED: Pass monthKey to displayResults ***
                 const monthKey = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}`;
                 const { available, onCall } = getAvailabilityForRange(checkDate, startMinutes, endMinutes);
                 
@@ -633,10 +666,16 @@
                 minutesInput.value = '';
                 staffSelect.value = '';
                 
-                const staffDisplay = staffDisplaySelect.value;
-                if (staff === staffDisplay) {
-                    displayStaffTotals(staff);
+                // --- UPDATED: Refresh the monthly total display ---
+                const [year, monthNum] = month.split('-').map(Number);
+                if (parseInt(yearDisplay.value, 10) === year) {
+                    // This is a bit complex, as we don't know which month is selected.
+                    // We'll just clear it and let the user re-click.
+                    // A better way: find the active button or just refresh if year matches.
+                    // Let's just clear it.
+                    totalsDisplay.innerHTML = '<p>Data saved. Click a month to refresh totals.</p>';
                 }
+                // --- END UPDATE ---
             });
 
             exportCsvButton.addEventListener('click', () => {
@@ -671,14 +710,17 @@
                 if (confirm("Are you sure you want to delete ALL saved extra minutes data? This cannot be undone.")) {
                     localStorage.removeItem('extraMinutes');
                     showSaveStatus("All saved data has been cleared.", false);
-                    const staffDisplay = staffDisplaySelect.value;
-                    displayStaffTotals(staffDisplay);
+                    // --- UPDATED: Clear the totals display ---
+                    totalsDisplay.innerHTML = '<p>All data cleared. Select a month to see totals.</p>';
+                    // --- END UPDATE ---
                 }
             });
 
-            staffDisplaySelect.addEventListener('change', (e) => {
-                displayStaffTotals(e.target.value);
+            // --- UPDATED: Re-added year listener, removed staff listener ---
+            yearDisplay.addEventListener('change', () => {
+                totalsDisplay.innerHTML = '<p>Select a month to see totals.</Vp>';
             });
+            // --- END UPDATE ---
             
             // Start the application
             loadData();
