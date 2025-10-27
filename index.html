@@ -163,6 +163,10 @@
             border: 1px solid #e0a800;
             color: #212529;
         }
+        /* Style to hide the file input */
+        #csv-file-input {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -236,9 +240,13 @@
         <div id="totals-display">
             <p>Select a month to see totals.</p>
         </div>
+        
+        <button id="import-csv-button" class="secondary">Import from CSV</button>
+        <input type="file" id="csv-file-input" accept=".csv">
         <button id="export-csv-button" class="secondary">Export All Data to CSV</button>
         <button id="clear-data-button" class="danger">Clear All Saved Data</button>
-    </div>
+        <div id="import-status" class="status" style="display:none; margin-top:10px;"></div>
+        </div>
 
 
     <script>
@@ -275,6 +283,11 @@
             const totalsDisplay = document.getElementById('totals-display');
             const exportCsvButton = document.getElementById('export-csv-button');
             const clearDataButton = document.getElementById('clear-data-button');
+            // *** NEW: Import elements ***
+            const importCsvButton = document.getElementById('import-csv-button');
+            const csvFileInput = document.getElementById('csv-file-input');
+            const importStatus = document.getElementById('import-status');
+            // *** END NEW ***
 
             // --- Helper Functions ---
             
@@ -293,8 +306,7 @@
                 const minutes = parseInt(timeStr.substring(2, 4), 10);
                 return (hours * 60) + minutes;
             }
-
-            // *** NEW: Format minutes to HH:MM ***
+            
             function minutesToHHMM(totalMinutes) {
                 const hours = Math.floor(totalMinutes / 60);
                 const minutes = totalMinutes % 60;
@@ -325,10 +337,10 @@
             }
             
             // --- Logic Function 1: Availability at a specific moment ---
-            // *** UPDATED: Returns onCallTimesMap ***
+
             function getAvailabilityAtTime(dateTime) {
                 const workingTeachers = new Set();
-                const onCallTimesMap = new Map(); // Changed from Set
+                const onCallTimesMap = new Map();
                 const busyTeachers = new Set();
                 
                 const checkWeek = getWeekNumber(dateTime);
@@ -354,7 +366,6 @@
                         } else if (subject === ON_CALL_SUBJECT) {
                             teachers.forEach(t => {
                                 workingTeachers.add(t);
-                                // Store the specific shift times if not already stored
                                 if (!onCallTimesMap.has(t)) {
                                     onCallTimesMap.set(t, { start: lessonStart, end: lessonEnd });
                                 }
@@ -366,14 +377,14 @@
                 });
 
                 const availableTeacherNames = [...workingTeachers].filter(teacher => !busyTeachers.has(teacher));
-                return { available: availableTeacherNames.sort(), onCallTimes: onCallTimesMap }; // Return map
+                return { available: availableTeacherNames.sort(), onCallTimes: onCallTimesMap };
             }
 
             // --- Logic Function 2: Availability for a time range ---
-            // *** UPDATED: Returns onCallTimesMap ***
+
             function getAvailabilityForRange(checkDate, checkStartMinutes, checkEndMinutes) {
                 const workingTeachers = new Set();
-                const onCallTimesMap = new Map(); // Changed from Set
+                const onCallTimesMap = new Map();
                 const busyTeachers = new Set();
 
                 const checkWeek = getWeekNumber(checkDate);
@@ -399,7 +410,6 @@
                         if (containsQuery) {
                             teachers.forEach(t => {
                                 workingTeachers.add(t);
-                                // Store the specific shift times if not already stored
                                 if (!onCallTimesMap.has(t)) {
                                     onCallTimesMap.set(t, { start: lessonStart, end: lessonEnd });
                                 }
@@ -411,11 +421,10 @@
                 });
 
                 const availableTeacherNames = [...workingTeachers].filter(teacher => !busyTeachers.has(teacher));
-                return { available: availableTeacherNames.sort(), onCallTimes: onCallTimesMap }; // Return map
+                return { available: availableTeacherNames.sort(), onCallTimes: onCallTimesMap };
             }
 
             // --- Display Function (Availability) ---
-            // *** UPDATED: Uses onCallTimesMap and adds times to text ***
             function displayResults(availableTeachers, onCallTimesMap, listElement, statusElement, monthKey) {
                 listElement.innerHTML = '';
                 const filteredTeachers = availableTeachers.filter(teacher => !EXCLUDE_TEACHERS_SET.has(teacher));
@@ -430,14 +439,12 @@
                         const li = document.createElement('li');
                         
                         if (onCallTimesMap.has(teacher)) {
-                            // Get and format times
                             const times = onCallTimesMap.get(teacher);
                             const startTimeStr = minutesToHHMM(times.start);
                             const endTimeStr = minutesToHHMM(times.end);
                             li.textContent = `${teacher} (On Call: ${startTimeStr} - ${endTimeStr})`;
                             li.classList.add('on-call');
                         } else {
-                            // Normal display + minute warnings
                             li.textContent = teacher;
                             const minutes = monthData[teacher] || 0;
                             if (minutes >= 180) {
@@ -473,9 +480,7 @@
 
             function populateStaffDropdown() {
                 const sortedTeachers = [...allTeachers].filter(teacher => !EXCLUDE_TEACHERS_SET.has(teacher)).sort();
-                
                 staffSelect.innerHTML = '<option value="">-- Select Staff --</option>';
-
                 sortedTeachers.forEach(teacher => {
                     const option = document.createElement('option');
                     option.value = teacher;
@@ -489,6 +494,14 @@
                 saveStatus.className = isError ? 'status error' : 'status success';
                 saveStatus.style.display = 'block';
                 setTimeout(() => { saveStatus.style.display = 'none'; }, 3000);
+            }
+            
+            // *** NEW: Show status for import ***
+            function showImportStatus(message, isError = false) {
+                importStatus.textContent = message;
+                importStatus.className = isError ? 'status error' : 'status success';
+                importStatus.style.display = 'block';
+                setTimeout(() => { importStatus.style.display = 'none'; }, 5000); // Show longer
             }
 
             function displayMonthlyTotals(year, monthIndex) {
@@ -576,7 +589,6 @@
                     
                     const now = new Date();
                     const nowMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-                    // *** UPDATED: Use onCallTimes map ***
                     const { available, onCallTimes } = getAvailabilityAtTime(now);
                     displayResults(available, onCallTimes, teachersNowList, statusNow, nowMonthKey);
                     
@@ -628,7 +640,6 @@
                 const checkDate = new Date(year, month - 1, day);
                 
                 const monthKey = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}`;
-                // *** UPDATED: Use onCallTimes map ***
                 const { available, onCallTimes } = getAvailabilityForRange(checkDate, startMinutes, endMinutes);
                 
                 statusCustom.textContent = `Showing teachers free from ${timeFromVal} to ${timeToVal} on ${checkDate.toLocaleDateString()}:`;
@@ -644,16 +655,13 @@
                 const minutes = parseInt(minutesInput.value, 10);
 
                 if (!staff) {
-                    showSaveStatus("Please select a staff member.", true);
-                    return;
+                    showSaveStatus("Please select a staff member.", true); return;
                 }
                 if (!month) {
-                    showSaveStatus("Please select a month and year.", true);
-                    return;
+                    showSaveStatus("Please select a month and year.", true); return;
                 }
                 if (isNaN(minutes) || minutes <= 0) {
-                    showSaveStatus("Please enter a valid number of minutes (greater than 0).", true);
-                    return;
+                    showSaveStatus("Please enter a valid number of minutes (greater than 0).", true); return;
                 }
 
                 const allData = getSavedMinutesData();
@@ -677,7 +685,6 @@
             exportCsvButton.addEventListener('click', () => {
                 const allData = getSavedMinutesData();
                 let csvContent = "data:text/csv;charset=utf-8,Year-Month,Staff,Minutes\n";
-
                 const sortedMonths = Object.keys(allData).sort();
 
                 for (const monthKey of sortedMonths) {
@@ -689,8 +696,7 @@
                 }
 
                 if (csvContent.length <= "data:text/csv;charset=utf-8,Year-Month,Staff,Minutes\n".length) {
-                    alert("No data to export.");
-                    return;
+                    alert("No data to export."); return;
                 }
 
                 const encodedUri = encodeURI(csvContent);
@@ -713,6 +719,76 @@
             yearDisplay.addEventListener('change', () => {
                 totalsDisplay.innerHTML = '<p>Select a month to see totals.</p>';
             });
+
+            // *** NEW: Import logic ***
+            importCsvButton.addEventListener('click', () => {
+                csvFileInput.click(); // Trigger the hidden file input
+            });
+
+            csvFileInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (!file) {
+                    return; // No file selected
+                }
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const text = e.target.result;
+                    try {
+                        const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+                        if (lines.length < 2) {
+                            throw new Error("CSV file is empty or has no data rows.");
+                        }
+
+                        const header = lines[0].split(',');
+                        if (header.length < 3 || header[0].trim() !== 'Year-Month' || header[1].trim() !== 'Staff' || header[2].trim() !== 'Minutes') {
+                            throw new Error("Invalid CSV header. Expected 'Year-Month,Staff,Minutes'.");
+                        }
+
+                        let importedCount = 0;
+                        const currentData = getSavedMinutesData();
+
+                        for (let i = 1; i < lines.length; i++) {
+                            const columns = lines[i].split(',');
+                            if (columns.length >= 3) {
+                                const monthKey = columns[0].trim();
+                                const staff = columns[1].trim();
+                                const minutes = parseInt(columns[2].trim(), 10);
+
+                                // Basic validation
+                                if (monthKey && staff && !isNaN(minutes) && minutes >= 0) {
+                                    if (!currentData[monthKey]) {
+                                        currentData[monthKey] = {};
+                                    }
+                                    currentData[monthKey][staff] = minutes; // Overwrite existing
+                                    importedCount++;
+                                } else {
+                                    console.warn(`Skipping invalid row ${i + 1}: ${lines[i]}`);
+                                }
+                            } else {
+                                console.warn(`Skipping row ${i + 1} due to incorrect column count: ${lines[i]}`);
+                            }
+                        }
+
+                        saveMinutesData(currentData);
+                        showImportStatus(`Successfully imported ${importedCount} records. Data has been merged (imported data overwrites existing entries).`, false);
+                        totalsDisplay.innerHTML = '<p>Data imported. Click a month to see updated totals.</p>';
+
+                    } catch (error) {
+                        showImportStatus(`Import failed: ${error.message}`, true);
+                        console.error("CSV Import Error:", error);
+                    } finally {
+                        // Reset file input to allow re-uploading the same file
+                        csvFileInput.value = '';
+                    }
+                };
+                reader.onerror = () => {
+                    showImportStatus(`Error reading file: ${reader.error}`, true);
+                    csvFileInput.value = ''; // Reset file input
+                };
+                reader.readAsText(file);
+            });
+            // *** END NEW ***
             
             // Start the application
             loadData();
