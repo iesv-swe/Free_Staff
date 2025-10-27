@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teacher Availability</title>
     <style>
-        body {
+        body { /* Styles remain largely the same */
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             line-height: 1.6;
             background-color: #f6f8fa;
@@ -14,266 +14,94 @@
             margin: 20px auto;
             padding: 20px;
         }
-        .logo {
-            width: 180px;
-            height: auto;
-            margin-bottom: 10px;
-        }
-        h1, h2 {
-            border-bottom: 2px solid #eaecef;
-            padding-bottom: 10px;
-        }
-        .container {
-            background-color: #ffffff;
-            border: 1px solid #d1d5da;
-            border-radius: 6px;
-            padding: 24px;
-            margin-bottom: 20px;
-        }
-        .input-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-        .input-group {
-            margin-bottom: 15px;
-        }
-        .input-group label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-        .input-group input,
-        .input-group select {
-            width: 95%;
-            padding: 8px 12px;
-            border: 1px solid #d1d5da;
-            border-radius: 6px;
-            background-color: #fff;
-        }
-        button {
-            background-color: #2ea44f; /* Default green */
-            color: #ffffff;
-            font-weight: 600;
-            padding: 10px 16px;
-            border: 1px solid rgba(27, 31, 35, 0.15);
-            border-radius: 6px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        button:hover {
-            background-color: #2c974b;
-        }
-        button.secondary {
-            background-color: #f6f8fa;
-            color: #24292e;
-        }
-        button.secondary:hover {
-            background-color: #f3f4f6;
-        }
-        button.danger {
-            background-color: #d73a49;
-            border-color: rgba(27, 31, 35, 0.15);
-        }
-        button.danger:hover {
-            background-color: #cb2431;
-        }
-        /* *** NEW: Style for explicitly green buttons *** */
-        button.success {
-             background-color: #2ea44f;
-             color: #ffffff;
-        }
-        button.success:hover {
-             background-color: #2c974b;
-        }
-        /* *** END NEW *** */
-
-        /* *** NEW: Container for the bottom buttons *** */
-        .button-group {
-            display: flex;
-            justify-content: space-between; /* Space out buttons */
-            gap: 10px; /* Add some space between */
-        }
-        /* *** END NEW *** */
-
-        .results {
-            margin-top: 20px;
-        }
-        .status {
-            font-style: italic;
-            color: #586069;
-        }
-        .status.error {
-            color: #d73a49;
-            font-weight: 600;
-        }
-        .status.success {
-            color: #2ea44f;
-            font-weight: 600;
-        }
-        .teacher-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            list-style: none;
-            padding: 0;
-        }
-        .teacher-list li {
-            background-color: #f6f8fa;
-            border: 1px solid #d1d5da;
-            border-radius: 10px;
-            padding: 5px 12px;
-            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-        }
-        .teacher-list li.on-call {
-            background-color: #2ea44f;
-            color: #ffffff;
-            border-color: #2c974b;
-            font-weight: 600;
-        }
-        .teacher-list li.minutes-danger {
-            background-color: #d73a49;
-            color: #ffffff;
-            border: 1px solid #cb2431;
-            font-weight: 600;
-        }
-        .teacher-list li.minutes-warn {
-            background-color: #ffc107;
-            border: 1px solid #e0a800;
-            color: #212529;
-        }
-        .month-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            margin-bottom: 15px;
-        }
-        .month-buttons button {
-            flex-grow: 1;
-            margin-top: 0;
-            padding: 5px 8px;
-        }
-        #totals-display {
-            background-color: #f6f8fa;
-            border: 1px solid #d1d5da;
-            border-radius: 6px;
-            padding: 15px;
-            min-height: 50px;
-        }
-        #totals-display h3 {
-            margin-top: 0;
-        }
-        #totals-display li {
-            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-            list-style: none;
-            padding: 4px 8px;
-            margin: 2px 0;
-            border-radius: 4px;
-        }
-        #totals-display li.minutes-danger {
-            background-color: #d73a49;
-            color: #ffffff;
-            border: 1px solid #cb2431;
-            font-weight: 600;
-        }
-        #totals-display li.minutes-warn {
-            background-color: #ffc107;
-            border: 1px solid #e0a800;
-            color: #212529;
-        }
-        #csv-file-input {
-            display: none;
-        }
+        .logo { width: 180px; height: auto; margin-bottom: 10px; }
+        h1, h2 { border-bottom: 2px solid #eaecef; padding-bottom: 10px; }
+        .container { background-color: #ffffff; border: 1px solid #d1d5da; border-radius: 6px; padding: 24px; margin-bottom: 20px; }
+        .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-weight: 600; margin-bottom: 5px; }
+        .input-group input, .input-group select { width: 95%; padding: 8px 12px; border: 1px solid #d1d5da; border-radius: 6px; background-color: #fff; }
+        button { background-color: #2ea44f; color: #ffffff; font-weight: 600; padding: 10px 16px; border: 1px solid rgba(27, 31, 35, 0.15); border-radius: 6px; cursor: pointer; margin-top: 10px; }
+        button:hover { background-color: #2c974b; }
+        button.secondary { background-color: #f6f8fa; color: #24292e; }
+        button.secondary:hover { background-color: #f3f4f6; }
+        button.danger { background-color: #d73a49; border-color: rgba(27, 31, 35, 0.15); }
+        button.danger:hover { background-color: #cb2431; }
+        button.success { background-color: #2ea44f; color: #ffffff; }
+        button.success:hover { background-color: #2c974b; }
+        .button-group { display: flex; justify-content: space-between; gap: 10px; }
+        .results { margin-top: 20px; }
+        .status { font-style: italic; color: #586069; }
+        .status.error { color: #d73a49; font-weight: 600; }
+        .status.success { color: #2ea44f; font-weight: 600; }
+        .teacher-list { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; }
+        .teacher-list li { background-color: #f6f8fa; border: 1px solid #d1d5da; border-radius: 10px; padding: 5px 12px; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; }
+        .teacher-list li.on-call { background-color: #2ea44f; color: #ffffff; border-color: #2c974b; font-weight: 600; }
+        .teacher-list li.minutes-danger { background-color: #d73a49; color: #ffffff; border: 1px solid #cb2431; font-weight: 600; }
+        .teacher-list li.minutes-warn { background-color: #ffc107; border: 1px solid #e0a800; color: #212529; }
+        .month-buttons { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 15px; }
+        .month-buttons button { flex-grow: 1; margin-top: 0; padding: 5px 8px; }
+        #totals-display { background-color: #f6f8fa; border: 1px solid #d1d5da; border-radius: 6px; padding: 15px; min-height: 50px; }
+        #totals-display h3 { margin-top: 0; }
+        #totals-display li { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; list-style: none; padding: 4px 8px; margin: 2px 0; border-radius: 4px; }
+        #totals-display li.minutes-danger { background-color: #d73a49; color: #ffffff; border: 1px solid #cb2431; font-weight: 600; }
+        #totals-display li.minutes-warn { background-color: #ffc107; border: 1px solid #e0a800; color: #212529; }
+        #csv-file-input { display: none; }
     </style>
 </head>
 <body>
 
     <img src="logo.png" alt="Logo" class="logo">
-
     <h1>Teacher Availability</h1>
 
     <div class="container">
         <h2>Available Right Now</h2>
         <div id="status-now" class="status">Loading schedule...</div>
-        <div id="results-now" class="results">
-            <ul id="teachers-now" class="teacher-list"></ul>
-        </div>
+        <div id="results-now" class="results"><ul id="teachers-now" class="teacher-list"></ul></div>
     </div>
-
     <div class="container">
         <h2>Check Availability for a Time Range</h2>
-        <div class="input-group">
-            <label for="date-input">Date:</label>
-            <input type="date" id="date-input">
-        </div>
+        <div class="input-group"><label for="date-input">Date:</label><input type="date" id="date-input"></div>
         <div class="input-grid">
-            <div class="input-group">
-                <label for="time-from-input">Time (From):</label>
-                <input type="time" id="time-from-input">
-            </div>
-            <div class="input-group">
-                <label for="time-to-input">Time (To):</label>
-                <input type="time" id="time-to-input">
-            </div>
+            <div class="input-group"><label for="time-from-input">Time (From):</label><input type="time" id="time-from-input"></div>
+            <div class="input-group"><label for="time-to-input">Time (To):</label><input type="time" id="time-to-input"></div>
         </div>
         <button id="check-button">Check Availability</button>
         <div id="status-custom" class="status" style="display:none;"></div>
-        <div id="results-custom" class="results">
-            <ul id="teachers-custom" class="teacher-list"></ul>
-        </div>
+        <div id="results-custom" class="results"><ul id="teachers-custom" class="teacher-list"></ul></div>
     </div>
 
     <div class="container">
         <h2>Extra Minutes Tracker</h2>
         <p>Record extra minutes worked by staff. This data is saved in your browser.</p>
         <div class="input-grid">
-            <div class="input-group">
-                <label for="staff-select">Staff Member:</label>
-                <select id="staff-select">
-                    <option value="">-- Select Staff --</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label for="month-input">Month & Year:</label>
-                <input type="month" id="month-input">
-            </div>
+            <div class="input-group"><label for="staff-select">Staff Member:</label><select id="staff-select"><option value="">-- Select Staff --</option></select></div>
+            <div class="input-group"><label for="date-entry-input">Date Worked:</label><input type="date" id="date-entry-input"></div>
         </div>
-        <div class="input-group">
-            <label for="minutes-input">Add Extra Minutes:</label>
-            <input type="number" id="minutes-input" placeholder="e.g., 60">
-        </div>
+        <div class="input-group"><label for="minutes-input">Add Extra Minutes:</label><input type="number" id="minutes-input" placeholder="e.g., 60"></div>
         <button id="save-minutes-button">Save Minutes</button>
         <div id="save-status" class="status" style="display:none; margin-top:10px;"></div>
     </div>
 
     <div class="container">
         <h2>Extra Minutes Totals</h2>
-        <div class="input-group">
-            <label for="year-display">Select Year:</label>
-            <input type="number" id="year-display" value="2025">
-        </div>
-        <div class="month-buttons" id="month-buttons">
-            </div>
-        <div id="totals-display">
-            <p>Select a month to see totals.</p>
-        </div>
-        
+        <div class="input-group"><label for="year-display">Select Year:</label><input type="number" id="year-display" value="2025"></div>
+        <div class="month-buttons" id="month-buttons"></div>
+        <div id="totals-display"><p>Select a month to see totals.</p></div>
         <div class="button-group">
-            <button id="export-csv-button" class="success">Export All Data to CSV</button> 
+            <button id="export-csv-button" class="success">Export All Data to CSV</button>
             <button id="import-csv-button" class="secondary">Import from CSV</button>
             <input type="file" id="csv-file-input" accept=".csv">
             <button id="clear-data-button" class="danger">Clear All Saved Data</button>
         </div>
         <div id="import-status" class="status" style="display:none; margin-top:10px;"></div>
-        </div>
-
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             let lessons = [];
             let allTeachers = new Set();
             let columnMap = {};
-            
             const dayMap = ["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"];
 
             // --- CONFIGURATION ---
@@ -293,7 +121,8 @@
             const timeFromInput = document.getElementById('time-from-input');
             const timeToInput = document.getElementById('time-to-input');
             const staffSelect = document.getElementById('staff-select');
-            const monthInput = document.getElementById('month-input');
+            // *** UPDATED: Get date entry input ***
+            const dateEntryInput = document.getElementById('date-entry-input');
             const minutesInput = document.getElementById('minutes-input');
             const saveMinutesButton = document.getElementById('save-minutes-button');
             const saveStatus = document.getElementById('save-status');
@@ -308,12 +137,14 @@
 
             // --- Helper Functions ---
             
-            function getWeekNumber(d) {
+            // Calculates ISO week number & year (important for year boundary weeks)
+            function getIsoWeekAndYear(d) {
                 d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-                d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-                var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-                var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-                return weekNo;
+                d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7)); // Set to Thursday of current week
+                const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+                const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+                const year = d.getUTCFullYear();
+                return { week: weekNo, year: year };
             }
 
             function timeToMinutes(timeStr) {
@@ -330,7 +161,7 @@
                 return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
             }
 
-            function parseRealWeeks(weekString) {
+            function parseRealWeeks(weekString) { /* ... remains the same ... */ 
                 const weeks = new Set();
                 if (!weekString) return weeks;
                 weekString.split(',').forEach(range => {
@@ -348,36 +179,30 @@
                 return weeks;
             }
 
-            function parseTeachers(teacherString) {
+            function parseTeachers(teacherString) { /* ... remains the same ... */
                 if (!teacherString) return [];
                 return teacherString.split(',').map(t => t.trim()).filter(t => t.length > 0);
             }
             
             // --- Logic Function 1: Availability at a specific moment ---
 
-            function getAvailabilityAtTime(dateTime) {
+            function getAvailabilityAtTime(dateTime) { /* ... remains the same ... */
                 const workingTeachers = new Set();
                 const onCallTimesMap = new Map();
                 const busyTeachers = new Set();
-                
-                const checkWeek = getWeekNumber(dateTime);
+                const checkWeek = getIsoWeekAndYear(dateTime).week; // Use ISO week
                 const checkDay = dayMap[dateTime.getDay()];
                 const checkTimeInMinutes = (dateTime.getHours() * 60) + dateTime.getMinutes();
-                
                 lessons.forEach(lesson => {
                     const lessonDay = lesson[columnMap['day']].trim();
                     const lessonWeeks = parseRealWeeks(lesson[columnMap['realweeks']]);
-
                     if (lessonDay !== checkDay || !lessonWeeks.has(checkWeek)) return;
-
                     const lessonStart = timeToMinutes(lesson[columnMap['starttime']]);
                     const lessonLength = parseInt(lesson[columnMap['length']], 10);
                     const lessonEnd = lessonStart + lessonLength;
                     const subject = lesson[columnMap['subject']].trim().toLowerCase();
-
                     if (checkTimeInMinutes >= lessonStart && checkTimeInMinutes < lessonEnd) {
                         const teachers = parseTeachers(lesson[columnMap['teacher']]);
-                        
                         if (subject === ARBETSTID_SUBJECT) {
                             teachers.forEach(t => workingTeachers.add(t));
                         } else if (subject === ON_CALL_SUBJECT) {
@@ -392,35 +217,29 @@
                         }
                     }
                 });
-
                 const availableTeacherNames = [...workingTeachers].filter(teacher => !busyTeachers.has(teacher));
                 return { available: availableTeacherNames.sort(), onCallTimes: onCallTimesMap };
             }
 
             // --- Logic Function 2: Availability for a time range ---
 
-            function getAvailabilityForRange(checkDate, checkStartMinutes, checkEndMinutes) {
+            function getAvailabilityForRange(checkDate, checkStartMinutes, checkEndMinutes) { /* ... remains the same ... */
                 const workingTeachers = new Set();
                 const onCallTimesMap = new Map();
                 const busyTeachers = new Set();
-
-                const checkWeek = getWeekNumber(checkDate);
+                const checkWeek = getIsoWeekAndYear(checkDate).week; // Use ISO week
                 const checkDay = dayMap[checkDate.getDay()];
-
                 lessons.forEach(lesson => {
                     const lessonDay = lesson[columnMap['day']].trim();
                     const lessonWeeks = parseRealWeeks(lesson[columnMap['realweeks']]);
                     if (lessonDay !== checkDay || !lessonWeeks.has(checkWeek)) return;
-
                     const lessonStart = timeToMinutes(lesson[columnMap['starttime']]);
                     const lessonLength = parseInt(lesson[columnMap['length']], 10);
                     const lessonEnd = lessonStart + lessonLength;
                     const subject = lesson[columnMap['subject']].trim().toLowerCase();
                     const teachers = parseTeachers(lesson[columnMap['teacher']]);
-                    
                     const containsQuery = (lessonStart <= checkStartMinutes && lessonEnd >= checkEndMinutes);
                     const overlapsQuery = (lessonStart < checkEndMinutes && lessonEnd > checkStartMinutes);
-
                     if (subject === ARBETSTID_SUBJECT) {
                         if (containsQuery) teachers.forEach(t => workingTeachers.add(t));
                     } else if (subject === ON_CALL_SUBJECT) {
@@ -436,17 +255,19 @@
                         teachers.forEach(t => busyTeachers.add(t));
                     }
                 });
-
                 const availableTeacherNames = [...workingTeachers].filter(teacher => !busyTeachers.has(teacher));
                 return { available: availableTeacherNames.sort(), onCallTimes: onCallTimesMap };
             }
 
             // --- Display Function (Availability) ---
-            function displayResults(availableTeachers, onCallTimesMap, listElement, statusElement, monthKey) {
+            // *** UPDATED: Calculates weekly and monthly totals for coloring ***
+            function displayResults(availableTeachers, onCallTimesMap, listElement, statusElement, checkDate) {
                 listElement.innerHTML = '';
                 const filteredTeachers = availableTeachers.filter(teacher => !EXCLUDE_TEACHERS_SET.has(teacher));
                 const allData = getSavedMinutesData();
-                const monthData = (allData && allData[monthKey]) ? allData[monthKey] : {};
+                
+                const { week: checkWeekNum, year: checkWeekYear } = getIsoWeekAndYear(checkDate);
+                const checkMonthKey = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}`;
 
                 if (filteredTeachers.length === 0) {
                     statusElement.textContent = 'No teachers are available (working and not in a lesson) for this time.';
@@ -456,18 +277,38 @@
                         const li = document.createElement('li');
                         
                         if (onCallTimesMap.has(teacher)) {
+                            // On Call display
                             const times = onCallTimesMap.get(teacher);
                             const startTimeStr = minutesToHHMM(times.start);
                             const endTimeStr = minutesToHHMM(times.end);
                             li.textContent = `${teacher} (On Call: ${startTimeStr} - ${endTimeStr})`;
                             li.classList.add('on-call');
                         } else {
+                            // Normal display + calculate totals for color
                             li.textContent = teacher;
-                            const minutes = monthData[teacher] || 0;
-                            if (minutes >= 180) {
-                                li.classList.add('minutes-danger');
-                            } else if (minutes >= 90) {
-                                li.classList.add('minutes-warn');
+                            let weeklyTotal = 0;
+                            let monthlyTotal = 0;
+                            const teacherData = allData[teacher] || {};
+
+                            for (const dateKey in teacherData) { // dateKey is "YYYY-MM-DD"
+                                const entryDate = new Date(dateKey + 'T00:00:00Z'); // Ensure UTC parsing
+                                const { week: entryWeek, year: entryYear } = getIsoWeekAndYear(entryDate);
+                                
+                                // Check weekly total
+                                if (entryWeek === checkWeekNum && entryYear === checkWeekYear) {
+                                    weeklyTotal += teacherData[dateKey];
+                                }
+                                // Check monthly total
+                                if (dateKey.startsWith(checkMonthKey)) {
+                                    monthlyTotal += teacherData[dateKey];
+                                }
+                            }
+
+                            // Apply colors based on totals
+                            if (monthlyTotal >= 180) {
+                                li.classList.add('minutes-danger'); // Red for month
+                            } else if (weeklyTotal >= 80) {
+                                li.classList.add('minutes-warn'); // Yellow for week
                             }
                         }
                         listElement.appendChild(li);
@@ -477,25 +318,24 @@
             
             // --- Extra Minutes Helper Functions ---
 
+            // *** UPDATED: Storage structure is {"Staff": {"YYYY-MM-DD": Minutes}} ***
             function getSavedMinutesData() {
                 try {
                     const data = localStorage.getItem('extraMinutes');
-                    return data ? JSON.parse(data) : {};
+                    // Ensure the outer structure is an object even if empty
+                    const parsed = data ? JSON.parse(data) : {};
+                    return typeof parsed === 'object' && parsed !== null ? parsed : {};
                 } catch (e) {
                     console.error("Failed to parse extra minutes data:", e);
-                    return {};
+                    return {}; // Return empty object on error
                 }
             }
 
-            function saveMinutesData(data) {
-                try {
-                    localStorage.setItem('extraMinutes', JSON.stringify(data));
-                } catch (e) {
-                    console.error("Failed to save extra minutes data:", e);
-                }
+            function saveMinutesData(data) { /* ... remains the same ... */ 
+                 try { localStorage.setItem('extraMinutes', JSON.stringify(data)); } catch (e) { console.error("Failed to save extra minutes data:", e); }
             }
 
-            function populateStaffDropdown() {
+            function populateStaffDropdown() { /* ... remains the same ... */
                 const sortedTeachers = [...allTeachers].filter(teacher => !EXCLUDE_TEACHERS_SET.has(teacher)).sort();
                 staffSelect.innerHTML = '<option value="">-- Select Staff --</option>';
                 sortedTeachers.forEach(teacher => {
@@ -506,29 +346,38 @@
                 });
             }
 
-            function showSaveStatus(message, isError = false) {
-                saveStatus.textContent = message;
-                saveStatus.className = isError ? 'status error' : 'status success';
-                saveStatus.style.display = 'block';
-                setTimeout(() => { saveStatus.style.display = 'none'; }, 3000);
+            function showSaveStatus(message, isError = false) { /* ... remains the same ... */ 
+                 saveStatus.textContent = message; saveStatus.className = isError ? 'status error' : 'status success'; saveStatus.style.display = 'block'; setTimeout(() => { saveStatus.style.display = 'none'; }, 3000);
             }
             
-            function showImportStatus(message, isError = false) {
-                importStatus.textContent = message;
-                importStatus.className = isError ? 'status error' : 'status success';
-                importStatus.style.display = 'block';
-                setTimeout(() => { importStatus.style.display = 'none'; }, 5000);
+            function showImportStatus(message, isError = false) { /* ... remains the same ... */ 
+                importStatus.textContent = message; importStatus.className = isError ? 'status error' : 'status success'; importStatus.style.display = 'block'; setTimeout(() => { importStatus.style.display = 'none'; }, 5000);
             }
 
+            // *** UPDATED: Calculates monthly totals from daily entries ***
             function displayMonthlyTotals(year, monthIndex) {
-                const monthKey = `${year}-${String(monthIndex + 1).padStart(2, '0')}`;
+                const monthKeyPrefix = `${year}-${String(monthIndex + 1).padStart(2, '0')}`; // "YYYY-MM"
                 const monthName = new Date(year, monthIndex).toLocaleString('default', { month: 'long' });
                 const allData = getSavedMinutesData();
-                const monthData = allData[monthKey] || {};
+                const monthlyTotals = {}; // { "Staff": TotalMinutes }
+
+                // Iterate through each staff member
+                for (const staff in allData) {
+                    const staffData = allData[staff];
+                    let staffMonthTotal = 0;
+                    // Iterate through their dates
+                    for (const dateKey in staffData) { // "YYYY-MM-DD"
+                        if (dateKey.startsWith(monthKeyPrefix)) {
+                            staffMonthTotal += staffData[dateKey];
+                        }
+                    }
+                    if (staffMonthTotal > 0) {
+                        monthlyTotals[staff] = staffMonthTotal;
+                    }
+                }
                 
                 let html = `<h3>Totals for ${monthName} ${year} (Sorted)</h3>`;
-
-                const staffEntries = Object.entries(monthData).map(([staff, minutes]) => {
+                const staffEntries = Object.entries(monthlyTotals).map(([staff, minutes]) => {
                     return { staff: staff, minutes: minutes };
                 });
 
@@ -536,11 +385,10 @@
                     html += "<p>No data recorded for this month.</p>";
                 } else {
                     staffEntries.sort((a, b) => a.minutes - b.minutes);
-
                     html += "<ul>";
                     staffEntries.forEach(entry => {
                         let classValue = '';
-                        if (entry.minutes >= 180) {
+                        if (entry.minutes >= 180) { // Color based on monthly total
                             classValue = 'minutes-danger';
                         } else if (entry.minutes >= 90) {
                             classValue = 'minutes-warn';
@@ -552,7 +400,7 @@
                 totalsDisplay.innerHTML = html;
             }
 
-            function setupMonthButtons() {
+            function setupMonthButtons() { /* ... remains the same ... */
                 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
                 monthButtonsContainer.innerHTML = '';
                 monthNames.forEach((name, index) => {
@@ -560,53 +408,39 @@
                     button.textContent = name;
                     button.classList.add('secondary');
                     button.addEventListener('click', () => {
-                        const year = parseInt(yearDisplay.value, 10);
-                        if (isNaN(year)) {
-                            totalsDisplay.innerHTML = '<p class="error">Please enter a valid year.</p>';
-                            return;
+                        const yearVal = parseInt(yearDisplay.value, 10);
+                        if (isNaN(yearVal)) {
+                            totalsDisplay.innerHTML = '<p class="error">Please enter a valid year.</p>'; return;
                         }
-                        displayMonthlyTotals(year, index);
+                        displayMonthlyTotals(yearVal, index);
                     });
                     monthButtonsContainer.appendChild(button);
                 });
-            }
+             }
 
             // --- Initialization ---
 
             async function loadData() {
                 try {
-                    const response = await fetch('Lessons.txt');
+                    // ... Fetching and parsing Lessons.txt remains the same ...
+                     const response = await fetch('Lessons.txt');
                     if (!response.ok) throw new Error(`Failed to fetch Lessons.txt. Make sure it's in the same directory.`);
-                    
                     const text = await response.text();
                     const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
                     if (lines.length < 2) throw new Error('Lesson file is empty or invalid.');
-
                     const header = lines[0].split('\t');
-                    header.forEach((col, index) => {
-                        columnMap[col.trim()] = index;
-                    });
-                    
+                    header.forEach((col, index) => { columnMap[col.trim()] = index; });
                     const requiredCols = ['subject', 'teacher', 'day', 'starttime', 'length', 'realweeks'];
-                    for (const col of requiredCols) {
-                        if (columnMap[col] === undefined) {
-                            throw new Error(`Missing required column in Lessons.txt: ${col}`);
-                        }
-                    }
-
+                    for (const col of requiredCols) { if (columnMap[col] === undefined) throw new Error(`Missing required column: ${col}`); }
                     lessons = lines.slice(1).map(line => line.split('\t'));
-                    
-                    lessons.forEach(lesson => {
-                        const teachers = parseTeachers(lesson[columnMap['teacher']]);
-                        teachers.forEach(teacher => allTeachers.add(teacher));
-                    });
+                    lessons.forEach(lesson => { const teachers = parseTeachers(lesson[columnMap['teacher']]); teachers.forEach(teacher => allTeachers.add(teacher)); });
                     
                     statusNow.textContent = `Schedule loaded. Checking for: ${new Date().toLocaleString()}`;
                     
                     const now = new Date();
-                    const nowMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
                     const { available, onCallTimes } = getAvailabilityAtTime(now);
-                    displayResults(available, onCallTimes, teachersNowList, statusNow, nowMonthKey);
+                    // *** UPDATED: Pass date object to displayResults ***
+                    displayResults(available, onCallTimes, teachersNowList, statusNow, now);
                     
                     dateInput.valueAsDate = now;
                     timeFromInput.value = now.toTimeString().substring(0, 5);
@@ -615,7 +449,8 @@
 
                     populateStaffDropdown();
                     setupMonthButtons();
-                    monthInput.value = nowMonthKey;
+                    // *** UPDATED: Set date entry default ***
+                    dateEntryInput.valueAsDate = now; 
                     yearDisplay.value = now.getFullYear();
 
                 } catch (error) {
@@ -628,90 +463,79 @@
             // --- Event Listeners (Availability) ---
 
             checkButton.addEventListener('click', () => {
+                // ... Input validation remains the same ...
                 const dateVal = dateInput.value;
                 const timeFromVal = timeFromInput.value;
                 const timeToVal = timeToInput.value;
-
                 teachersCustomList.innerHTML = '';
                 statusCustom.classList.remove('error');
-                
-                if (!dateVal || !timeFromVal || !timeToVal) {
-                    statusCustom.textContent = 'Please select a date and both a "From" and "To" time.';
-                    statusCustom.style.display = 'block';
-                    statusCustom.classList.add('error');
-                    return;
-                }
-
+                if (!dateVal || !timeFromVal || !timeToVal) { statusCustom.textContent = 'Please select date & times.'; statusCustom.style.display = 'block'; statusCustom.classList.add('error'); return; }
                 const startMinutes = timeToMinutes(timeFromVal);
                 const endMinutes = timeToMinutes(timeToVal);
-
-                if (endMinutes <= startMinutes) {
-                    statusCustom.textContent = 'The "To" time must be after the "From"time.';
-                    statusCustom.style.display = 'block';
-                    statusCustom.classList.add('error');
-                    return;
-                }
+                if (endMinutes <= startMinutes) { statusCustom.textContent = '"To" time must be after "From".'; statusCustom.style.display = 'block'; statusCustom.classList.add('error'); return; }
                 
                 const [year, month, day] = dateVal.split('-').map(Number);
                 const checkDate = new Date(year, month - 1, day);
                 
-                const monthKey = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}`;
                 const { available, onCallTimes } = getAvailabilityForRange(checkDate, startMinutes, endMinutes);
                 
                 statusCustom.textContent = `Showing teachers free from ${timeFromVal} to ${timeToVal} on ${checkDate.toLocaleDateString()}:`;
                 statusCustom.style.display = 'block';
-                displayResults(available, onCallTimes, teachersCustomList, statusCustom, monthKey);
+                // *** UPDATED: Pass date object to displayResults ***
+                displayResults(available, onCallTimes, teachersCustomList, statusCustom, checkDate);
             });
 
             // --- Event Listeners (Extra Minutes) ---
             
+            // *** UPDATED: Save uses date and new data structure ***
             saveMinutesButton.addEventListener('click', () => {
                 const staff = staffSelect.value;
-                const month = monthInput.value;
+                const date = dateEntryInput.value; // "YYYY-MM-DD"
                 const minutes = parseInt(minutesInput.value, 10);
 
-                if (!staff) {
-                    showSaveStatus("Please select a staff member.", true); return;
-                }
-                if (!month) {
-                    showSaveStatus("Please select a month and year.", true); return;
-                }
-                if (isNaN(minutes) || minutes <= 0) {
-                    showSaveStatus("Please enter a valid number of minutes (greater than 0).", true); return;
-                }
+                if (!staff) { showSaveStatus("Select staff.", true); return; }
+                if (!date) { showSaveStatus("Select date.", true); return; }
+                if (isNaN(minutes) || minutes <= 0) { showSaveStatus("Enter valid minutes (> 0).", true); return; }
 
                 const allData = getSavedMinutesData();
-                if (!allData[month]) {
-                    allData[month] = {};
+                
+                // Ensure staff entry exists
+                if (!allData[staff]) {
+                    allData[staff] = {};
                 }
                 
-                const currentMinutes = allData[month][staff] || 0;
+                // Add minutes to the specific date
+                const currentMinutes = allData[staff][date] || 0;
                 const newTotalMinutes = currentMinutes + minutes;
-                allData[month][staff] = newTotalMinutes;
+                allData[staff][date] = newTotalMinutes;
                 
                 saveMinutesData(allData);
                 
-                showSaveStatus(`Added ${minutes} minutes for ${staff}. New total for ${month}: ${newTotalMinutes}.`, false);
+                showSaveStatus(`Added ${minutes} mins for ${staff} on ${date}. New total for date: ${newTotalMinutes}.`, false);
                 minutesInput.value = '';
-                staffSelect.value = '';
+                staffSelect.value = ''; // Optionally reset staff too
                 
                 totalsDisplay.innerHTML = '<p>Data saved. Click a month to refresh totals.</p>';
             });
 
+            // *** UPDATED: Export uses new data structure and format ***
             exportCsvButton.addEventListener('click', () => {
                 const allData = getSavedMinutesData();
-                let csvContent = "data:text/csv;charset=utf-8,Year-Month,Staff,Minutes\n";
-                const sortedMonths = Object.keys(allData).sort();
+                let csvContent = "data:text/csv;charset=utf-8,Date,Staff,Minutes\n";
+                let rowCount = 0;
 
-                for (const monthKey of sortedMonths) {
-                    const monthData = allData[monthKey];
-                    const sortedStaff = Object.keys(monthData).sort();
-                    for (const staff of sortedStaff) {
-                        csvContent += `${monthKey},${staff},${monthData[staff]}\n`;
+                const sortedStaff = Object.keys(allData).sort();
+
+                for (const staff of sortedStaff) {
+                    const staffData = allData[staff];
+                    const sortedDates = Object.keys(staffData).sort();
+                    for (const dateKey of sortedDates) {
+                        csvContent += `${dateKey},${staff},${staffData[dateKey]}\n`;
+                        rowCount++;
                     }
                 }
 
-                if (csvContent.length <= "data:text/csv;charset=utf-8,Year-Month,Staff,Minutes\n".length) {
+                if (rowCount === 0) {
                     alert("No data to export."); return;
                 }
 
@@ -724,40 +548,31 @@
                 document.body.removeChild(link);
             });
 
-            clearDataButton.addEventListener('click', () => {
-                if (confirm("Are you sure you want to delete ALL saved extra minutes data? This cannot be undone.")) {
-                    localStorage.removeItem('extraMinutes');
-                    showSaveStatus("All saved data has been cleared.", false);
-                    totalsDisplay.innerHTML = '<p>All data cleared. Select a month to see totals.</p>';
-                }
+            clearDataButton.addEventListener('click', () => { /* ... remains the same ... */ 
+                if (confirm("Are you sure you want to delete ALL saved extra minutes data? This cannot be undone.")) { localStorage.removeItem('extraMinutes'); showSaveStatus("All saved data cleared.", false); totalsDisplay.innerHTML = '<p>All data cleared. Select a month to see totals.</p>'; }
             });
 
-            yearDisplay.addEventListener('change', () => {
-                totalsDisplay.innerHTML = '<p>Select a month to see totals.</p>';
+            yearDisplay.addEventListener('change', () => { /* ... remains the same ... */ 
+                totalsDisplay.innerHTML = '<p>Select a month to see totals.</p>'; 
             });
 
-            importCsvButton.addEventListener('click', () => {
-                csvFileInput.click();
-            });
+            // *** UPDATED: Import uses new data structure and format ***
+            importCsvButton.addEventListener('click', () => { csvFileInput.click(); });
 
             csvFileInput.addEventListener('change', (event) => {
                 const file = event.target.files[0];
-                if (!file) {
-                    return;
-                }
+                if (!file) return;
 
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     const text = e.target.result;
                     try {
                         const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
-                        if (lines.length < 2) {
-                            throw new Error("CSV file is empty or has no data rows.");
-                        }
+                        if (lines.length < 2) throw new Error("CSV has no data rows.");
 
                         const header = lines[0].split(',');
-                        if (header.length < 3 || header[0].trim() !== 'Year-Month' || header[1].trim() !== 'Staff' || header[2].trim() !== 'Minutes') {
-                            throw new Error("Invalid CSV header. Expected 'Year-Month,Staff,Minutes'.");
+                        if (header.length < 3 || header[0].trim() !== 'Date' || header[1].trim() !== 'Staff' || header[2].trim() !== 'Minutes') {
+                            throw new Error("Invalid CSV header. Expected 'Date,Staff,Minutes'.");
                         }
 
                         let importedCount = 0;
@@ -766,15 +581,16 @@
                         for (let i = 1; i < lines.length; i++) {
                             const columns = lines[i].split(',');
                             if (columns.length >= 3) {
-                                const monthKey = columns[0].trim();
+                                const dateKey = columns[0].trim(); // "YYYY-MM-DD"
                                 const staff = columns[1].trim();
                                 const minutes = parseInt(columns[2].trim(), 10);
 
-                                if (monthKey && staff && !isNaN(minutes) && minutes >= 0) {
-                                    if (!currentData[monthKey]) {
-                                        currentData[monthKey] = {};
+                                // Basic validation (check date format loosely)
+                                if (dateKey.match(/^\d{4}-\d{2}-\d{2}$/) && staff && !isNaN(minutes) && minutes >= 0) {
+                                    if (!currentData[staff]) {
+                                        currentData[staff] = {};
                                     }
-                                    currentData[monthKey][staff] = minutes;
+                                    currentData[staff][dateKey] = minutes; // Overwrite existing for this date/staff
                                     importedCount++;
                                 } else {
                                     console.warn(`Skipping invalid row ${i + 1}: ${lines[i]}`);
@@ -785,7 +601,7 @@
                         }
 
                         saveMinutesData(currentData);
-                        showImportStatus(`Successfully imported ${importedCount} records. Data has been merged (imported data overwrites existing entries).`, false);
+                        showImportStatus(`Imported ${importedCount} records. Existing entries for the same staff/date were overwritten.`, false);
                         totalsDisplay.innerHTML = '<p>Data imported. Click a month to see updated totals.</p>';
 
                     } catch (error) {
@@ -795,10 +611,7 @@
                         csvFileInput.value = '';
                     }
                 };
-                reader.onerror = () => {
-                    showImportStatus(`Error reading file: ${reader.error}`, true);
-                    csvFileInput.value = '';
-                };
+                reader.onerror = () => { showImportStatus(`Error reading file: ${reader.error}`, true); csvFileInput.value = ''; };
                 reader.readAsText(file);
             });
             
