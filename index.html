@@ -107,12 +107,28 @@
             padding: 5px 12px;
             font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
         }
+
+        /* --- STYLES MOVED HERE --- */
+        /* Green (On Call) has highest priority */
         .teacher-list li.on-call {
             background-color: #2ea44f;
             color: #ffffff;
             border-color: #2c974b;
             font-weight: 600;
         }
+        /* Red (Danger) */
+        .teacher-list li.minutes-danger {
+            background-color: #ffeef0;
+            border: 1px solid #ffc1c7;
+            font-weight: 600;
+        }
+        /* Yellow (Warning) */
+        .teacher-list li.minutes-warn {
+            background-color: #fffbdd;
+            border: 1px solid #ffdc73;
+        }
+        /* --- END MOVED STYLES --- */
+
         .month-buttons {
             display: flex;
             flex-wrap: wrap;
@@ -136,24 +152,8 @@
         }
         #totals-display li {
             font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-            list-style: none;
-            padding: 4px 8px;
-            margin: 2px 0;
-            border-radius: 4px;
+            /* Color coding removed from here */
         }
-        
-        /* --- NEW: STYLES FOR MINUTE TOTALS --- */
-        #totals-display li.minutes-warn {
-            background-color: #fffbdd; /* Yellow */
-            border: 1px solid #ffdc73;
-        }
-        #totals-display li.minutes-danger {
-            background-color: #ffeef0; /* Red */
-            border: 1px solid #ffc1c7;
-            font-weight: 600;
-        }
-        /* --- END NEW STYLES --- */
-
     </style>
 </head>
 <body>
@@ -188,7 +188,7 @@
         </div>
         <button id="check-button">Check Availability</button>
         <div id="status-custom" class="status" style="display:none;"></div>
-        <div id="results-custom" classm="results">
+        <div id="results-custom" class="results">
             <ul id="teachers-custom" class="teacher-list"></ul>
         </div>
     </div>
@@ -209,8 +209,8 @@
             </div>
         </div>
         <div class="input-group">
-            <label for="minutes-input">Total Extra Minutes for Month:</label>
-            <input type="number" id="minutes-input" placeholder="e.g., 120">
+            <label for="minutes-input">Add Extra Minutes:</label>
+            <input type="number" id="minutes-input" placeholder="e.g., 60">
         </div>
         <button id="save-minutes-button">Save Minutes</button>
         <div id="save-status" class="status" style="display:none; margin-top:10px;"></div>
@@ -395,10 +395,12 @@
             }
 
             // --- Display Function (Availability) ---
-
-            function displayResults(availableTeachers, onCallTeachers, listElement, statusElement) {
+            // *** UPDATED TO ADD COLOR CODING ***
+            function displayResults(availableTeachers, onCallTeachers, listElement, statusElement, monthKey) {
                 listElement.innerHTML = '';
                 const filteredTeachers = availableTeachers.filter(teacher => !EXCLUDE_TEACHERS_SET.has(teacher));
+                const allData = getSavedMinutesData();
+                const monthData = (allData && allData[monthKey]) ? allData[monthKey] : {};
                 
                 if (filteredTeachers.length === 0) {
                     statusElement.textContent = 'No teachers are available (working and not in a lesson) for this time.';
@@ -407,8 +409,17 @@
                     filteredTeachers.forEach(teacher => {
                         const li = document.createElement('li');
                         li.textContent = teacher;
+                        
+                        // Apply color coding
                         if (onCallTeachers.has(teacher)) {
-                            li.classList.add('on-call');
+                            li.classList.add('on-call'); // Green (priority)
+                        } else {
+                            const minutes = monthData[teacher] || 0;
+                            if (minutes > 180) {
+                                li.classList.add('minutes-danger'); // Red
+                            } else if (minutes > 90) {
+                                li.classList.add('minutes-warn'); // Yellow
+                            }
                         }
                         listElement.appendChild(li);
                     });
@@ -452,7 +463,7 @@
                 setTimeout(() => { saveStatus.style.display = 'none'; }, 3000);
             }
 
-            // --- UPDATED: displayMonthlyTotals ---
+            // *** UPDATED: displayMonthlyTotals (Removed color classes) ***
             function displayMonthlyTotals(year, monthIndex) {
                 const monthKey = `${year}-${String(monthIndex + 1).padStart(2, '0')}`;
                 const monthName = new Date(year, monthIndex).toLocaleString('default', { month: 'long' });
@@ -471,15 +482,8 @@
                     staffEntries.sort((a, b) => a[0].localeCompare(b[0]));
 
                     staffEntries.forEach(([staff, minutes]) => {
-                        let classValue = '';
-                        if (minutes > 180) {
-                            classValue = 'minutes-danger';
-                        } else if (minutes > 90) {
-                            classValue = 'minutes-warn';
-                        }
-                        
-                        html += `<li class="${classValue}">${staff}: ${minutes} minutes</li>`;
-                        totalMinutes += minutes;
+                        html += `<li>${staff}: ${minutes} minutes</li>`;
+                        totalMinutes += minutes; // This will be a number
                     });
                     html += "</ul>";
                 }
@@ -487,7 +491,6 @@
                 html += `<hr><h4>Total for ${monthName}: ${totalMinutes} minutes</h4>`;
                 totalsDisplay.innerHTML = html;
             }
-            // --- END UPDATE ---
 
             function setupMonthButtons() {
                 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -541,8 +544,10 @@
                     statusNow.textContent = `Schedule loaded. Checking for: ${new Date().toLocaleString()}`;
                     
                     const now = new Date();
+                    // *** UPDATED: Pass current month key ***
+                    const nowMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
                     const { available, onCall } = getAvailabilityAtTime(now);
-                    displayResults(available, onCall, teachersNowList, statusNow);
+                    displayResults(available, onCall, teachersNowList, statusNow, nowMonthKey);
                     
                     dateInput.valueAsDate = now;
                     timeFromInput.value = now.toTimeString().substring(0, 5);
@@ -551,10 +556,8 @@
 
                     populateStaffDropdown();
                     setupMonthButtons();
-                    const nowMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
                     monthInput.value = nowMonthKey;
                     yearDisplay.value = now.getFullYear();
-
 
                 } catch (error) {
                     statusNow.textContent = `Error: ${error.message}`;
@@ -593,15 +596,18 @@
                 const [year, month, day] = dateVal.split('-').map(Number);
                 const checkDate = new Date(year, month - 1, day);
                 
+                // *** UPDATED: Pass selected month key ***
+                const monthKey = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}`;
                 const { available, onCall } = getAvailabilityForRange(checkDate, startMinutes, endMinutes);
                 
                 statusCustom.textContent = `Showing teachers free from ${timeFromVal} to ${timeToVal} on ${checkDate.toLocaleDateString()}:`;
                 statusCustom.style.display = 'block';
-                displayResults(available, onCall, teachersCustomList, statusCustom);
+                displayResults(available, onCall, teachersCustomList, statusCustom, monthKey);
             });
 
             // --- Event Listeners (Extra Minutes) ---
-
+            
+            // *** UPDATED: Save logic is now ADDITIVE ***
             saveMinutesButton.addEventListener('click', () => {
                 const staff = staffSelect.value;
                 const month = monthInput.value;
@@ -615,8 +621,8 @@
                     showSaveStatus("Please select a month and year.", true);
                     return;
                 }
-                if (isNaN(minutes) || minutes < 0) {
-                    showSaveStatus("Please enter a valid number of minutes.", true);
+                if (isNaN(minutes) || minutes <= 0) {
+                    showSaveStatus("Please enter a valid number of minutes (greater than 0).", true);
                     return;
                 }
 
@@ -624,13 +630,20 @@
                 if (!allData[month]) {
                     allData[month] = {};
                 }
-                allData[month][staff] = minutes;
+                
+                // ADDITIVE LOGIC
+                const currentMinutes = allData[month][staff] || 0;
+                const newTotalMinutes = currentMinutes + minutes;
+                allData[month][staff] = newTotalMinutes;
+                
                 saveMinutesData(allData);
                 
-                showSaveStatus(`Saved ${minutes} minutes for ${staff} in ${month}.`, false);
+                // Updated save message
+                showSaveStatus(`Added ${minutes} minutes for ${staff}. New total for ${month}: ${newTotalMinutes}.`, false);
                 minutesInput.value = '';
                 staffSelect.value = '';
                 
+                // Refresh totals if that month is showing
                 const [year, monthNum] = month.split('-').map(Number);
                 if (parseInt(yearDisplay.value, 10) === year) {
                     displayMonthlyTotals(year, monthNum - 1);
