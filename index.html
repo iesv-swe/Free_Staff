@@ -341,11 +341,30 @@
 
                 const allData = getSavedAbsenceData();
                 const dayEntries = allData[staffName]?.[dateKey] || [];
-                
+
                 if (dayEntries.length === 0) {
                     existingAbsencesList.innerHTML = '<p class="status">No absences logged for this staff member on this day.</p>';
                     return;
                 }
+
+                // Sort entries by start time
+                dayEntries.sort((a, b) => a.start - b.start);
+
+                // Add the teacher's name as a heading
+                let html = `<h4>${staffName}</h4><ul>`; // Added heading
+
+                dayEntries.forEach((entry, index) => {
+                    // Removed staffName from inside the loop item as it's now in the heading
+                    html += `
+                        <li style="margin-bottom: 10px; list-style-type: none; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                            <strong>${minutesToHHMM(entry.start)} - ${minutesToHHMM(entry.end)}</strong>
+                            <button class="danger" data-staff="${staffName}" data-date="${dateKey}" data-index="${index}" style="padding: 3px 8px; font-size: 12px; margin-left: 10px; margin-top: 0;">Delete</button>
+                        </li>
+                    `;
+                });
+                html += '</ul>';
+                existingAbsencesList.innerHTML = html;
+            }
 
                 // Sort entries by start time
                 dayEntries.sort((a, b) => a.start - b.start);
@@ -987,4 +1006,5 @@
     </script>
 </body>
 </html>
+
 
