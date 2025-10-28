@@ -165,12 +165,27 @@
 
 
             // --- Helper Functions ---
-            // ... (All helpers remain the same) ...
-             function getIsoWeekAndYear(d) { /* ... */ }
-             function timeToMinutes(timeStr) { /* ... */ }
-             function minutesToHHMM(totalMinutes) { /* ... */ }
-             function parseRealWeeks(weekString) { /* ... */ }
-             function parseTeachers(teacherString) { /* ... */ }
+            function getIsoWeekAndYear(d) { /* ... same ... */ }
+            function timeToMinutes(timeStr) { /* ... same ... */ }
+            function minutesToHHMM(totalMinutes) { /* ... same ... */ }
+            function parseRealWeeks(weekString) { /* ... same ... */ }
+
+            // *** UPDATED parseTeachers for more safety ***
+            function parseTeachers(teacherString) {
+                try {
+                    if (!teacherString || typeof teacherString !== 'string') {
+                        return []; // Return empty array for non-string or empty input
+                    }
+                    const teachers = teacherString.split(',')
+                                            .map(t => t.trim()) // Trim whitespace
+                                            .filter(t => t && t.length > 0); // Filter out empty strings
+                    return Array.isArray(teachers) ? teachers : []; // Ensure result is array
+                } catch (error) {
+                    console.error("Error inside parseTeachers:", error, "Input:", teacherString);
+                    return []; // Return empty array on any internal error
+                }
+            }
+
 
             // --- Logic Function 1: Availability at a specific moment ---
             function getAvailabilityAtTime(dateTime) { /* ... same (with try-catch) ... */ }
@@ -195,34 +210,7 @@
             function handleDeleteAbsence(event) { /* ... same ... */ }
 
             // --- Other Helper Functions ---
-            function populateStaffDropdown() {
-                 console.log("Populating dropdowns...");
-                 if (!allTeachers || allTeachers.size === 0) {
-                     console.warn("Cannot populate dropdowns: allTeachers set is empty or invalid.");
-                     staffSelect.innerHTML = '<option value="">Error: No staff found</option>';
-                     absenceStaffSelect.innerHTML = '<option value="">Error: No staff found</option>';
-                     return; // Stop execution here
-                 }
-                 try {
-                    const sortedTeachers = [...allTeachers].filter(teacher => teacher && !EXCLUDE_TEACHERS_SET.has(teacher)).sort();
-                    staffSelect.innerHTML = '<option value="">-- Select Staff --</option>';
-                    absenceStaffSelect.innerHTML = '<option value="">-- Select Staff --</option>';
-                    sortedTeachers.forEach(teacher => {
-                        const option = document.createElement('option');
-                        option.value = teacher;
-                        option.textContent = teacher;
-                        staffSelect.appendChild(option.cloneNode(true));
-                        absenceStaffSelect.appendChild(option.cloneNode(true));
-                    });
-                     console.log(`Dropdowns populated with ${sortedTeachers.length} teachers.`);
-                 } catch (error) {
-                      console.error("Error during populateStaffDropdown:", error);
-                      staffSelect.innerHTML = '<option value="">Error populating</option>';
-                      absenceStaffSelect.innerHTML = '<option value="">Error populating</option>';
-                 }
-            }
-
-
+            function populateStaffDropdown() { /* ... same ... */ }
             function showSaveStatus(message, isError = false) { /* ... same ... */ }
             function showImportStatus(message, isError = false) { /* ... same ... */ }
             function displayMonthlyTotals(year, monthIndex) { /* ... same ... */ }
@@ -231,9 +219,8 @@
             // --- Initialization ---
             async function loadData() {
                  console.log("Starting application load...");
-                 // ** Set loading status immediately **
                  statusNow.textContent = 'Loading schedule...';
-                 statusNow.classList.remove('error', 'success'); // Reset status style
+                 statusNow.classList.remove('error', 'success');
 
                  try {
                      // 1. Fetch and Parse Lessons.txt
@@ -265,55 +252,69 @@
                               if (columns.length > expectedColumns) columns.length = expectedColumns;
                          }
                          return columns;
-                     }).filter(row => row); // Filter out potential null rows
+                     }).filter(row => row);
                      console.log(`Parsed ${lessons.length} lesson rows.`);
-                     if (lessons.length === 0) {
-                         console.warn("No valid lesson rows parsed from file.");
-                         // Decide if this is a fatal error or just a warning
-                         // throw new Error("No valid lesson data found in Lessons.txt");
+                     if (lessons.length === 0 && lines.length > 1) {
+                         console.warn("No valid lesson rows parsed from file, although file was not empty.");
                      }
 
                      // 4. Populate Teacher List
                      allTeachers = new Set();
-                     const teacherColIndex = columnMap['teacher']; // Get index outside loop
-                     if (typeof teacherColIndex !== 'number') {
-                         throw new Error("Could not find the 'teacher' column index.");
-                     }
+                     const teacherColIndex = columnMap['teacher'];
+                     if (typeof teacherColIndex !== 'number') { throw new Error("Could not find the 'teacher' column index."); }
+                     
+                     console.log("Starting teacher population loop...");
                      lessons.forEach((lesson, index) => {
+                          // ** Wrap the inner part in try-catch **
                           try {
-                             // Check if lesson array and teacher string exist
-                             if (lesson && typeof lesson[teacherColIndex] === 'string') {
-                                 const teacherString = lesson[teacherColIndex].trim();
-                                 if (teacherString) { // Only parse if not empty
-                                     parseTeachers(teacherString).forEach(teacher => {
-                                          if(teacher) allTeachers.add(teacher);
-                                     });
-                                 }
-                             } else {
-                                  // console.warn(`Skipping teacher extraction for row ${index + 2}: Invalid data format.`); // Optional
+                             if (!lesson) { // Skip if row was filtered out
+                                  // console.log(`Skipping row ${index + 2} (filtered).`); // Optional logging
+                                  return;
                              }
-                         } catch (e) { console.error(`Error populating teachers from row ${index + 2}:`, lesson, e); }
+                             // Check if lesson is an array and has enough columns
+                             if (!Array.isArray(lesson) || lesson.length <= teacherColIndex) {
+                                  console.warn(`Skipping teacher extraction for row ${index + 2}: Invalid lesson data structure or length.`, lesson);
+                                  return;
+                             }
+
+                             const teacherStringRaw = lesson[teacherColIndex];
+
+                             if (typeof teacherStringRaw === 'string' && teacherStringRaw.trim()) {
+                                 const teacherString = teacherStringRaw.trim();
+                                 const parsedResult = parseTeachers(teacherString); // Use safer parseTeachers
+
+                                 if (Array.isArray(parsedResult)) {
+                                     parsedResult.forEach(teacher => {
+                                         if (teacher) allTeachers.add(teacher);
+                                     });
+                                 } else {
+                                     // This case should not happen with the safer parseTeachers, but log just in case
+                                     console.warn(`parseTeachers returned non-array for row ${index + 2}, input: "${teacherString}". Skipping.`);
+                                 }
+                             }
+                             // No 'else' needed - skips empty/non-string teacher data
+                         } catch (e) {
+                              console.error(`Unexpected error processing teachers for row ${index + 2}:`, lesson, e);
+                         }
                      });
-                      console.log(`Found ${allTeachers.size} unique teachers.`);
+                      console.log(`Finished teacher population. Found ${allTeachers.size} unique teachers.`);
 
 
                      // --- UI Setup ---
-                     // ** Only proceed with UI setup if teachers were found (or handle appropriately) **
                      if (allTeachers.size === 0) {
-                          console.warn("No teachers identified. Dropdowns will be empty.");
-                          statusNow.textContent = 'Warning: No teachers found in Lessons.txt.';
+                          console.warn("No teachers identified. Dropdowns will be empty or show error.");
+                          statusNow.textContent = 'Warning: No teachers found in Lessons.txt. Check file format/content.';
                           statusNow.classList.add('error');
-                          // Still try to set up other parts
-                          setupMonthButtons();
                      } else {
-                          console.log("Populating dropdowns...");
-                          populateStaffDropdown();
-                          console.log("Setting up month buttons...");
-                          setupMonthButtons();
-                          statusNow.textContent = `Schedule loaded. Checked for: ${new Date().toLocaleString()}`; // Set success status
+                          statusNow.textContent = `Schedule loaded. Checking for: ${new Date().toLocaleString()}`; // Set success status
                      }
 
-                     // Set default values for inputs (do this regardless of teacher count)
+                     console.log("Populating dropdowns...");
+                     populateStaffDropdown(); // Call regardless, handles empty set
+                     console.log("Setting up month buttons...");
+                     setupMonthButtons();
+
+                     // Set default values for inputs
                      console.log("Setting default input values...");
                      const now = new Date();
                      dateInput.valueAsDate = now;
@@ -328,15 +329,17 @@
                      // Initial display for "Available Now" (Only if lessons parsed successfully)
                      if (lessons.length > 0) {
                          console.log("Getting availability for now...");
-                         const availabilityNow = getAvailabilityAtTime(now);
+                         const availabilityNow = getAvailabilityAtTime(now); // Safe call
                          console.log("Displaying results for now...");
                          displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now);
-                     } else if (allTeachers.size > 0) { // If teachers found but lessons maybe empty/invalid
-                         statusNow.textContent = 'Warning: Could not parse lesson data. Availability check skipped.';
-                         statusNow.classList.add('error');
-                     } // If no teachers found, error already set
+                     } else {
+                         // Update status if lessons are empty but file was read
+                         statusNow.textContent = statusNow.textContent.includes('No teachers found') ? statusNow.textContent : 'Warning: Lessons file parsed but no valid lesson data found. Availability check skipped.';
+                         if (!statusNow.classList.contains('error')) statusNow.classList.add('error');
+                     }
 
-                     // Auto-click current month button (if setupMonthButtons was called)
+
+                     // Auto-click current month button
                      console.log("Setting active month...");
                      const currentMonthIndex = now.getMonth();
                      const currentMonthButton = monthButtonsContainer.querySelector(`button[data-month-index="${currentMonthIndex}"]`);
@@ -344,16 +347,11 @@
                          currentMonthButton.click();
                      } else {
                          console.warn("Could not find button for current month.");
-                         // Attempt to display anyway
-                         if (yearDisplay && typeof displayMonthlyTotals === 'function') {
-                              displayMonthlyTotals(now.getFullYear(), currentMonthIndex);
-                         }
+                         displayMonthlyTotals(now.getFullYear(), currentMonthIndex);
                      }
 
                      console.log("Displaying absences for today...");
-                      if (typeof displayAbsencesForDate === 'function') {
-                         displayAbsencesForDate(now.toISOString().split('T')[0]);
-                      }
+                     displayAbsencesForDate(now.toISOString().split('T')[0]);
                      console.log("Initialization complete.");
 
 
@@ -361,12 +359,20 @@
                      statusNow.textContent = `Critical Error: ${error.message}. Cannot initialize fully. Check console (F12).`;
                      statusNow.classList.add('error');
                      console.error("Load Data Error:", error);
-                     // Optionally disable UI elements
-                     checkButton.disabled = true;
-                     saveMinutesButton.disabled = true;
-                     saveAbsenceButton.disabled = true;
-                     // Avoid showing partial/broken UI by adding a general error message
-                     // document.body.innerHTML = `<div style="padding: 20px; color: red; font-weight: bold;">Critical Error: ${error.message}. Cannot initialize application. Check console (F12).</div>`;
+                     // Attempt basic UI setup anyway
+                     try {
+                         populateStaffDropdown();
+                         setupMonthButtons();
+                         const now = new Date();
+                         dateEntryInput.valueAsDate = now;
+                         absenceDateInput.valueAsDate = now;
+                         viewAbsenceDateInput.valueAsDate = now;
+                         yearDisplay.value = now.getFullYear();
+                         displayAbsencesForDate(now.toISOString().split('T')[0]);
+                     } catch (uiError) {
+                         console.error("Critical UI setup error after schedule load failure:", uiError);
+                         document.body.innerHTML = `<div style="padding: 20px; color: red; font-weight: bold;">Critical Error: ${error.message}. Cannot initialize application. Check console (F12).</div>`;
+                     }
                  }
             }
 
