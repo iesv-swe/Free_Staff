@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teacher Availability</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; background-color: #f6f8fa; color: #24292e; max-width: 800px; margin: 20px auto; padding: 20px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; background-color: #333333; color: #24292e; max-width: 800px; margin: 20px auto; padding: 20px; }
         .logo { width: 180px; height: auto; margin-bottom: 10px; }
         h1, h2 { border-bottom: 2px solid #eaecef; padding-bottom: 10px; }
         .container { background-color: #ffffff; border: 1px solid #d1d5da; border-radius: 6px; padding: 24px; margin-bottom: 20px; }
@@ -134,10 +134,11 @@
         <div class="month-buttons" id="month-buttons"></div>
         <div id="totals-display"><p>Select a month to see totals.</p></div>
         <div class="button-group">
-            <!-- Changed Export Backup Button to Blue (info class) -->
-            <button id="export-backup-button" class="info">Export Backup CSV (Minutes Only)</button> 
-            <button id="export-summary-button" class="primary">Export Summary CSV (Minutes Only)</button>
-            <button id="import-csv-button" class="secondary">Import Entries from CSV (Minutes Only)</button>
+            <!-- *** UPDATED BUTTONS *** -->
+            <button id="export-backup-button" class="primary">Export CSV (Min)</button> <!-- Changed text & class to primary (purple) -->
+            <button id="export-summary-button" class="info">Summary CSV (Min)</button>    <!-- Changed text & class to info (blue) -->
+            <button id="import-csv-button" class="secondary">Import CSV (Min)</button>     <!-- Changed text -->
+            <!-- *** END UPDATED BUTTONS *** -->
             <input type="file" id="csv-file-input" accept=".csv">
             <button id="clear-data-button" class="danger">Clear All Saved Data</button>
         </div>
@@ -401,6 +402,9 @@
                 const staffNames = Object.keys(allAbsenceData).sort();
 
                 staffNames.forEach(staffName => {
+                    // Skip globally excluded teachers
+                    if (EXCLUDE_TEACHERS_SET.has(staffName)) return; 
+
                     const dayEntries = allAbsenceData[staffName]?.[dateKey] || [];
                     if (dayEntries.length > 0) {
                         foundAbsences = true;
@@ -427,6 +431,7 @@
                     existingAbsencesList.innerHTML = html;
                 }
             }
+
 
             // Corrected date formatting
             function isTeacherAbsent(teacher, checkDate, checkTimeInMinutes) {
@@ -1176,7 +1181,7 @@
                          // Get current data - NOTE: This simple import ADDS entries.
                          // For a true "restore", you might want to clear existing absence data first
                          // Or, clear only data for the specific staff/days being imported.
-                         // Current approach: Add all entries from the file.
+                         // Current approach: Add all entries from the file, avoiding exact duplicates.
                          const currentAbsenceData = getSavedAbsenceData(); 
 
                          for (let i = 1; i < lines.length; i++) {
