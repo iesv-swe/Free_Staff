@@ -178,7 +178,7 @@
             }
 
             // --- Display Function (Availability) ---
-            // *** UPDATED: Changed color priority -> Green > Yellow > Red ***
+            // *** UPDATED: Calculates totals, applies colors, shows totals in text ***
             function displayResults(availableTeachers, onCallTimesMap, listElement, statusElement, checkDate) {
                 listElement.innerHTML = '';
                 const filteredTeachers = availableTeachers.filter(teacher => !EXCLUDE_TEACHERS_SET.has(teacher));
@@ -219,14 +219,13 @@
                             const startTimeStr = minutesToHHMM(times.start);
                             const endTimeStr = minutesToHHMM(times.end);
                             textContent = `${teacher} (On Call: ${startTimeStr} - ${endTimeStr}) (W: ${weeklyTotal} / M: ${monthlyTotal})`;
-                            li.classList.add('on-call'); // Green (highest priority)
+                            li.classList.add('on-call'); // Green (priority)
                         } else {
                             // Apply minute-based colors only if not On Call
-                            // *** PRIORITY CHANGE: Yellow > Red ***
-                            if (weeklyTotal >= 90) { // Check weekly first
+                            if (monthlyTotal >= 180) {
+                                li.classList.add('minutes-danger'); // Red for month (priority over yellow)
+                            } else if (weeklyTotal >= 90) { // Changed from 80
                                 li.classList.add('minutes-warn');  // Yellow for week
-                            } else if (monthlyTotal >= 180) { // Only check monthly if weekly isn't met
-                                li.classList.add('minutes-danger'); // Red for month
                             }
                         }
                         
