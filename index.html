@@ -283,7 +283,45 @@
                     showSaveStatus("Critical error saving data. Check console.", true);
                 }
             }
+// --- Absence Data Helper Functions ---
+            const ABSENCE_STORAGE_KEY = 'teacherAbsenceData';
 
+            function getSavedAbsenceData() {
+                try {
+                    const data = localStorage.getItem(ABSENCE_STORAGE_KEY);
+                    return data ? JSON.parse(data) : {};
+                } catch (error) {
+                    console.error("Error reading absence data from localStorage:", error);
+                    return {};
+                }
+            }
+
+            function saveAbsenceData(data) {
+                try {
+                    localStorage.setItem(ABSENCE_STORAGE_KEY, JSON.stringify(data));
+                } catch (error) {
+                    console.error("Error saving absence data to localStorage:", error);
+                    // Show an error to the user in the absence status area
+                    if (absenceSaveStatus) {
+                        showAbsenceSaveStatus("Critical error saving data. Check console.", true);
+                    }
+                }
+            }
+
+            function showAbsenceSaveStatus(message, isError = false) {
+                if (!absenceSaveStatus) return;
+                absenceSaveStatus.textContent = message;
+                absenceSaveStatus.className = 'status'; // Reset classes
+                if (isError) {
+                    absenceSaveStatus.classList.add('error');
+                } else {
+                    absenceSaveStatus.classList.add('success');
+                }
+                absenceSaveStatus.style.display = 'block';
+                setTimeout(() => {
+                    if (absenceSaveStatus) absenceSaveStatus.style.display = 'none';
+                }, 4000);
+            }
             // --- Other Helper Functions ---
             // CHANGE 1D: Replaced function to populate both dropdowns
             function populateStaffDropdown() {
@@ -777,4 +815,5 @@
     </script>
 </body>
 </html>
+
 
