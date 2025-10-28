@@ -15,15 +15,18 @@
         .input-group input, .input-group select { width: 95%; padding: 8px 12px; border: 1px solid #d1d5da; border-radius: 6px; background-color: #fff; }
         button { background-color: #2ea44f; color: #ffffff; font-weight: 600; padding: 10px 16px; border: 1px solid rgba(27, 31, 35, 0.15); border-radius: 6px; cursor: pointer; margin-top: 10px; }
         button:hover { background-color: #2c974b; }
-        button.secondary { background-color: #f6f8fa; color: #24292e; }
+        button.secondary { background-color: #f6f8fa; color: #24292e; border-color: rgba(27, 31, 35, 0.15);} /* Added border */
         button.secondary:hover { background-color: #f3f4f6; }
         button.danger { background-color: #d73a49; border-color: rgba(27, 31, 35, 0.15); }
         button.danger:hover { background-color: #cb2431; }
-        button.success { background-color: #2ea44f; color: #ffffff; }
-        button.success:hover { background-color: #2c974b; }
+        /* Changed .success to .info for blue */
+        button.info { background-color: #0366d6; color: #ffffff; border-color: rgba(27, 31, 35, 0.15);} 
+        button.info:hover { background-color: #005cc5; }
         button.primary { background-color: #6f42c1; color: #ffffff; border-color: rgba(27, 31, 35, 0.15); }
         button.primary:hover { background-color: #5833a6; }
-        .button-group { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+        .button-group { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 15px; }
+         /* Button group specific to absence section */
+        .absence-button-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; } 
         .results { margin-top: 20px; }
         .status { font-style: italic; color: #586069; }
         .status.error { color: #d73a49; font-weight: 600; }
@@ -41,7 +44,7 @@
         #totals-display li { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; list-style: none; padding: 4px 8px; margin: 2px 0; border-radius: 4px; }
         #totals-display li.minutes-danger { background-color: #d73a49; color: #ffffff; border: 1px solid #cb2431; font-weight: 600; }
         #totals-display li.minutes-warn { background-color: #ffc107; border: 1px solid #e0a800; color: #212529; }
-        #csv-file-input { display: none; }
+        #csv-file-input, #absence-csv-file-input { display: none; } /* Hide both file inputs */
         /* Style for absence list grouping */
         #existing-absences-list h4 { margin-bottom: 5px; margin-top: 15px; border-bottom: 1px dashed #ccc; padding-bottom: 3px;}
         #existing-absences-list ul { padding-left: 0; margin-top: 5px;}
@@ -101,6 +104,15 @@
         <div id="existing-absences-list" style="padding-left: 0;"> <!-- Changed padding-left -->
             <p class="status">Select a date to see existing entries.</p> <!-- Updated text -->
         </div>
+
+        <!-- New Buttons for Absence Import/Export -->
+        <div class="absence-button-group">
+             <button id="export-absences-button" class="primary">Export Absences CSV</button>
+             <button id="import-absences-button" class="secondary">Import Absences CSV</button>
+             <input type="file" id="absence-csv-file-input" accept=".csv">
+        </div>
+         <div id="absence-import-status" class="status" style="display:none; margin-top:10px;"></div>
+
     </div>
     <!-- END OF NEW HTML SECTION -->
 
@@ -122,9 +134,10 @@
         <div class="month-buttons" id="month-buttons"></div>
         <div id="totals-display"><p>Select a month to see totals.</p></div>
         <div class="button-group">
-            <button id="export-backup-button" class="success">Export Backup CSV</button>
-            <button id="export-summary-button" class="primary">Export Summary CSV</button>
-            <button id="import-csv-button" class="secondary">Import Entries from CSV</button>
+            <!-- Changed Export Backup Button to Blue (info class) -->
+            <button id="export-backup-button" class="info">Export Backup CSV (Minutes Only)</button> 
+            <button id="export-summary-button" class="primary">Export Summary CSV (Minutes Only)</button>
+            <button id="import-csv-button" class="secondary">Import Entries from CSV (Minutes Only)</button>
             <input type="file" id="csv-file-input" accept=".csv">
             <button id="clear-data-button" class="danger">Clear All Saved Data</button>
         </div>
@@ -174,7 +187,7 @@
             const csvFileInput = document.getElementById('csv-file-input');
             const importStatus = document.getElementById('import-status');
 
-            // START: NEW JAVASCRIPT VARIABLES (1B)
+            // Absence section elements
             const absenceStaffSelect = document.getElementById('absence-staff-select');
             const absenceDateInput = document.getElementById('absence-date-input');
             const absenceTimeFromInput = document.getElementById('absence-time-from-input');
@@ -182,16 +195,23 @@
             const saveAbsenceButton = document.getElementById('save-absence-button');
             const absenceSaveStatus = document.getElementById('absence-save-status');
             const existingAbsencesList = document.getElementById('existing-absences-list');
-            // END: NEW JAVASCRIPT VARIABLES
+            // New Absence Import/Export Elements
+            const exportAbsencesButton = document.getElementById('export-absences-button');
+            const importAbsencesButton = document.getElementById('import-absences-button');
+            const absenceCsvFileInput = document.getElementById('absence-csv-file-input');
+            const absenceImportStatus = document.getElementById('absence-import-status');
 
              // Log if critical elements are missing BEFORE loadData runs
-             // CHANGE 1C: Added absenceStaffSelect to the check
-             if (!statusNow || !monthButtonsContainer || !staffSelect || !absenceStaffSelect) {
+             if (!statusNow || !monthButtonsContainer || !staffSelect || !absenceStaffSelect || !exportAbsencesButton || !importAbsencesButton || !absenceCsvFileInput || !absenceImportStatus) { // Added checks for new elements
                  console.error("Critical DOM element missing! Cannot proceed.", { 
                      statusNowExists: !!statusNow, 
                      monthButtonsContainerExists: !!monthButtonsContainer, 
                      staffSelectExists: !!staffSelect,
-                     absenceStaffSelectExists: !!absenceStaffSelect // Added check
+                     absenceStaffSelectExists: !!absenceStaffSelect,
+                     exportAbsencesButtonExists: !!exportAbsencesButton, // Added logs
+                     importAbsencesButtonExists: !!importAbsencesButton,
+                     absenceCsvFileInputExists: !!absenceCsvFileInput,
+                     absenceImportStatusExists: !!absenceImportStatus
                  });
                  if (statusNow) { statusNow.textContent = "Error: Page structure broken."; statusNow.classList.add('error'); }
                  return; // Stop script execution
@@ -233,6 +253,31 @@
                     const teachers = teacherString.split(',').map(t => t.trim()).filter(t => t && t.length > 0);
                     return Array.isArray(teachers) ? teachers : [];
                 } catch (error) { console.error("Error inside parseTeachers:", error, "Input:", teacherString); return []; }
+            }
+             // Function to safely parse CSV lines, handling quoted fields with commas
+            function parseCsvLine(line) {
+                const result = [];
+                let currentField = '';
+                let inQuotes = false;
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    if (char === '"') {
+                        if (inQuotes && line[i + 1] === '"') {
+                            // Escaped quote
+                            currentField += '"';
+                            i++; // Skip the next quote
+                        } else {
+                            inQuotes = !inQuotes;
+                        }
+                    } else if (char === ',' && !inQuotes) {
+                        result.push(currentField.trim());
+                        currentField = '';
+                    } else {
+                        currentField += char;
+                    }
+                }
+                result.push(currentField.trim()); // Add the last field
+                return result;
             }
 
             // --- Logic Function 1: Availability at a specific moment ---
@@ -386,7 +431,15 @@
 
             function isTeacherAbsent(teacher, checkDate, checkTimeInMinutes) {
                 const allData = getSavedAbsenceData();
-                const dateKey = checkDate.toISOString().split('T')[0]; // Ensure consistent YYYY-MM-DD format
+                // Ensure dateKey uses consistent YYYY-MM-DD format from the date object
+                let dateKey = '';
+                if (checkDate instanceof Date && !isNaN(checkDate)) {
+                     dateKey = checkDate.toISOString().split('T')[0]; 
+                } else {
+                    console.warn("isTeacherAbsent received invalid date object:", checkDate);
+                    return false; // Cannot determine absence without a valid date
+                }
+                
                 const dayEntries = allData[teacher]?.[dateKey] || [];
 
                 if (dayEntries.length === 0) return false;
@@ -445,7 +498,7 @@
                 }, 4000);
             }
             // (Restored from original code)
-            function showImportStatus(message, isError = false) {
+            function showImportStatus(message, isError = false) { // Used for Minutes import
                 if (!importStatus) return;
                 importStatus.textContent = message;
                 importStatus.className = 'status'; // Reset classes
@@ -457,6 +510,21 @@
                 importStatus.style.display = 'block';
                 setTimeout(() => {
                     if (importStatus) importStatus.style.display = 'none';
+                }, 5000);
+            }
+             // New function for Absence import status
+             function showAbsenceImportStatus(message, isError = false) { 
+                if (!absenceImportStatus) return;
+                absenceImportStatus.textContent = message;
+                absenceImportStatus.className = 'status'; // Reset classes
+                if (isError) {
+                    absenceImportStatus.classList.add('error');
+                } else {
+                    absenceImportStatus.classList.add('success');
+                }
+                absenceImportStatus.style.display = 'block';
+                setTimeout(() => {
+                    if (absenceImportStatus) absenceImportStatus.style.display = 'none';
                 }, 5000);
             }
             // (Restored from original code)
@@ -571,7 +639,6 @@
 
 
             // --- Event Listeners ---
-            // (Restored from original code)
             checkButton.addEventListener('click', () => {
                 try {
                     const date = dateInput.valueAsDate;
@@ -610,7 +677,6 @@
                     statusCustom.classList.add('error');
                 }
             });
-            // (Restored from original code)
             saveMinutesButton.addEventListener('click', () => {
                 const staffName = staffSelect.value;
                 const date = dateEntryInput.value;
@@ -655,7 +721,6 @@
                     showSaveStatus(`Error saving: ${e.message}`, true);
                 }
             });
-            // (Restored from original code)
             exportSummaryButton.addEventListener('click', () => {
                 // This export remains unchanged - only includes minutes data
                 try {
@@ -728,113 +793,81 @@
                 }
             });
 
-            // MODIFIED Backup Export to include Absences
+            // Reverted Backup Export (Minutes Only)
             exportBackupButton.addEventListener('click', () => {
                 try {
-                    const minutesData = getSavedMinutesData();
-                    const absenceData = getSavedAbsenceData();
-                    let csvContent = "data:text/csv;charset=utf-8,Date,Staff,Type,Minutes,StartTime,EndTime\r\n"; // Added Type, StartTime, EndTime
+                    const allData = getSavedMinutesData();
+                    let csvContent = "data:text/csv;charset=utf-8,Date,Staff,Minutes\r\n"; // Back to original header
                     let entries = [];
 
-                    // Process Minutes Data
-                    for (const teacher in minutesData) {
-                        const teacherData = minutesData[teacher];
+                    for (const teacher in allData) {
+                        const teacherData = allData[teacher];
                         for (const dateKey in teacherData) {
                             const minutes = teacherData[dateKey] || 0;
                             if (minutes > 0) {
-                                // Add minutes entry (StartTime/EndTime are empty)
-                                entries.push({ date: dateKey, staff: teacher, type: 'Minutes', minutes: minutes, startTime: '', endTime: '' });
+                                entries.push({ date: dateKey, staff: teacher, minutes: minutes });
                             }
                         }
                     }
 
-                    // Process Absence Data
-                    for (const teacher in absenceData) {
-                        const teacherDateData = absenceData[teacher];
-                        for (const dateKey in teacherDateData) {
-                            const dayEntries = teacherDateData[dateKey] || [];
-                            dayEntries.forEach(entry => {
-                                // Add absence entry (Minutes is empty)
-                                entries.push({ 
-                                    date: dateKey, 
-                                    staff: teacher, 
-                                    type: 'Absence', 
-                                    minutes: '', 
-                                    startTime: minutesToHHMM(entry.start), 
-                                    endTime: minutesToHHMM(entry.end) 
-                                });
-                            });
-                        }
-                    }
-
-                    // Sort by date, then by staff, then by type (Absence first), then by start time/minutes
+                    // Sort by date, then by staff
                     entries.sort((a, b) => {
                         if (a.date < b.date) return -1;
                         if (a.date > b.date) return 1;
-                        if (a.staff < b.staff) return -1;
-                        if (a.staff > b.staff) return 1;
-                        if (a.type < b.type) return -1; // Absence before Minutes
-                        if (a.type > b.type) return 1;
-                        if (a.type === 'Absence') {
-                             return timeToMinutes(a.startTime) - timeToMinutes(b.startTime);
-                        } else {
-                             // Should only be one minutes entry per day, but handle just in case
-                             return a.minutes - b.minutes; 
-                        }
+                        return a.staff.localeCompare(b.staff);
                     });
 
                     entries.forEach(entry => {
-                        // Ensure CSV safety for names if they contain commas (though unlikely with current format)
-                        const safeStaff = `"${entry.staff.replace(/"/g, '""')}"`; 
-                        csvContent += `${entry.date},${safeStaff},${entry.type},${entry.minutes},${entry.startTime},${entry.endTime}\r\n`;
+                        // Use safe parsing for staff name, just in case
+                        const safeStaff = `"${entry.staff.replace(/"/g, '""')}"`;
+                        csvContent += `${entry.date},${safeStaff},${entry.minutes}\r\n`;
                     });
 
                     const encodedUri = encodeURI(csvContent);
                     const link = document.createElement("a");
                     const exportDate = new Date().toISOString().split('T')[0];
                     link.setAttribute("href", encodedUri);
-                    // Updated filename slightly
-                    link.setAttribute("download", `Teacher_Data_Backup_${exportDate}.csv`); 
+                    link.setAttribute("download", `Extra_Minutes_Backup_${exportDate}.csv`); // Original filename
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
-                    showImportStatus('Backup CSV exported successfully.', false); // Give feedback
+                    showImportStatus('Minutes Backup CSV exported successfully.', false); 
                 } catch (e) {
-                    console.error("Error exporting backup:", e);
-                    showImportStatus(`Error exporting backup: ${e.message}`, true);
+                    console.error("Error exporting minutes backup:", e);
+                    showImportStatus(`Error exporting minutes backup: ${e.message}`, true);
                 }
             });
-            // (Restored from original code - MODIFIED for Step 3D)
+
+            // (MODIFIED Step 3D - still clears both)
             clearDataButton.addEventListener('click', () => {
-                // Use a custom modal or confirmation later, for now, just log
                 console.log("Clear data button clicked");
                 const reallyClear = confirm("Are you sure you want to delete ALL saved extra minutes AND absence data? This cannot be undone.");
                 
                 if (reallyClear) {
                     try {
                         localStorage.removeItem('teacherMinutesData');
-                        // CHANGE 3D: Also remove absence data
                         localStorage.removeItem(ABSENCE_STORAGE_KEY); 
 
                         showImportStatus('All extra minutes and absence data have been cleared.', false);
                         
-                        // Refresh absence list display
-                        refreshAbsenceList(); // MODIFIED: Call correct function
+                        refreshAbsenceList(); 
 
-                        // Refresh totals if currently displayed
                         if (activeMonthButton) {
                             const yearVal = parseInt(yearDisplay.value, 10);
                             const monthIndex = parseInt(activeMonthButton.dataset.monthIndex, 10);
                             if (!isNaN(yearVal) && !isNaN(monthIndex)) {
                                 displayMonthlyTotals(yearVal, monthIndex);
+                            } else {
+                                totalsDisplay.innerHTML = '<p>Select a month to see totals.</p>'; // Reset if no valid month selected
                             }
+                        } else {
+                             totalsDisplay.innerHTML = '<p>Select a month to see totals.</p>'; // Reset if no button active
                         }
-                        // Refresh availability lists
                         const now = new Date();
                         const availabilityNow = getAvailabilityAtTime(now);
                         displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now);
                         if (teachersCustomList.innerHTML !== '') {
-                            checkButton.click(); // Re-run custom check
+                            checkButton.click(); 
                         }
                     } catch (e) {
                         console.error("Error clearing data:", e);
@@ -844,7 +877,6 @@
                      showImportStatus('Clear data operation cancelled.', true);
                 }
             });
-            // (Restored from original code)
             yearDisplay.addEventListener('change', () => {
                 if (activeMonthButton) {
                     const yearVal = parseInt(yearDisplay.value, 10);
@@ -854,164 +886,91 @@
                     }
                 }
             });
-            // (Restored from original code)
             importCsvButton.addEventListener('click', () => { 
                 csvFileInput.value = null; // Reset file input
                 csvFileInput.click(); 
             });
             
-            // MODIFIED Import to handle combined format
+            // Reverted Import (Minutes Only)
             csvFileInput.addEventListener('change', (event) => {
-                const file = event.target.files[0];
-                if (!file) {
-                    showImportStatus('No file selected.', true);
-                    return;
-                }
+                 const file = event.target.files[0];
+                 if (!file) {
+                     showImportStatus('No file selected.', true);
+                     return;
+                 }
 
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const text = e.target.result;
-                        const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
-                        if (lines.length < 2) {
-                            throw new Error("CSV file is empty or has no header/data.");
-                        }
-
-                        // --- PARSE HEADER ---
-                        const header = lines[0].toLowerCase().split(',').map(h => h.trim().replace(/^"|"$/g, '')); // Trim and remove potential quotes
-                        const dateIndex = header.indexOf('date');
-                        const staffIndex = header.indexOf('staff');
-                        const typeIndex = header.indexOf('type');
-                        const minutesIndex = header.indexOf('minutes');
-                        const startTimeIndex = header.indexOf('starttime');
-                        const endTimeIndex = header.indexOf('endtime');
-
-                        // Check for essential columns
-                        if (dateIndex === -1 || staffIndex === -1 || typeIndex === -1) {
-                            // Try parsing old format (Date, Staff, Minutes)
-                            if (dateIndex !== -1 && staffIndex !== -1 && minutesIndex !== -1 && header.length === 3) {
-                                 console.log("Detected old backup format (Date, Staff, Minutes). Importing minutes only.");
-                                 // Proceed with old logic (will be handled below by checking typeIndex === -1)
-                            } else {
-                                throw new Error("Invalid CSV Header. Must contain 'Date', 'Staff', and 'Type' columns.");
-                            }
-                        }
-                        // Check for columns needed for specific types if header is new format
-                         if (typeIndex !== -1 && minutesIndex === -1 && (startTimeIndex === -1 || endTimeIndex === -1)) {
-                             throw new Error("Invalid CSV Header. New format requires 'Minutes' column OR both 'StartTime' and 'EndTime' columns.");
+                 const reader = new FileReader();
+                 reader.onload = (e) => {
+                     try {
+                         const text = e.target.result;
+                         const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+                         if (lines.length < 2) {
+                             throw new Error("CSV file is empty or has no data.");
                          }
 
+                         const header = lines[0].toLowerCase().split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+                         const dateIndex = header.indexOf('date');
+                         const staffIndex = header.indexOf('staff');
+                         const minutesIndex = header.indexOf('minutes'); 
 
-                        let importedMinutesCount = 0;
-                        let importedAbsencesCount = 0;
-                        let skippedCount = 0;
-                        // Get current data - we will ADD to it or OVERWRITE specific entries
-                        const currentMinutesData = getSavedMinutesData();
-                        const currentAbsenceData = getSavedAbsenceData(); 
-                        // Keep track of absence entries added per day to avoid duplicates if overwriting isn't desired
-                        // For simplicity now, let's just add - assumes import is clean or replaces all data.
-                        // To properly overwrite absences, we'd need to clear existing absences for imported days first.
+                         if (dateIndex === -1 || staffIndex === -1 || minutesIndex === -1) {
+                             throw new Error("Invalid Minutes CSV Header. Must contain 'Date', 'Staff', and 'Minutes' columns.");
+                         }
 
-                        for (let i = 1; i < lines.length; i++) {
-                             // Basic CSV parsing - IMPROVEMENT: Handle commas within quoted fields better
-                             // This simple split works if staff names don't contain commas, which seems likely.
-                             // A more robust parser would be needed otherwise.
-                            const columns = lines[i].split(','); 
-                            if (columns.length < header.length) { // Check against header length
-                                console.warn("Skipping line with fewer columns than header:", lines[i]);
-                                skippedCount++;
-                                continue;
-                            }
+                         let importedCount = 0;
+                         let skippedCount = 0;
+                         const currentMinutesData = getSavedMinutesData(); // Get existing minutes data
 
-                            const date = columns[dateIndex]?.trim();
-                            // Handle potentially quoted staff names more robustly
-                            let staff = columns[staffIndex]?.trim(); 
-                             if (staff && staff.startsWith('"') && staff.endsWith('"')) {
-                                staff = staff.substring(1, staff.length - 1).replace(/""/g, '"');
+                         for (let i = 1; i < lines.length; i++) {
+                             const columns = parseCsvLine(lines[i]); // Use safe parser
+                             if (columns.length < 3) { // Expecting at least 3 columns
+                                 console.warn("Skipping short line:", lines[i]);
+                                 skippedCount++;
+                                 continue;
                              }
-                            const type = (typeIndex !== -1) ? columns[typeIndex]?.trim() : 'Minutes'; // Default to Minutes if Type column missing (old format)
 
-                            if (!date || !staff) {
-                                console.warn("Skipping line with missing date or staff:", lines[i]);
-                                skippedCount++;
-                                continue;
-                            }
+                             const date = columns[dateIndex]?.trim();
+                             const staff = columns[staffIndex]?.trim(); // Already handled quotes in parseCsvLine
+                             const minutesStr = columns[minutesIndex]?.trim();
+                             const minutes = parseInt(minutesStr, 10);
 
-                            if (type === 'Minutes') {
-                                if (minutesIndex === -1) {
-                                     console.warn("Skipping 'Minutes' type row - missing 'Minutes' column:", lines[i]);
-                                     skippedCount++;
-                                     continue;
-                                }
-                                const minutesStr = columns[minutesIndex]?.trim();
-                                const minutes = parseInt(minutesStr, 10);
-                                if (minutesStr && !isNaN(minutes) && minutes > 0) {
-                                     if (!currentMinutesData[staff]) {
-                                         currentMinutesData[staff] = {};
-                                     }
-                                     // Overwrite existing entry for that day/staff
-                                     currentMinutesData[staff][date] = minutes; 
-                                     importedMinutesCount++;
-                                } else if (minutesStr) { // Only count as skipped if minutes column had content but was invalid
-                                     console.warn("Skipping 'Minutes' row with invalid minutes value:", lines[i]);
-                                     skippedCount++;
-                                } else {
-                                     // Skip silently if minutes column is just empty
-                                }
-                            } else if (type === 'Absence') {
-                                if (startTimeIndex === -1 || endTimeIndex === -1) {
-                                    console.warn("Skipping 'Absence' type row - missing 'StartTime' or 'EndTime' column:", lines[i]);
-                                    skippedCount++;
-                                    continue;
-                                }
-                                const startTimeStr = columns[startTimeIndex]?.trim();
-                                const endTimeStr = columns[endTimeIndex]?.trim();
-                                const startMinutes = timeToMinutes(startTimeStr);
-                                const endMinutes = timeToMinutes(endTimeStr);
+                             if (!date || !staff || !minutesStr || isNaN(minutes) || minutes <= 0) {
+                                 console.warn("Skipping invalid minutes line:", lines[i]);
+                                 skippedCount++;
+                                 continue;
+                             }
 
-                                // Validate the parsed times
-                                if (startTimeStr && endTimeStr && startMinutes < endMinutes) { // Check start < end
-                                    if (!currentAbsenceData[staff]) currentAbsenceData[staff] = {};
-                                    if (!currentAbsenceData[staff][date]) currentAbsenceData[staff][date] = [];
-                                    
-                                    // Add the new absence entry
-                                    // Consider adding a check here to prevent duplicate entries if needed
-                                    currentAbsenceData[staff][date].push({ start: startMinutes, end: endMinutes });
-                                    importedAbsencesCount++;
-                                } else {
-                                    console.warn("Skipping 'Absence' row with invalid/missing time range:", lines[i]);
-                                    skippedCount++;
-                                }
-                            } else {
-                                console.warn("Skipping row with unknown type:", lines[i]);
-                                skippedCount++;
-                            }
-                        }
+                             if (!currentMinutesData[staff]) {
+                                 currentMinutesData[staff] = {};
+                             }
+                             // Overwrite existing entry for that day/staff
+                             currentMinutesData[staff][date] = minutes; 
+                             importedCount++;
+                         }
 
-                        saveMinutesData(currentMinutesData);
-                        saveAbsenceData(currentAbsenceData); // Save the imported absence data
+                         saveMinutesData(currentMinutesData); // Save only minutes data
 
-                        showImportStatus(`Import complete: ${importedMinutesCount} minute entries & ${importedAbsencesCount} absence entries processed. ${skippedCount} lines skipped.`, false);
+                         showImportStatus(`Minutes Import complete: ${importedCount} minute entries imported/overwritten. ${skippedCount} lines skipped.`, false);
 
 
-                        // Refresh UI elements
-                        if (activeMonthButton) activeMonthButton.click(); // Refresh totals
-                        const now = new Date();
-                        const availabilityNow = getAvailabilityAtTime(now); // Refresh availability now
-                        displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now);
-                        if (teachersCustomList.innerHTML !== '') checkButton.click(); // Refresh custom availability if shown
-                        refreshAbsenceList(); // Refresh absence list too
+                         // Refresh UI elements
+                         if (activeMonthButton) activeMonthButton.click(); 
+                         const now = new Date();
+                         const availabilityNow = getAvailabilityAtTime(now); 
+                         displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now);
+                         if (teachersCustomList.innerHTML !== '') checkButton.click(); 
+                         // No need to refresh absence list here
 
-                    } catch (err) {
-                        console.error("Error processing CSV:", err);
-                        showImportStatus(`Error: ${err.message}`, true);
-                    }
-                };
-                reader.readAsText(file);
-            });
+                     } catch (err) {
+                         console.error("Error processing minutes CSV:", err);
+                         showImportStatus(`Minutes Import Error: ${err.message}`, true);
+                     }
+                 };
+                 reader.readAsText(file);
+             });
 
 
-            // --- Absence Event Listeners (Step 3B - MODIFIED) ---
+            // --- Absence Event Listeners ---
 
             // Save a new absence entry
             saveAbsenceButton.addEventListener('click', () => {
@@ -1049,7 +1008,7 @@
                     absenceTimeToInput.value = '';
 
                     // Refresh the list (now shows all for the day)
-                    refreshAbsenceList(); // MODIFIED: Call correct function
+                    refreshAbsenceList(); 
 
                     // Refresh availability lists as absence might affect them
                     const now = new Date();
@@ -1070,7 +1029,6 @@
                 const date = absenceDateInput.value; // YYYY-MM-DD format
                 displayExistingAbsences(date); // MODIFIED: Pass only date
             }
-            // absenceStaffSelect.addEventListener('change', refreshAbsenceList); // REMOVED listener for staff select
             absenceDateInput.addEventListener('change', refreshAbsenceList);
 
             // Handle clicking the "Delete" button on an absence entry
@@ -1078,20 +1036,26 @@
                 if (e.target.tagName === 'BUTTON' && e.target.classList.contains('danger')) {
                     const { staff, date, index } = e.target.dataset;
                     
-                    if (!staff || !date || !index) return;
+                    if (!staff || !date || index === undefined) return; // Check index defined
 
                     try {
+                         const idx = parseInt(index, 10); // Parse index to number
+                         if (isNaN(idx)) {
+                            console.error("Invalid index on delete button:", index);
+                            return;
+                         }
+
                         const allData = getSavedAbsenceData();
-                        if (allData[staff]?.[date]) {
+                        if (allData[staff]?.[date]?.[idx] !== undefined) { // Check if entry exists at index
                             // Remove the entry from the array by its index
-                            allData[staff][date].splice(parseInt(index, 10), 1);
+                            allData[staff][date].splice(idx, 1);
                             
                             // If no entries left for this day, remove the day array
                             if (allData[staff][date].length === 0) {
                                 delete allData[staff][date];
                             }
                             // If no entries left for this staff, remove the staff object
-                            if (Object.keys(allData[staff]).length === 0) {
+                            if (Object.keys(allData[staff] || {}).length === 0) { // Add check for staff existence
                                 delete allData[staff];
                             }
                             
@@ -1099,7 +1063,7 @@
                             showAbsenceSaveStatus('Absence entry deleted.', false);
                             
                             // Refresh the list (now shows all for the day)
-                            refreshAbsenceList(); // MODIFIED: Call correct function
+                            refreshAbsenceList(); 
 
                             // Refresh availability lists as absence might affect them
                             const now = new Date();
@@ -1108,6 +1072,8 @@
                             if (teachersCustomList.innerHTML !== '') {
                                 checkButton.click(); // Re-run custom check
                             }
+                        } else {
+                            console.warn("Attempted to delete non-existent absence entry:", {staff, date, index});
                         }
                     } catch (err) {
                         console.error("Error deleting absence:", err);
@@ -1115,6 +1081,152 @@
                     }
                 }
             });
+
+            // New Listener for Exporting Absences
+            exportAbsencesButton.addEventListener('click', () => {
+                try {
+                    const absenceData = getSavedAbsenceData();
+                    let csvContent = "data:text/csv;charset=utf-8,Date,Staff,StartTime,EndTime\r\n";
+                    let entries = [];
+
+                    // Process Absence Data
+                    for (const teacher in absenceData) {
+                        const teacherDateData = absenceData[teacher];
+                        for (const dateKey in teacherDateData) {
+                            const dayEntries = teacherDateData[dateKey] || [];
+                            dayEntries.forEach(entry => {
+                                entries.push({ 
+                                    date: dateKey, 
+                                    staff: teacher, 
+                                    startTime: minutesToHHMM(entry.start), 
+                                    endTime: minutesToHHMM(entry.end) 
+                                });
+                            });
+                        }
+                    }
+
+                    // Sort by date, then by staff, then by start time
+                    entries.sort((a, b) => {
+                        if (a.date < b.date) return -1;
+                        if (a.date > b.date) return 1;
+                        if (a.staff < b.staff) return -1;
+                        if (a.staff > b.staff) return 1;
+                        return timeToMinutes(a.startTime) - timeToMinutes(b.startTime);
+                    });
+
+                    entries.forEach(entry => {
+                        const safeStaff = `"${entry.staff.replace(/"/g, '""')}"`;
+                        csvContent += `${entry.date},${safeStaff},${entry.startTime},${entry.endTime}\r\n`;
+                    });
+
+                    const encodedUri = encodeURI(csvContent);
+                    const link = document.createElement("a");
+                    const exportDate = new Date().toISOString().split('T')[0];
+                    link.setAttribute("href", encodedUri);
+                    link.setAttribute("download", `Teacher_Absences_Backup_${exportDate}.csv`); 
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    showAbsenceImportStatus('Absences CSV exported successfully.', false); 
+                } catch (e) {
+                    console.error("Error exporting absences:", e);
+                    showAbsenceImportStatus(`Error exporting absences: ${e.message}`, true);
+                }
+            });
+
+            // New Listener for Absence Import Button
+            importAbsencesButton.addEventListener('click', () => { 
+                absenceCsvFileInput.value = null; // Reset file input
+                absenceCsvFileInput.click(); 
+            });
+
+             // New Listener for Absence File Input
+            absenceCsvFileInput.addEventListener('change', (event) => {
+                 const file = event.target.files[0];
+                 if (!file) {
+                     showAbsenceImportStatus('No file selected.', true);
+                     return;
+                 }
+
+                 const reader = new FileReader();
+                 reader.onload = (e) => {
+                     try {
+                         const text = e.target.result;
+                         const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+                         if (lines.length < 2) {
+                             throw new Error("Absence CSV file is empty or has no header/data.");
+                         }
+
+                         const header = lines[0].toLowerCase().split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+                         const dateIndex = header.indexOf('date');
+                         const staffIndex = header.indexOf('staff');
+                         const startTimeIndex = header.indexOf('starttime');
+                         const endTimeIndex = header.indexOf('endtime');
+
+                         if (dateIndex === -1 || staffIndex === -1 || startTimeIndex === -1 || endTimeIndex === -1) {
+                             throw new Error("Invalid Absence CSV Header. Must contain 'Date', 'Staff', 'StartTime', and 'EndTime' columns.");
+                         }
+
+                         let importedCount = 0;
+                         let skippedCount = 0;
+                         const currentAbsenceData = getSavedAbsenceData(); 
+
+                         for (let i = 1; i < lines.length; i++) {
+                             const columns = parseCsvLine(lines[i]); // Use safe parser
+                             if (columns.length < 4) { // Expecting 4 columns
+                                 console.warn("Skipping short absence line:", lines[i]);
+                                 skippedCount++;
+                                 continue;
+                             }
+
+                             const date = columns[dateIndex]?.trim();
+                             const staff = columns[staffIndex]?.trim(); // Already handled quotes
+                             const startTimeStr = columns[startTimeIndex]?.trim();
+                             const endTimeStr = columns[endTimeIndex]?.trim();
+                             
+                             if (!date || !staff || !startTimeStr || !endTimeStr) {
+                                 console.warn("Skipping absence line with missing data:", lines[i]);
+                                 skippedCount++;
+                                 continue;
+                             }
+
+                             const startMinutes = timeToMinutes(startTimeStr);
+                             const endMinutes = timeToMinutes(endTimeStr);
+
+                             if (startMinutes >= endMinutes) {
+                                console.warn("Skipping absence line with invalid time range (start >= end):", lines[i]);
+                                skippedCount++;
+                                continue;
+                             }
+
+                             // Add the entry
+                             if (!currentAbsenceData[staff]) currentAbsenceData[staff] = {};
+                             if (!currentAbsenceData[staff][date]) currentAbsenceData[staff][date] = [];
+                             
+                             // Optional: Add check for duplicates before pushing
+                             currentAbsenceData[staff][date].push({ start: startMinutes, end: endMinutes });
+                             importedCount++;
+                         }
+
+                         saveAbsenceData(currentAbsenceData); // Save imported absence data
+
+                         showAbsenceImportStatus(`Absences Import complete: ${importedCount} entries processed. ${skippedCount} lines skipped.`, false);
+
+                         // Refresh UI elements
+                         refreshAbsenceList(); 
+                         const now = new Date();
+                         const availabilityNow = getAvailabilityAtTime(now); 
+                         displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now);
+                         if (teachersCustomList.innerHTML !== '') checkButton.click(); 
+
+                     } catch (err) {
+                         console.error("Error processing absence CSV:", err);
+                         showAbsenceImportStatus(`Absence Import Error: ${err.message}`, true);
+                     }
+                 };
+                 reader.readAsText(file);
+             });
+
 
             // Start the application
             loadData();
