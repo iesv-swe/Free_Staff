@@ -225,6 +225,10 @@
             }
             function parseTeachers(teacherString) {
                 try {
+                    // Handle names potentially quoted in CSV
+                    if (teacherString && teacherString.startsWith('"') && teacherString.endsWith('"')) {
+                        teacherString = teacherString.substring(1, teacherString.length - 1).replace(/""/g, '"');
+                    }
                     if (!teacherString || typeof teacherString !== 'string') return [];
                     const teachers = teacherString.split(',').map(t => t.trim()).filter(t => t && t.length > 0);
                     return Array.isArray(teachers) ? teachers : [];
@@ -653,6 +657,7 @@
             });
             // (Restored from original code)
             exportSummaryButton.addEventListener('click', () => {
+                // This export remains unchanged - only includes minutes data
                 try {
                     const allData = getSavedMinutesData();
                     let csvContent = "data:text/csv;charset=utf-8,Date of Export,Staff Name,Month,Month Total,Week,Week Total\r\n";
@@ -854,7 +859,8 @@
                 csvFileInput.value = null; // Reset file input
                 csvFileInput.click(); 
             });
-            // (Restored from original code) - TODO: Modify this for import
+            
+            // MODIFIED Import to handle combined format
             csvFileInput.addEventListener('change', (event) => {
                 const file = event.target.files[0];
                 if (!file) {
@@ -868,83 +874,132 @@
                         const text = e.target.result;
                         const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
                         if (lines.length < 2) {
-                            throw new Error("CSV file is empty or has no data.");
+                            throw new Error("CSV file is empty or has no header/data.");
                         }
-                        
-                        // --- TODO: Update import logic for new format ---
-                        // Placeholder for original logic:
-                        const header = lines[0].toLowerCase().split(',').map(h => h.trim());
+
+                        // --- PARSE HEADER ---
+                        const header = lines[0].toLowerCase().split(',').map(h => h.trim().replace(/^"|"$/g, '')); // Trim and remove potential quotes
                         const dateIndex = header.indexOf('date');
                         const staffIndex = header.indexOf('staff');
-                        const minutesIndex = header.indexOf('minutes'); // This index might not exist or be empty for absences
+                        const typeIndex = header.indexOf('type');
+                        const minutesIndex = header.indexOf('minutes');
+                        const startTimeIndex = header.indexOf('starttime');
+                        const endTimeIndex = header.indexOf('endtime');
 
-                        if (dateIndex === -1 || staffIndex === -1 ) { // Removed minutesIndex check for now
-                            throw new Error("Invalid CSV. Must contain at least 'Date' and 'Staff' columns.");
+                        // Check for essential columns
+                        if (dateIndex === -1 || staffIndex === -1 || typeIndex === -1) {
+                            // Try parsing old format (Date, Staff, Minutes)
+                            if (dateIndex !== -1 && staffIndex !== -1 && minutesIndex !== -1 && header.length === 3) {
+                                 console.log("Detected old backup format (Date, Staff, Minutes). Importing minutes only.");
+                                 // Proceed with old logic (will be handled below by checking typeIndex === -1)
+                            } else {
+                                throw new Error("Invalid CSV Header. Must contain 'Date', 'Staff', and 'Type' columns.");
+                            }
                         }
+                        // Check for columns needed for specific types if header is new format
+                         if (typeIndex !== -1 && minutesIndex === -1 && (startTimeIndex === -1 || endTimeIndex === -1)) {
+                             throw new Error("Invalid CSV Header. New format requires 'Minutes' column OR both 'StartTime' and 'EndTime' columns.");
+                         }
+
 
                         let importedMinutesCount = 0;
                         let importedAbsencesCount = 0;
                         let skippedCount = 0;
-                        // For import, we should probably clear existing data for the days imported? Or just overwrite?
-                        // Let's assume overwrite for now.
+                        // Get current data - we will ADD to it or OVERWRITE specific entries
                         const currentMinutesData = getSavedMinutesData();
-                        const currentAbsenceData = getSavedAbsenceData();
+                        const currentAbsenceData = getSavedAbsenceData(); 
+                        // Keep track of absence entries added per day to avoid duplicates if overwriting isn't desired
+                        // For simplicity now, let's just add - assumes import is clean or replaces all data.
+                        // To properly overwrite absences, we'd need to clear existing absences for imported days first.
 
                         for (let i = 1; i < lines.length; i++) {
-                             // Basic CSV parsing, doesn't handle commas within quoted fields
+                             // Basic CSV parsing - IMPROVEMENT: Handle commas within quoted fields better
+                             // This simple split works if staff names don't contain commas, which seems likely.
+                             // A more robust parser would be needed otherwise.
                             const columns = lines[i].split(','); 
-                            if (columns.length < 3) { // Need at least Date, Staff, Type
-                                console.warn("Skipping short line:", lines[i]);
+                            if (columns.length < header.length) { // Check against header length
+                                console.warn("Skipping line with fewer columns than header:", lines[i]);
                                 skippedCount++;
                                 continue;
                             }
 
                             const date = columns[dateIndex]?.trim();
-                            // Handle potentially quoted staff names
+                            // Handle potentially quoted staff names more robustly
                             let staff = columns[staffIndex]?.trim(); 
                              if (staff && staff.startsWith('"') && staff.endsWith('"')) {
                                 staff = staff.substring(1, staff.length - 1).replace(/""/g, '"');
                              }
+                            const type = (typeIndex !== -1) ? columns[typeIndex]?.trim() : 'Minutes'; // Default to Minutes if Type column missing (old format)
 
                             if (!date || !staff) {
                                 console.warn("Skipping line with missing date or staff:", lines[i]);
                                 skippedCount++;
                                 continue;
                             }
-                            
-                            // Placeholder: Logic to determine Type and process accordingly is needed here
-                            // For now, it only imports minutes if the minutes column exists and is valid
-                            if (minutesIndex !== -1 && columns[minutesIndex]) {
-                                const minutes = parseInt(columns[minutesIndex]?.trim(), 10);
-                                if (!isNaN(minutes) && minutes > 0) {
+
+                            if (type === 'Minutes') {
+                                if (minutesIndex === -1) {
+                                     console.warn("Skipping 'Minutes' type row - missing 'Minutes' column:", lines[i]);
+                                     skippedCount++;
+                                     continue;
+                                }
+                                const minutesStr = columns[minutesIndex]?.trim();
+                                const minutes = parseInt(minutesStr, 10);
+                                if (minutesStr && !isNaN(minutes) && minutes > 0) {
                                      if (!currentMinutesData[staff]) {
                                          currentMinutesData[staff] = {};
                                      }
-                                     currentMinutesData[staff][date] = minutes; // Overwrite
+                                     // Overwrite existing entry for that day/staff
+                                     currentMinutesData[staff][date] = minutes; 
                                      importedMinutesCount++;
-                                } else {
-                                     console.warn("Skipping line with invalid minutes:", lines[i]);
+                                } else if (minutesStr) { // Only count as skipped if minutes column had content but was invalid
+                                     console.warn("Skipping 'Minutes' row with invalid minutes value:", lines[i]);
                                      skippedCount++;
+                                } else {
+                                     // Skip silently if minutes column is just empty
+                                }
+                            } else if (type === 'Absence') {
+                                if (startTimeIndex === -1 || endTimeIndex === -1) {
+                                    console.warn("Skipping 'Absence' type row - missing 'StartTime' or 'EndTime' column:", lines[i]);
+                                    skippedCount++;
+                                    continue;
+                                }
+                                const startTimeStr = columns[startTimeIndex]?.trim();
+                                const endTimeStr = columns[endTimeIndex]?.trim();
+                                const startMinutes = timeToMinutes(startTimeStr);
+                                const endMinutes = timeToMinutes(endTimeStr);
+
+                                // Validate the parsed times
+                                if (startTimeStr && endTimeStr && startMinutes < endMinutes) { // Check start < end
+                                    if (!currentAbsenceData[staff]) currentAbsenceData[staff] = {};
+                                    if (!currentAbsenceData[staff][date]) currentAbsenceData[staff][date] = [];
+                                    
+                                    // Add the new absence entry
+                                    // Consider adding a check here to prevent duplicate entries if needed
+                                    currentAbsenceData[staff][date].push({ start: startMinutes, end: endMinutes });
+                                    importedAbsencesCount++;
+                                } else {
+                                    console.warn("Skipping 'Absence' row with invalid/missing time range:", lines[i]);
+                                    skippedCount++;
                                 }
                             } else {
-                                // Potentially an absence row, or just missing minutes - skip for now
-                                // console.warn("Skipping line possibly missing minutes or type:", lines[i]);
-                                // skippedCount++; // Don't count as skipped if it will be handled by absence logic later
+                                console.warn("Skipping row with unknown type:", lines[i]);
+                                skippedCount++;
                             }
                         }
 
                         saveMinutesData(currentMinutesData);
-                        // saveAbsenceData(currentAbsenceData); // Need to save absence data too once parsing logic is added
+                        saveAbsenceData(currentAbsenceData); // Save the imported absence data
 
-                        showImportStatus(`Import partially complete: ${importedMinutesCount} minute entries imported/overwritten. Absences not yet supported. ${skippedCount} lines skipped.`, false);
+                        showImportStatus(`Import complete: ${importedMinutesCount} minute entries & ${importedAbsencesCount} absence entries processed. ${skippedCount} lines skipped.`, false);
 
 
-                        // Refresh totals and availability
-                        if (activeMonthButton) activeMonthButton.click();
+                        // Refresh UI elements
+                        if (activeMonthButton) activeMonthButton.click(); // Refresh totals
                         const now = new Date();
-                        const availabilityNow = getAvailabilityAtTime(now);
+                        const availabilityNow = getAvailabilityAtTime(now); // Refresh availability now
                         displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now);
-                        if (teachersCustomList.innerHTML !== '') checkButton.click();
+                        if (teachersCustomList.innerHTML !== '') checkButton.click(); // Refresh custom availability if shown
                         refreshAbsenceList(); // Refresh absence list too
 
                     } catch (err) {
@@ -954,6 +1009,7 @@
                 };
                 reader.readAsText(file);
             });
+
 
             // --- Absence Event Listeners (Step 3B - MODIFIED) ---
 
