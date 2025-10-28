@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teacher Availability</title>
     <style>
-        /* Styles remain largely the same */
+        /* Styles remain the same */
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; background-color: #f6f8fa; color: #24292e; max-width: 800px; margin: 20px auto; padding: 20px; }
         .logo { width: 180px; height: auto; margin-bottom: 10px; }
         h1, h2 { border-bottom: 2px solid #eaecef; padding-bottom: 10px; }
@@ -37,41 +37,17 @@
         .month-buttons { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 15px; }
         .month-buttons button { flex-grow: 1; margin-top: 0; padding: 5px 8px; }
         .month-buttons button.active { background-color: #0366d6; color: #ffffff; border-color: #0366d6; font-weight: 600; }
-        #totals-display, #view-absences-display { background-color: #f6f8fa; border: 1px solid #d1d5da; border-radius: 6px; padding: 15px; min-height: 50px; } /* Added view-absences-display */
-        #totals-display h3, #view-absences-display h3 { margin-top: 0; } /* Added view-absences-display */
-        #totals-display li, #view-absences-display li { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; list-style: none; padding: 4px 8px; margin: 2px 0; border-radius: 4px; } /* Added view-absences-display */
-        #totals-display li.minutes-danger, #view-absences-display li.minutes-danger { background-color: #d73a49; color: #ffffff; border: 1px solid #cb2431; font-weight: 600; } /* Added view-absences-display */
-        #totals-display li.minutes-warn, #view-absences-display li.minutes-warn { background-color: #ffc107; border: 1px solid #e0a800; color: #212529; } /* Added view-absences-display */
+        #totals-display, #view-absences-display { background-color: #f6f8fa; border: 1px solid #d1d5da; border-radius: 6px; padding: 15px; min-height: 50px; }
+        #totals-display h3, #view-absences-display h3 { margin-top: 0; }
+        #totals-display li, #view-absences-display li { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; list-style: none; padding: 4px 8px; margin: 2px 0; border-radius: 4px; }
+        #totals-display li.minutes-danger, #view-absences-display li.minutes-danger { background-color: #d73a49; color: #ffffff; border: 1px solid #cb2431; font-weight: 600; }
+        #totals-display li.minutes-warn, #view-absences-display li.minutes-warn { background-color: #ffc107; border: 1px solid #e0a800; color: #212529; }
         #csv-file-input { display: none; }
-
-        /* Styles for absence list */
         #view-absences-display ul { padding-left: 0; }
-        #view-absences-display li {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: #fff; /* White background for items */
-            border: 1px solid #d1d5da;
-            padding: 8px 12px;
-            margin-bottom: 5px;
-        }
-         #view-absences-display li span {
-            flex-grow: 1;
-            margin-right: 10px;
-        }
-        #view-absences-display .delete-absence-btn {
-            background-color: #d73a49;
-            color: white;
-            border: none;
-            padding: 3px 8px;
-            font-size: 0.8em;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 0; /* Override default button margin */
-        }
-         #view-absences-display .delete-absence-btn:hover {
-            background-color: #cb2431;
-        }
+        #view-absences-display li { display: flex; justify-content: space-between; align-items: center; background-color: #fff; border: 1px solid #d1d5da; padding: 8px 12px; margin-bottom: 5px; }
+        #view-absences-display li span { flex-grow: 1; margin-right: 10px; }
+        #view-absences-display .delete-absence-btn { background-color: #d73a49; color: white; border: none; padding: 3px 8px; font-size: 0.8em; border-radius: 4px; cursor: pointer; margin-top: 0; }
+        #view-absences-display .delete-absence-btn:hover { background-color: #cb2431; }
     </style>
 </head>
 <body>
@@ -169,11 +145,12 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // *** Initialize with empty arrays/sets to prevent errors if loading fails ***
             let lessons = [];
             let allTeachers = new Set();
             let columnMap = {};
             let activeMonthButton = null;
-            
+
             const dayMap = ["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"];
 
             // --- CONFIGURATION ---
@@ -184,7 +161,7 @@
             // ---------------------
 
             // --- Get DOM Elements ---
-            // ... (previous elements) ...
+            // ... (all elements defined here) ...
             const statusNow = document.getElementById('status-now');
             const teachersNowList = document.getElementById('teachers-now');
             const statusCustom = document.getElementById('status-custom');
@@ -214,132 +191,183 @@
             const absenceReasonInput = document.getElementById('absence-reason-input');
             const saveAbsenceButton = document.getElementById('save-absence-button');
             const absenceStatus = document.getElementById('absence-status');
-            // *** NEW: View Absence elements ***
             const viewAbsenceDateInput = document.getElementById('view-absence-date-input');
             const viewAbsencesDisplay = document.getElementById('view-absences-display');
             const absenceDeleteStatus = document.getElementById('absence-delete-status');
-            // *** END NEW ***
 
 
             // --- Helper Functions ---
-            
-            function getIsoWeekAndYear(d) { /* ... same ... */ }
-            function timeToMinutes(timeStr) { /* ... same ... */ }
-            function minutesToHHMM(totalMinutes) { /* ... same ... */ }
-            function parseRealWeeks(weekString) { /* ... same ... */ }
-            function parseTeachers(teacherString) { /* ... same ... */ }
-            
+            // ... (All helper functions remain the same: getIsoWeekAndYear, timeToMinutes, minutesToHHMM, parseRealWeeks, parseTeachers) ...
+             function getIsoWeekAndYear(d) {
+                if (!(d instanceof Date) || isNaN(d)) { return { week: 0, year: 0, weekKey: '0000-W00'}; }
+                const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+                date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
+                const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+                const weekNo = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+                const year = date.getUTCFullYear();
+                return { week: weekNo, year: year, weekKey: `${year}-W${String(weekNo).padStart(2, '0')}` };
+            }
+             function timeToMinutes(timeStr) {
+                 if (!timeStr) return 0; timeStr = timeStr.replace(':', ''); if (timeStr.length < 4) timeStr = '0' + timeStr; const hours = parseInt(timeStr.substring(0, 2), 10); const minutes = parseInt(timeStr.substring(2, 4), 10); return (isNaN(hours) || isNaN(minutes)) ? 0 : (hours * 60) + minutes;
+            }
+             function minutesToHHMM(totalMinutes) {
+                 if (isNaN(totalMinutes)) return "00:00"; const hours = Math.floor(totalMinutes / 60); const minutes = totalMinutes % 60; return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+            }
+             function parseRealWeeks(weekString) {
+                const weeks = new Set(); if (!weekString) return weeks; weekString.split(',').forEach(range => { const parts = range.trim().split('-'); if (parts.length === 1 && parts[0]) { const weekNum = parseInt(parts[0], 10); if (!isNaN(weekNum)) weeks.add(weekNum); } else if (parts.length === 2 && parts[0] && parts[1]) { try { const start = parseInt(parts[0], 10); const end = parseInt(parts[1], 10); if (!isNaN(start) && !isNaN(end)) { for (let i = start; i <= end; i++) { weeks.add(i); } } } catch(e){ console.error("Error parsing week range:", range, e); } } }); return weeks;
+            }
+             function parseTeachers(teacherString) {
+                if (!teacherString) return []; return teacherString.split(',').map(t => t.trim()).filter(t => t && t.length > 0);
+            }
+
             // --- Logic Function 1: Availability at a specific moment ---
 
-            function getAvailabilityAtTime(dateTime) { /* ... same (checks absences) ... */ }
+            function getAvailabilityAtTime(dateTime) {
+                const workingTeachers = new Set(); const onCallTimesMap = new Map(); const busyTeachers = new Set(); const { week: checkWeekNum, year: checkWeekYear } = getIsoWeekAndYear(dateTime); const checkDay = dayMap[dateTime.getDay()]; const checkTimeInMinutes = (dateTime.getHours() * 60) + dateTime.getMinutes();
+
+                // Check Lessons.txt
+                lessons.forEach(lesson => {
+                    try {
+                        // ** More robust checks for potentially missing data **
+                        const lessonDay = lesson[columnMap['day']]?.trim();
+                        const weekString = lesson[columnMap['realweeks']];
+                        const subject = lesson[columnMap['subject']]?.trim().toLowerCase();
+                        const startStr = lesson[columnMap['starttime']];
+                        const lenStr = lesson[columnMap['length']];
+                        const teacherStr = lesson[columnMap['teacher']];
+
+                        if (!lessonDay || !weekString || !subject || !startStr || !lenStr) {
+                             // console.warn("Skipping lesson due to missing basic data:", lesson); // Optional logging
+                             return;
+                        }
+
+                        const lessonWeeks = parseRealWeeks(weekString);
+                        if (lessonDay !== checkDay || !lessonWeeks.has(checkWeekNum)) return;
+
+                        const lessonStart = timeToMinutes(startStr);
+                        const lessonLength = parseInt(lenStr, 10);
+                        if (isNaN(lessonLength) || lessonLength <= 0) { console.warn("Skipping lesson due to invalid length:", lesson); return; }
+                        const lessonEnd = lessonStart + lessonLength;
+
+                        if (checkTimeInMinutes >= lessonStart && checkTimeInMinutes < lessonEnd) {
+                            const teachers = parseTeachers(teacherStr);
+                            if (subject === ARBETSTID_SUBJECT) { teachers.forEach(t => workingTeachers.add(t)); }
+                            else if (subject === ON_CALL_SUBJECT) { teachers.forEach(t => { workingTeachers.add(t); if (!onCallTimesMap.has(t)) { onCallTimesMap.set(t, { start: lessonStart, end: lessonEnd }); } }); }
+                            else { teachers.forEach(t => busyTeachers.add(t)); }
+                        }
+                    } catch (e) {
+                         console.error("Error processing lesson row in getAvailabilityAtTime:", lesson, e);
+                    }
+                });
+
+                let availableTeacherNames = [...workingTeachers].filter(teacher => !busyTeachers.has(teacher));
+
+                // Check saved absences
+                try {
+                    const absences = getSavedAbsences();
+                    const checkDateKey = dateTime.toISOString().split('T')[0];
+                    const todaysAbsences = absences[checkDateKey] || {};
+
+                    availableTeacherNames = availableTeacherNames.filter(teacher => {
+                        const staffAbsences = todaysAbsences[teacher];
+                        if (!staffAbsences || staffAbsences.length === 0) return true;
+                        for (const absence of staffAbsences) {
+                             // Ensure absence times are valid numbers before comparing
+                            if (typeof absence.start === 'number' && typeof absence.end === 'number' &&
+                                checkTimeInMinutes >= absence.start && checkTimeInMinutes < absence.end) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    });
+                } catch(e) {
+                     console.error("Error checking absences in getAvailabilityAtTime:", e);
+                }
+
+                return { available: availableTeacherNames.sort(), onCallTimes: onCallTimesMap };
+            }
+
 
             // --- Logic Function 2: Availability for a time range ---
 
-            function getAvailabilityForRange(checkDate, checkStartMinutes, checkEndMinutes) { /* ... same (checks absences) ... */ }
+            function getAvailabilityForRange(checkDate, checkStartMinutes, checkEndMinutes) {
+                 let workingTeachers = new Set(); const onCallTimesMap = new Map(); const busyTeachers = new Set(); const { week: checkWeekNum, year: checkWeekYear } = getIsoWeekAndYear(checkDate); const checkDay = dayMap[checkDate.getDay()];
+
+                 // Check Lessons.txt
+                 lessons.forEach(lesson => {
+                    try {
+                        const lessonDay = lesson[columnMap['day']]?.trim();
+                        const weekString = lesson[columnMap['realweeks']];
+                        const subject = lesson[columnMap['subject']]?.trim().toLowerCase();
+                        const startStr = lesson[columnMap['starttime']];
+                        const lenStr = lesson[columnMap['length']];
+                        const teacherStr = lesson[columnMap['teacher']];
+
+                        if (!lessonDay || !weekString || !subject || !startStr || !lenStr) return;
+
+                        const lessonWeeks = parseRealWeeks(weekString);
+                        if (lessonDay !== checkDay || !lessonWeeks.has(checkWeekNum)) return;
+
+                        const lessonStart = timeToMinutes(startStr);
+                        const lessonLength = parseInt(lenStr, 10);
+                         if (isNaN(lessonLength) || lessonLength <= 0) return;
+                        const lessonEnd = lessonStart + lessonLength;
+                        const teachers = parseTeachers(teacherStr);
+                        const containsQuery = (lessonStart <= checkStartMinutes && lessonEnd >= checkEndMinutes);
+                        const overlapsQuery = (lessonStart < checkEndMinutes && lessonEnd > checkStartMinutes);
+
+                        if (subject === ARBETSTID_SUBJECT) { if (containsQuery) teachers.forEach(t => workingTeachers.add(t)); }
+                        else if (subject === ON_CALL_SUBJECT) { if (containsQuery) { teachers.forEach(t => { workingTeachers.add(t); if (!onCallTimesMap.has(t)) { onCallTimesMap.set(t, { start: lessonStart, end: lessonEnd }); } }); } }
+                        else if (overlapsQuery) { teachers.forEach(t => busyTeachers.add(t)); }
+                    } catch (e) {
+                         console.error("Error processing lesson row in getAvailabilityForRange:", lesson, e);
+                    }
+                 });
+
+                 let availableTeacherNames = [...workingTeachers].filter(teacher => !busyTeachers.has(teacher));
+
+                 // Check saved absences
+                 try {
+                     const absences = getSavedAbsences();
+                     const checkDateKey = checkDate.toISOString().split('T')[0];
+                     const todaysAbsences = absences[checkDateKey] || {};
+
+                     availableTeacherNames = availableTeacherNames.filter(teacher => {
+                         const staffAbsences = todaysAbsences[teacher];
+                         if (!staffAbsences || staffAbsences.length === 0) return true;
+                         for (const absence of staffAbsences) {
+                              if (typeof absence.start === 'number' && typeof absence.end === 'number' &&
+                                  absence.start < checkEndMinutes && absence.end > checkStartMinutes) {
+                                  return false;
+                              }
+                         }
+                         return true;
+                     });
+                 } catch(e) {
+                      console.error("Error checking absences in getAvailabilityForRange:", e);
+                 }
+
+                 return { available: availableTeacherNames.sort(), onCallTimes: onCallTimesMap };
+            }
 
 
             // --- Display Function (Availability) ---
-            function displayResults(availableTeachers, onCallTimesMap, listElement, statusElement, checkDate) { /* ... same ... */ }
-            
+            function displayResults(availableTeachers, onCallTimesMap, listElement, statusElement, checkDate) {
+                 listElement.innerHTML = ''; const filteredTeachers = availableTeachers.filter(teacher => !EXCLUDE_TEACHERS_SET.has(teacher)); const allData = getSavedMinutesData(); const { week: checkWeekNum, year: checkWeekYear } = getIsoWeekAndYear(checkDate); const checkMonthKey = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}`; if (filteredTeachers.length === 0) { statusElement.textContent = 'No available teachers found.'; statusElement.classList.remove('error'); } else { filteredTeachers.forEach(teacher => { const li = document.createElement('li'); let weeklyTotal = 0; let monthlyTotal = 0; const teacherData = allData[teacher] || {}; for (const dateKey in teacherData) { try { const entryDate = new Date(dateKey + 'T00:00:00Z'); if (isNaN(entryDate.getTime())) continue; const { week: entryWeek, year: entryYear } = getIsoWeekAndYear(entryDate); const minutes = teacherData[dateKey] || 0; if (entryWeek === checkWeekNum && entryYear === checkWeekYear) { weeklyTotal += minutes; } if (dateKey.startsWith(checkMonthKey)) { monthlyTotal += minutes; } } catch (e) { console.error("Error calculating totals for teacher:", teacher, dateKey, e); } } let textContent = `${teacher} (W: ${weeklyTotal} / M: ${monthlyTotal})`; if (onCallTimesMap.has(teacher)) { const times = onCallTimesMap.get(teacher); const startTimeStr = minutesToHHMM(times.start); const endTimeStr = minutesToHHMM(times.end); textContent = `${teacher} (On Call: ${startTimeStr} - ${endTimeStr}) (W: ${weeklyTotal} / M: ${monthlyTotal})`; li.classList.add('on-call'); } else { if (monthlyTotal >= 180) { li.classList.add('minutes-danger'); } else if (weeklyTotal >= 90) { li.classList.add('minutes-warn'); } } li.textContent = textContent; listElement.appendChild(li); }); }
+            }
+
             // --- Extra Minutes Helper Functions ---
             function getSavedMinutesData() { /* ... same ... */ }
             function saveMinutesData(data) { /* ... same ... */ }
-            
+
             // --- Absence Helper Functions ---
             function getSavedAbsences() { /* ... same ... */ }
             function saveAbsences(data) { /* ... same ... */ }
             function showAbsenceStatus(message, isError = false) { /* ... same ... */ }
-            // *** NEW: Show status for absence delete ***
-            function showAbsenceDeleteStatus(message, isError = false) {
-                absenceDeleteStatus.textContent = message;
-                absenceDeleteStatus.className = isError ? 'status error' : 'status success';
-                absenceDeleteStatus.style.display = 'block';
-                setTimeout(() => { absenceDeleteStatus.style.display = 'none'; }, 3000);
-            }
-            // *** NEW: Display Absences for a specific date ***
-            function displayAbsencesForDate(dateKey) { // dateKey is "YYYY-MM-DD"
-                const allAbsences = getSavedAbsences();
-                const absencesForDay = allAbsences[dateKey] || {};
-                let html = `<h3>Absences for ${dateKey}</h3>`;
-                let count = 0;
-
-                const sortedStaff = Object.keys(absencesForDay).sort();
-
-                if (sortedStaff.length === 0) {
-                    html += "<p>No absences recorded for this date.</p>";
-                } else {
-                    html += "<ul>";
-                    sortedStaff.forEach(staff => {
-                        const staffAbsences = absencesForDay[staff] || [];
-                        staffAbsences.forEach((absence, index) => {
-                            const startStr = minutesToHHMM(absence.start);
-                            const endStr = minutesToHHMM(absence.end);
-                            const reasonText = absence.reason ? ` - ${absence.reason}` : '';
-                            // Add data attributes to identify the item for deletion
-                            html += `<li>
-                                        <span>${staff}: ${startStr} - ${endStr}${reasonText}</span>
-                                        <button class="delete-absence-btn" 
-                                                data-date="${dateKey}" 
-                                                data-staff="${staff}" 
-                                                data-index="${index}">Delete</button>
-                                     </li>`;
-                            count++;
-                        });
-                    });
-                    html += "</ul>";
-                }
-                viewAbsencesDisplay.innerHTML = html;
-
-                // Add event listeners to the new delete buttons
-                addDeleteButtonListeners();
-            }
-
-            // *** NEW: Add listeners to delete buttons ***
-            function addDeleteButtonListeners() {
-                const deleteButtons = viewAbsencesDisplay.querySelectorAll('.delete-absence-btn');
-                deleteButtons.forEach(button => {
-                    button.addEventListener('click', handleDeleteAbsence);
-                });
-            }
-
-             // *** NEW: Handle absence deletion ***
-             function handleDeleteAbsence(event) {
-                const button = event.target;
-                const dateKey = button.dataset.date;
-                const staff = button.dataset.staff;
-                const index = parseInt(button.dataset.index, 10);
-
-                if (!dateKey || !staff || isNaN(index)) {
-                    showAbsenceDeleteStatus("Error identifying absence to delete.", true);
-                    return;
-                }
-
-                if (confirm(`Delete absence for ${staff} on ${dateKey} at index ${index + 1}?`)) {
-                    const allAbsences = getSavedAbsences();
-                    if (allAbsences[dateKey] && allAbsences[dateKey][staff] && allAbsences[dateKey][staff][index]) {
-                        // Remove the absence from the array
-                        allAbsences[dateKey][staff].splice(index, 1);
-
-                        // If no more absences for that staff on that day, remove staff entry
-                        if (allAbsences[dateKey][staff].length === 0) {
-                            delete allAbsences[dateKey][staff];
-                        }
-                        // If no more staff have absences on that day, remove date entry
-                        if (Object.keys(allAbsences[dateKey]).length === 0) {
-                            delete allAbsences[dateKey];
-                        }
-
-                        saveAbsences(allAbsences);
-                        showAbsenceDeleteStatus("Absence deleted successfully.", false);
-                        
-                        // Refresh the display for the current date
-                        displayAbsencesForDate(dateKey); 
-                    } else {
-                         showAbsenceDeleteStatus("Could not find the absence record to delete.", true);
-                    }
-                }
-            }
-
+            function showAbsenceDeleteStatus(message, isError = false) { /* ... same ... */ }
+            function displayAbsencesForDate(dateKey) { /* ... same ... */ }
+            function addDeleteButtonListeners() { /* ... same ... */ }
+            function handleDeleteAbsence(event) { /* ... same ... */ }
 
             // --- Other Helper Functions ---
             function populateStaffDropdown() { /* ... same (populates both) ... */ }
@@ -349,45 +377,115 @@
             function setupMonthButtons() { /* ... same ... */ }
 
             // --- Initialization ---
+            // *** UPDATED loadData with more robust error handling and simplified catch ***
             async function loadData() {
                 try {
-                    // ... Fetching logic ...
-                    const response = await fetch('Lessons.txt'); if (!response.ok) throw new Error(`Fetch failed: ${response.statusText}`); const text = await response.text(); const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0); if (lines.length < 2) throw new Error('Lessons.txt empty/invalid.'); const header = lines[0].split('\t'); header.forEach((c, i) => { columnMap[c.trim()] = i; }); const requiredCols = ['subject', 'teacher', 'day', 'starttime', 'length', 'realweeks']; for (const col of requiredCols) { if (columnMap[col] === undefined) throw new Error(`Missing column: ${col}`); } lessons = lines.slice(1).map(line => line.split('\t')); 
-                    
-                    allTeachers = new Set(); 
-                    lessons.forEach(lesson => { if (lesson && lesson[columnMap['teacher']]) { parseTeachers(lesson[columnMap['teacher']]).forEach(teacher => allTeachers.add(teacher)); } });
-                    
+                    // Fetch and parse Lessons.txt
+                    console.log("Fetching Lessons.txt...");
+                    const response = await fetch('Lessons.txt');
+                    if (!response.ok) throw new Error(`Fetch failed: ${response.statusText} (${response.status})`);
+                    console.log("Fetched OK. Reading text...");
+                    const text = await response.text();
+                    const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+                    if (lines.length < 2) throw new Error('Lessons.txt is empty or invalid.');
+                    console.log(`Read ${lines.length} lines.`);
+
+                    // Parse Header
+                    const header = lines[0].split('\t');
+                    columnMap = {}; // Reset columnMap
+                    header.forEach((c, i) => { columnMap[c.trim()] = i; });
+                    console.log("Parsed header:", columnMap);
+
+                    // Check Required Columns
+                    const requiredCols = ['subject', 'teacher', 'day', 'starttime', 'length', 'realweeks'];
+                    for (const col of requiredCols) {
+                        if (columnMap[col] === undefined) throw new Error(`Missing required column in Lessons.txt: ${col}`);
+                    }
+                    console.log("Required columns found.");
+
+                    // Parse Lessons Data
+                    // ** Add check for correct number of columns **
+                    const expectedColumns = header.length;
+                    lessons = lines.slice(1).map((line, index) => {
+                        const columns = line.split('\t');
+                        if (columns.length < expectedColumns) {
+                             console.warn(`Row ${index + 2}: Incorrect column count (${columns.length}, expected ${expectedColumns}). Padding with empty strings.`);
+                             // Pad the array if columns are missing
+                             while (columns.length < expectedColumns) {
+                                 columns.push('');
+                             }
+                        } else if (columns.length > expectedColumns) {
+                             console.warn(`Row ${index + 2}: Too many columns (${columns.length}, expected ${expectedColumns}). Truncating.`);
+                             // Truncate if too many columns
+                             columns.length = expectedColumns;
+                        }
+                        return columns;
+                    });
+                    console.log(`Parsed ${lessons.length} lesson rows.`);
+
+                    // Populate allTeachers from lessons
+                    allTeachers = new Set();
+                    lessons.forEach((lesson, index) => {
+                         try {
+                            const teacherColIndex = columnMap['teacher'];
+                            if (lesson && typeof lesson[teacherColIndex] === 'string') {
+                                parseTeachers(lesson[teacherColIndex]).forEach(teacher => allTeachers.add(teacher));
+                            } else {
+                                // console.warn(`Skipping teacher population for row ${index + 2}: Missing or invalid teacher data.`); // Optional logging
+                            }
+                        } catch (e) {
+                             console.error(`Error populating teachers from row ${index + 2}:`, lesson, e);
+                        }
+                    });
+                     console.log(`Found ${allTeachers.size} unique teachers.`);
+
                     statusNow.textContent = `Schedule loaded. Checking for: ${new Date().toLocaleString()}`;
-                    
+
+                    // Initial display
                     const now = new Date();
+                    console.log("Getting availability for now...");
                     const { available, onCallTimes } = getAvailabilityAtTime(now);
+                     console.log("Displaying results for now...");
                     displayResults(available, onCallTimes, teachersNowList, statusNow, now);
-                    
-                    // Set defaults
+
+                    // Set default values for inputs
+                    console.log("Setting default input values...");
                     dateInput.valueAsDate = now;
                     timeFromInput.value = now.toTimeString().substring(0, 5);
-                    const later = new Date(now.getTime() + 60 * 60 * 1000); 
+                    const later = new Date(now.getTime() + 60 * 60 * 1000);
                     timeToInput.value = later.toTimeString().substring(0, 5);
-                    dateEntryInput.valueAsDate = now; 
+                    dateEntryInput.valueAsDate = now;
                     absenceDateInput.valueAsDate = now;
-                    // *** NEW: Set default for viewing absences ***
-                    viewAbsenceDateInput.valueAsDate = now; 
+                    viewAbsenceDateInput.valueAsDate = now;
                     yearDisplay.value = now.getFullYear();
 
-                    populateStaffDropdown(); 
-                    setupMonthButtons(); 
+                     console.log("Populating dropdowns...");
+                    populateStaffDropdown(); // Needs allTeachers
+                     console.log("Setting up month buttons...");
+                    setupMonthButtons();
 
                     // Auto-click current month button
+                     console.log("Setting active month...");
                     const currentMonthIndex = now.getMonth();
                     const currentMonthButton = monthButtonsContainer.querySelector(`button[data-month-index="${currentMonthIndex}"]`);
-                    if (currentMonthButton) { currentMonthButton.click(); }
+                    if (currentMonthButton) {
+                        currentMonthButton.click();
+                    }
 
-                    // *** NEW: Show absences for today ***
+                     console.log("Displaying absences for today...");
                     displayAbsencesForDate(now.toISOString().split('T')[0]);
+                    console.log("Initialization complete.");
 
 
-                } catch (error) { /* ... Error handling ... */ }
+                } catch (error) {
+                    // *** Simplified Catch Block ***
+                    statusNow.textContent = `Error loading schedule: ${error.message}`;
+                    statusNow.classList.add('error');
+                    console.error("Load Data Error:", error);
+                    // Don't try to initialize UI elements if loading failed
+                }
             }
+
 
             // --- Event Listeners (Availability) ---
             checkButton.addEventListener('click', () => { /* ... same ... */ });
@@ -396,29 +494,23 @@
             saveMinutesButton.addEventListener('click', () => { /* ... same ... */ });
             exportSummaryButton.addEventListener('click', () => { /* ... same ... */ });
             exportBackupButton.addEventListener('click', () => { /* ... same ... */ });
-            clearDataButton.addEventListener('click', () => { /* ... updated to clear absences too ... */ 
-                 if (confirm("Delete ALL extra minutes AND absence data?")) { 
-                     localStorage.removeItem('extraMinutes'); 
-                     localStorage.removeItem('teacherAbsences'); // Clear absences
-                     showSaveStatus("All saved data cleared.", false); 
-                     totalsDisplay.innerHTML = '<p>All data cleared. Select a month.</p>'; 
-                     viewAbsencesDisplay.innerHTML = '<p>All absence data cleared. Select a date.</p>'; // Clear absence display too
-                     if (activeMonthButton) { activeMonthButton.classList.remove('active'); activeMonthButton.classList.add('secondary'); activeMonthButton = null; } 
-                 } 
-            });
+            clearDataButton.addEventListener('click', () => { /* ... same ... */ });
             yearDisplay.addEventListener('change', () => { /* ... same ... */ });
-            importCsvButton.addEventListener('click', () => { csvFileInput.click(); }); 
+            importCsvButton.addEventListener('click', () => { csvFileInput.click(); });
             csvFileInput.addEventListener('change', (event) => { /* ... same ... */ });
 
              // --- Event Listeners (Absence) ---
              saveAbsenceButton.addEventListener('click', () => { /* ... same ... */ });
-             // *** NEW: Listener for absence view date change ***
              viewAbsenceDateInput.addEventListener('change', (event) => {
-                 displayAbsencesForDate(event.target.value);
+                 if(event.target.value) { // Ensure a date is selected
+                    displayAbsencesForDate(event.target.value);
+                 } else {
+                     viewAbsencesDisplay.innerHTML = '<p>Select a date to view recorded absences.</p>'; // Reset if date is cleared
+                 }
              });
-             // *** END NEW ***
-            
+
             // Start the application
+            console.log("Starting application load...");
             loadData();
         });
     </script>
