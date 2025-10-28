@@ -265,51 +265,25 @@
              }
 
             // --- Extra Minutes Helper Functions ---
-            function getSavedMinutesData() { /* ... function body needed ... */ }
-            function saveMinutesData(data) { /* ... function body needed ... */ }
-
-            
-// --- Absence Data Helper Functions ---
-            const ABSENCE_STORAGE_KEY = 'teacherAbsenceData';
-
-            function getSavedAbsenceData() {
+            // (Restored from your original code)
+            function getSavedMinutesData() {
                 try {
-                    const data = localStorage.getItem(ABSENCE_STORAGE_KEY);
+                    const data = localStorage.getItem('teacherMinutesData');
                     return data ? JSON.parse(data) : {};
                 } catch (error) {
-                    console.error("Error reading absence data from localStorage:", error);
+                    console.error("Error reading data from localStorage:", error);
                     return {};
                 }
             }
-
-            function saveAbsenceData(data) {
+            function saveMinutesData(data) {
                 try {
-                    localStorage.setItem(ABSENCE_STORAGE_KEY, JSON.stringify(data));
+                    localStorage.setItem('teacherMinutesData', JSON.stringify(data));
                 } catch (error) {
-                    console.error("Error saving absence data to localStorage:", error);
-                    // Show an error to the user in the absence status area
-                    if (absenceSaveStatus) {
-                        showAbsenceSaveStatus("Critical error saving data. Check console.", true);
-                    }
+                    console.error("Error saving data to localStorage:", error);
+                    showSaveStatus("Critical error saving data. Check console.", true);
                 }
             }
 
-            function showAbsenceSaveStatus(message, isError = false) {
-                if (!absenceSaveStatus) return;
-                absenceSaveStatus.textContent = message;
-                absenceSaveStatus.className = 'status'; // Reset classes
-                if (isError) {
-                    absenceSaveStatus.classList.add('error');
-                } else {
-                    absenceSaveStatus.classList.add('success');
-                }
-                absenceSaveStatus.style.display = 'block';
-                setTimeout(() => {
-                    if (absenceSaveStatus) absenceSaveStatus.style.display = 'none';
-                }, 4000);
-            }
-
-            
             // --- Other Helper Functions ---
             // CHANGE 1D: Replaced function to populate both dropdowns
             function populateStaffDropdown() {
@@ -338,9 +312,83 @@
                 }
                 catch (error) { console.error("Error during populateStaffDropdown:", error); staffSelect.innerHTML = '<option value="">Error populating</option>'; }
             }
-            function showSaveStatus(message, isError = false) { /* ... function body needed ... */ }
-            function showImportStatus(message, isError = false) { /* ... function body needed ... */ }
-            function displayMonthlyTotals(year, monthIndex) { /* ... function body needed ... */ }
+
+            // (Restored from your original code)
+            function showSaveStatus(message, isError = false) {
+                if (!saveStatus) return;
+                saveStatus.textContent = message;
+                saveStatus.className = 'status'; // Reset classes
+                if (isError) {
+                    saveStatus.classList.add('error');
+                } else {
+                    saveStatus.classList.add('success');
+                }
+                saveStatus.style.display = 'block';
+                setTimeout(() => {
+                    if (saveStatus) saveStatus.style.display = 'none';
+                }, 4000);
+            }
+            // (Restored from your original code)
+            function showImportStatus(message, isError = false) {
+                if (!importStatus) return;
+                importStatus.textContent = message;
+                importStatus.className = 'status'; // Reset classes
+                if (isError) {
+                    importStatus.classList.add('error');
+                } else {
+                    importStatus.classList.add('success');
+                }
+                importStatus.style.display = 'block';
+                setTimeout(() => {
+                    if (importStatus) importStatus.style.display = 'none';
+                }, 5000);
+            }
+            // (Restored from your original code)
+            function displayMonthlyTotals(year, monthIndex) {
+                totalsDisplay.innerHTML = ''; // Clear previous
+                const monthKey = `${year}-${String(monthIndex + 1).padStart(2, '0')}`;
+                const allData = getSavedMinutesData();
+                let totals = [];
+
+                for (const teacher in allData) {
+                    if (EXCLUDE_TEACHERS_SET.has(teacher)) continue;
+
+                    let monthlyTotal = 0;
+                    const teacherData = allData[teacher] || {};
+                    for (const dateKey in teacherData) {
+                        if (dateKey.startsWith(monthKey)) {
+                            monthlyTotal += teacherData[dateKey] || 0;
+                        }
+                    }
+                    if (monthlyTotal > 0) {
+                        totals.push({ name: teacher, total: monthlyTotal });
+                    }
+                }
+
+                // Sort by total, least to most
+                totals.sort((a, b) => a.total - b.total);
+
+                if (totals.length === 0) {
+                    totalsDisplay.innerHTML = `<p class="status">No extra minutes recorded for ${monthKey}.</p>`;
+                    return;
+                }
+
+                const monthName = new Date(year, monthIndex, 1).toLocaleString('default', { month: 'long' });
+                let html = `<h3>Totals for ${monthName} ${year}</h3><ul style="padding: 0;">`;
+                totals.forEach(entry => {
+                    const li = document.createElement('li');
+                    li.textContent = `${entry.name}: ${entry.total} minutes`;
+                    if (entry.total >= 180) {
+                        li.classList.add('minutes-danger');
+                    } else if (entry.total >= 90) { // Using 90 as a general weekly proxy for monthly warning
+                         li.classList.add('minutes-warn');
+                    }
+                    html += li.outerHTML;
+                });
+                html += '</ul>';
+                totalsDisplay.innerHTML = html;
+            }
+            // (Restored from your original code)
              function setupMonthButtons() {
                  console.log("Attempting to set up month buttons...");
                  if (!monthButtonsContainer) { console.error("Critical Error: Month buttons container not found."); return; }
@@ -404,15 +452,324 @@
 
 
             // --- Event Listeners ---
-            checkButton.addEventListener('click', () => { /* ... same ... */ });
-            saveMinutesButton.addEventListener('click', () => { /* ... same ... */ });
-            exportSummaryButton.addEventListener('click', () => { /* ... same ... */ });
-            exportBackupButton.addEventListener('click', () => { /* ... same ... */ });
-            clearDataButton.addEventListener('click', () => { /* ... same (no absence clearing) ... */ });
-            yearDisplay.addEventListener('change', () => { /* ... same ... */ });
-            importCsvButton.addEventListener('click', () => { csvFileInput.click(); });
-            csvFileInput.addEventListener('change', (event) => { /* ... same ... */ });
-            // Absence listeners removed
+            // (Restored from your original code)
+            checkButton.addEventListener('click', () => {
+                try {
+                    const date = dateInput.valueAsDate;
+                    const timeFrom = timeFromInput.value;
+                    const timeTo = timeToInput.value;
+
+                    if (!date || !timeFrom || !timeTo) {
+                        statusCustom.textContent = 'Please select a date and a time range.';
+                        statusCustom.style.display = 'block';
+                        statusCustom.classList.add('error');
+                        teachersCustomList.innerHTML = '';
+                        return;
+                    }
+
+                    const startMinutes = timeToMinutes(timeFrom);
+                    const endMinutes = timeToMinutes(timeTo);
+
+                    if (startMinutes >= endMinutes) {
+                        statusCustom.textContent = 'Invalid time: "From" time must be before "To" time.';
+                        statusCustom.style.display = 'block';
+                        statusCustom.classList.add('error');
+                        teachersCustomList.innerHTML = '';
+                        return;
+                    }
+                    
+                    statusCustom.textContent = `Checking for: ${date.toDateString()} from ${timeFrom} to ${timeTo}...`;
+                    statusCustom.style.display = 'block';
+                    statusCustom.classList.remove('error');
+
+                    const availability = getAvailabilityForRange(date, startMinutes, endMinutes);
+                    displayResults(availability.available, availability.onCallTimes, teachersCustomList, statusCustom, date);
+                } catch (e) {
+                    console.error("Error in checkButton click:", e);
+                    statusCustom.textContent = `An error occurred: ${e.message}`;
+                    statusCustom.style.display = 'block';
+                    statusCustom.classList.add('error');
+                }
+            });
+            // (Restored from your original code)
+            saveMinutesButton.addEventListener('click', () => {
+                const staffName = staffSelect.value;
+                const date = dateEntryInput.value;
+                const minutes = parseInt(minutesInput.value, 10);
+
+                if (!staffName || !date || isNaN(minutes) || minutes <= 0) {
+                    showSaveStatus('Please select a staff member, valid date, and enter positive minutes.', true);
+                    return;
+                }
+
+                try {
+                    const allData = getSavedMinutesData();
+                    if (!allData[staffName]) {
+                        allData[staffName] = {};
+                    }
+                    
+                    const currentMinutes = allData[staffName][date] || 0;
+                    allData[staffName][date] = currentMinutes + minutes;
+                    
+                    saveMinutesData(allData);
+                    showSaveStatus(`Saved ${minutes} minutes for ${staffName} on ${date}. New total for day: ${allData[staffName][date]}`, false);
+                    minutesInput.value = ''; // Clear input
+
+                    // Refresh totals if currently displayed
+                    if (activeMonthButton) {
+                        const yearVal = parseInt(yearDisplay.value, 10);
+                        const monthIndex = parseInt(activeMonthButton.dataset.monthIndex, 10);
+                        if (!isNaN(yearVal) && !isNaN(monthIndex)) {
+                            displayMonthlyTotals(yearVal, monthIndex);
+                        }
+                    }
+                    // Refresh availability lists
+                    const now = new Date();
+                    const availabilityNow = getAvailabilityAtTime(now);
+                    displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now);
+                    if (teachersCustomList.innerHTML !== '') {
+                        checkButton.click(); // Re-run custom check
+                    }
+
+                } catch (e) {
+                    console.error("Error saving minutes:", e);
+                    showSaveStatus(`Error saving: ${e.message}`, true);
+                }
+            });
+            // (Restored from your original code)
+            exportSummaryButton.addEventListener('click', () => {
+                try {
+                    const allData = getSavedMinutesData();
+                    let csvContent = "data:text/csv;charset=utf-8,Date of Export,Staff Name,Month,Month Total,Week,Week Total\r\n";
+                    const exportDate = new Date().toISOString().split('T')[0];
+                    const year = new Date().getFullYear(); // Use current year for week calculations
+                    let entries = [];
+
+                    for (const teacher in allData) {
+                        if (EXCLUDE_TEACHERS_SET.has(teacher)) continue;
+
+                        const teacherData = allData[teacher];
+                        let totalsByMonth = {};
+                        let totalsByWeek = {};
+
+                        for (const dateKey in teacherData) {
+                            const minutes = teacherData[dateKey] || 0;
+                            if (minutes === 0) continue;
+
+                            const monthKey = dateKey.substring(0, 7); // YYYY-MM
+                            totalsByMonth[monthKey] = (totalsByMonth[monthKey] || 0) + minutes;
+
+                            try {
+                                const entryDate = new Date(dateKey + 'T00:00:00Z');
+                                if (isNaN(entryDate.getTime())) continue;
+                                const { weekKey } = getIsoWeekAndYear(entryDate);
+                                totalsByWeek[weekKey] = (totalsByWeek[weekKey] || 0) + minutes;
+                            } catch (e) {
+                                console.error("Error processing date for week calculation:", dateKey, e);
+                            }
+                        }
+                        
+                        entries.push({ teacher, totalsByMonth, totalsByWeek });
+                    }
+
+                    // Sort alphabetically by teacher name
+                    entries.sort((a, b) => a.teacher.localeCompare(b.teacher));
+
+                    entries.forEach(entry => {
+                        const { teacher, totalsByMonth, totalsByWeek } = entry;
+                        
+                        // Combine and sort keys
+                        const allMonthKeys = Object.keys(totalsByMonth).sort();
+                        const allWeekKeys = Object.keys(totalsByWeek).sort();
+
+                        let i = 0, j = 0;
+                        while(i < allMonthKeys.length || j < allWeekKeys.length) {
+                            const monthKey = allMonthKeys[i] || '';
+                            const monthTotal = totalsByMonth[monthKey] || '';
+                            const weekKey = allWeekKeys[j] || '';
+                            const weekTotal = totalsByWeek[weekKey] || '';
+
+                            csvContent += `${exportDate},${teacher},${monthKey},${monthTotal},${weekKey},${weekTotal}\r\n`;
+                            
+                            i++; j++;
+                        }
+                    });
+
+                    const encodedUri = encodeURI(csvContent);
+                    const link = document.createElement("a");
+                    link.setAttribute("href", encodedUri);
+                    link.setAttribute("download", `Extra_Minutes_Summary_${exportDate}.csv`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                } catch (e) {
+                    console.error("Error exporting summary:", e);
+                    showImportStatus(`Error exporting summary: ${e.message}`, true); // Use import status for feedback
+                }
+            });
+            // (Restored from your original code)
+            exportBackupButton.addEventListener('click', () => {
+                try {
+                    const allData = getSavedMinutesData();
+                    let csvContent = "data:text/csv;charset=utf-8,Date,Staff,Minutes\r\n";
+                    let entries = [];
+
+                    for (const teacher in allData) {
+                        const teacherData = allData[teacher];
+                        for (const dateKey in teacherData) {
+                            const minutes = teacherData[dateKey] || 0;
+                            if (minutes > 0) {
+                                entries.push({ date: dateKey, staff: teacher, minutes: minutes });
+                            }
+                        }
+                    }
+
+                    // Sort by date, then by staff
+                    entries.sort((a, b) => {
+                        if (a.date < b.date) return -1;
+                        if (a.date > b.date) return 1;
+                        return a.staff.localeCompare(b.staff);
+                    });
+
+                    entries.forEach(entry => {
+                        csvContent += `${entry.date},${entry.staff},${entry.minutes}\r\n`;
+                    });
+
+                    const encodedUri = encodeURI(csvContent);
+                    const link = document.createElement("a");
+                    const exportDate = new Date().toISOString().split('T')[0];
+                    link.setAttribute("href", encodedUri);
+                    link.setAttribute("download", `Extra_Minutes_Backup_${exportDate}.csv`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                } catch (e) {
+                    console.error("Error exporting backup:", e);
+                    showImportStatus(`Error exporting backup: ${e.message}`, true);
+                }
+            });
+            // (Restored from your original code)
+            clearDataButton.addEventListener('click', () => {
+                // Use a custom modal or confirmation later, for now, just log
+                console.log("Clear data button clicked");
+                const reallyClear = confirm("Are you sure you want to delete ALL saved extra minutes data? This cannot be undone.");
+                
+                if (reallyClear) {
+                    try {
+                        localStorage.removeItem('teacherMinutesData');
+                        showImportStatus('All extra minutes data has been cleared.', false);
+                        // Refresh totals if currently displayed
+                        if (activeMonthButton) {
+                            const yearVal = parseInt(yearDisplay.value, 10);
+                            const monthIndex = parseInt(activeMonthButton.dataset.monthIndex, 10);
+                            if (!isNaN(yearVal) && !isNaN(monthIndex)) {
+                                displayMonthlyTotals(yearVal, monthIndex);
+                            }
+                        }
+                        // Refresh availability lists
+                        const now = new Date();
+                        const availabilityNow = getAvailabilityAtTime(now);
+                        displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now);
+                        if (teachersCustomList.innerHTML !== '') {
+                            checkButton.click(); // Re-run custom check
+                        }
+                    } catch (e) {
+                        console.error("Error clearing data:", e);
+                        showImportStatus(`Error clearing data: ${e.message}`, true);
+                    }
+                } else {
+                     showImportStatus('Clear data operation cancelled.', true);
+                }
+            });
+            // (Restored from your original code)
+            yearDisplay.addEventListener('change', () => {
+                if (activeMonthButton) {
+                    const yearVal = parseInt(yearDisplay.value, 10);
+                    const monthIndex = parseInt(activeMonthButton.dataset.monthIndex, 10);
+                    if (!isNaN(yearVal) && !isNaN(monthIndex)) {
+                        displayMonthlyTotals(yearVal, monthIndex);
+                    }
+                }
+            });
+            // (Restored from your original code)
+            importCsvButton.addEventListener('click', () => { 
+                csvFileInput.value = null; // Reset file input
+                csvFileInput.click(); 
+            });
+            // (Restored from your original code)
+            csvFileInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (!file) {
+                    showImportStatus('No file selected.', true);
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const text = e.target.result;
+                        const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+                        if (lines.length < 2) {
+                            throw new Error("CSV file is empty or has no data.");
+                        }
+
+                        const header = lines[0].toLowerCase().split(',').map(h => h.trim());
+                        const dateIndex = header.indexOf('date');
+                        const staffIndex = header.indexOf('staff');
+                        const minutesIndex = header.indexOf('minutes');
+
+                        if (dateIndex === -1 || staffIndex === -1 || minutesIndex === -1) {
+                            throw new Error("Invalid CSV. Must contain 'Date', 'Staff', and 'Minutes' columns.");
+                        }
+
+                        let importedCount = 0;
+                        let skippedCount = 0;
+                        const allData = getSavedMinutesData();
+
+                        for (let i = 1; i < lines.length; i++) {
+                            const columns = lines[i].split(',');
+                            if (columns.length < 3) {
+                                skippedCount++;
+                                continue;
+                            }
+
+                            const date = columns[dateIndex]?.trim();
+                            const staff = columns[staffIndex]?.trim();
+                            const minutes = parseInt(columns[minutesIndex]?.trim(), 10);
+
+                            if (!date || !staff || isNaN(minutes) || minutes <= 0) {
+                                console.warn("Skipping invalid line:", lines[i]);
+                                skippedCount++;
+                                continue;
+                            }
+
+                            if (!allData[staff]) {
+                                allData[staff] = {};
+                            }
+
+                            // Overwrite existing entry for that day
+                            allData[staff][date] = minutes;
+                            importedCount++;
+                        }
+
+                        saveMinutesData(allData);
+                        showImportStatus(`Import successful: ${importedCount} entries imported/overwritten. ${skippedCount} lines skipped.`, false);
+
+                        // Refresh totals and availability
+                        if (activeMonthButton) activeMonthButton.click();
+                        const now = new Date();
+                        const availabilityNow = getAvailabilityAtTime(now);
+                        displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now);
+                        if (teachersCustomList.innerHTML !== '') checkButton.click();
+
+                    } catch (err) {
+                        console.error("Error processing CSV:", err);
+                        showImportStatus(`Error: ${err.message}`, true);
+                    }
+                };
+                reader.readAsText(file);
+            });
+            // Absence listeners will be added in Step 3
 
             // Start the application
             loadData();
@@ -420,5 +777,4 @@
     </script>
 </body>
 </html>
-
 
