@@ -5,49 +5,229 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teacher Availability</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; background-color: #102d69; color: #dbdad8; max-width: 800px; margin: 20px auto; padding: 20px; }
-        .logo { width: 180px; height: auto; margin-bottom: 10px; /* filter: invert(1) hue-rotate(180deg); */ }
-        h1, h2 { border-bottom: 2px solid #00a0df; padding-bottom: 10px; color: #ffffff; }
-        /* Single .container rule */
-        .container { background-color: #1a3a7f; border: 1px solid #9a9b9d; border-radius: 6px; padding: 24px; margin-bottom: 20px; color: #dbdad8; }
+        /* Base Dark Theme */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #102d69; /* Navy Blue background */
+            color: #dbdad8; /* Light Grey text */
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        .logo {
+            width: 180px;
+            height: auto;
+            margin-bottom: 10px;
+            /* Optional: Add filter if logo looks better inverted on dark bg */
+            /* filter: invert(1) hue-rotate(180deg); */
+        }
+
+        h1, h2 {
+            border-bottom: 2px solid #00a0df; /* IES Logo Blue border */
+            padding-bottom: 10px;
+            color: #ffffff; /* White headings */
+        }
+
+        /* Container Styling */
+        .container {
+            background-color: #1a3a7f; /* Derived darker blue */
+            border: 1px solid #9a9b9d; /* IES Logo Grey border */
+            border-radius: 6px;
+            padding: 24px;
+            margin-bottom: 20px;
+            color: #dbdad8; /* Ensure text inside container is light */
+        }
+
+        /* Input Fields */
         .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; font-weight: 600; margin-bottom: 5px; color: #ffffff; }
-        .input-group input, .input-group select { width: 95%; padding: 8px 12px; border: 1px solid #9a9b9d; border-radius: 6px; background-color: #2a4a8f; color: #ffffff; }
-        .input-group input::placeholder { color: #9a9b9d; }
-        button { background-color: #00a0df; color: #ffffff; font-weight: 600; padding: 10px 16px; border: 1px solid #007ead; border-radius: 6px; cursor: pointer; margin-top: 10px; }
-        button:hover { background-color: #007ead; border-color: #005c8a; }
-        button.secondary { background-color: #9a9b9d; color: #102d69; border-color: #7a7b7d; }
-        button.secondary:hover { background-color: #7a7b7d; border-color: #5a5b5d; }
-        button.danger { background-color: #d73a49; color: #ffffff; border-color: rgba(27, 31, 35, 0.15); }
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #ffffff; /* White labels */
+         }
+        .input-group input, .input-group select {
+            width: 95%;
+            padding: 8px 12px;
+            border: 1px solid #9a9b9d; /* IES Logo Grey border */
+            border-radius: 6px;
+            background-color: #2a4a8f; /* Darker input background */
+            color: #ffffff; /* White text in inputs */
+        }
+        .input-group input::placeholder {
+             color: #9a9b9d;
+        }
+
+        /* Buttons */
+        button {
+            /* Default button: IES Logo Blue */
+            background-color: #00a0df;
+            color: #ffffff;
+            font-weight: 600;
+            padding: 10px 16px;
+            border: 1px solid #007ead; /* Darker blue border */
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #007ead; /* Darker blue on hover */
+            border-color: #005c8a;
+        }
+
+        /* --- CHANGE 1: Make Check Availability button green --- */
+        #check-button {
+            background-color: #2ea44f; /* Green */
+            border-color: #2c974b;
+        }
+        #check-button:hover {
+            background-color: #2c974b; /* Darker green */
+            border-color: #258141;
+        }
+        /* --- End Change 1 --- */
+
+        /* Secondary Button: IES Logo Grey */
+        button.secondary {
+            background-color: #9a9b9d;
+            color: #102d69; /* Navy text for contrast */
+            border-color: #7a7b7d;
+        }
+        button.secondary:hover {
+            background-color: #7a7b7d;
+            border-color: #5a5b5d;
+        }
+
+        /* Danger Button: Keep Red */
+        button.danger {
+            background-color: #d73a49;
+            color: #ffffff;
+            border-color: rgba(27, 31, 35, 0.15);
+        }
         button.danger:hover { background-color: #cb2431; }
-        button.primary, button.info { background-color: #00a0df; color: #ffffff; border-color: #007ead; }
-        button.primary:hover, button.info:hover { background-color: #007ead; border-color: #005c8a; }
+
+        /* Purple Button Style (Used for primary & summary) */
+        button.primary {
+            background-color: #6f42c1;
+            color: #ffffff;
+            border-color: #5833a6;
+        }
+        button.primary:hover {
+             background-color: #5833a6;
+             border-color: #442681;
+        }
+
+        /* Info Button Style (Keep as IES Blue if needed elsewhere, not used by Summary anymore) */
+         button.info {
+            background-color: #00a0df;
+            color: #ffffff;
+            border-color: #007ead;
+        }
+        button.info:hover {
+             background-color: #007ead;
+             border-color: #005c8a;
+        }
+
         .button-group { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 15px; }
         .absence-button-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; }
+
+        /* Results & Status */
         .results { margin-top: 20px; }
-        .status { font-style: italic; color: #9a9b9d; }
-        .status.error { color: #d73a49; font-weight: 600; }
-        .status.success { color: #2ea44f; font-weight: 600; }
+        .status {
+            font-style: italic;
+            color: #9a9b9d; /* IES Logo Grey for default status */
+        }
+        .status.error { color: #d73a49; font-weight: 600; } /* Keep Red */
+        .status.success { color: #2ea44f; font-weight: 600; } /* Keep Green */
+
+        /* Teacher List Items */
         .teacher-list { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; }
-        .teacher-list li { background-color: #2a4a8f; border: 1px solid #9a9b9d; color: #dbdad8; border-radius: 10px; padding: 5px 12px; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; }
-        .teacher-list li.on-call { background-color: #00a0df; color: #ffffff; border-color: #007ead; font-weight: 600; }
+        .teacher-list li {
+            background-color: #2a4a8f; /* Dark background */
+            border: 1px solid #9a9b9d; /* IES Logo Grey border */
+            color: #dbdad8; /* Light Grey text */
+            border-radius: 10px;
+            padding: 5px 12px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+        /* --- CHANGE 2: Make On Call list item green --- */
+        .teacher-list li.on-call {
+            background-color: #2ea44f; /* Green */
+            color: #ffffff; /* White text */
+            border-color: #2c974b; /* Darker green border */
+            font-weight: 600;
+        }
+        /* --- End Change 2 --- */
+
+        /* Keep warning colors */
         .teacher-list li.minutes-danger { background-color: #d73a49; color: #ffffff; border: 1px solid #cb2431; font-weight: 600; }
-        .teacher-list li.minutes-warn { background-color: #ffc107; border: 1px solid #e0a800; color: #102d69; }
+        .teacher-list li.minutes-warn { background-color: #ffc107; border: 1px solid #e0a800; color: #102d69; } /* Dark text on yellow */
+
+        /* Month Buttons */
         .month-buttons { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 15px; }
-        .month-buttons button { background-color: #9a9b9d; color: #102d69; border-color: #7a7b7d; flex-grow: 1; margin-top: 0; padding: 5px 8px; font-weight: normal; }
-        .month-buttons button:hover { background-color: #7a7b7d; border-color: #5a5b5d; }
-        .month-buttons button.active { background-color: #00a0df; color: #ffffff; border-color: #007ead; font-weight: 600; }
-        #totals-display { background-color: #1a3a7f; border: 1px solid #9a9b9d; border-radius: 6px; padding: 15px; min-height: 50px; color: #dbdad8; }
+        .month-buttons button {
+            background-color: #9a9b9d;
+            color: #102d69;
+            border-color: #7a7b7d;
+            flex-grow: 1;
+            margin-top: 0;
+            padding: 5px 8px;
+            font-weight: normal;
+        }
+         .month-buttons button:hover {
+            background-color: #7a7b7d;
+            border-color: #5a5b5d;
+         }
+        .month-buttons button.active {
+            background-color: #00a0df; /* IES Blue */
+            color: #ffffff;
+            border-color: #007ead;
+            font-weight: 600;
+        }
+
+        /* Totals Display */
+        #totals-display {
+            background-color: #1a3a7f;
+            border: 1px solid #9a9b9d;
+            border-radius: 6px;
+            padding: 15px;
+            min-height: 50px;
+            color: #dbdad8;
+        }
         #totals-display h3 { margin-top: 0; color: #ffffff; }
-        #totals-display li { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; list-style: none; padding: 4px 8px; margin: 2px 0; border-radius: 4px; background-color: #2a4a8f; border: 1px solid #9a9b9d; }
+        #totals-display li {
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            list-style: none;
+            padding: 4px 8px; margin: 2px 0;
+            border-radius: 4px;
+            background-color: #2a4a8f;
+            border: 1px solid #9a9b9d;
+         }
         #totals-display li.minutes-danger { background-color: #d73a49; color: #ffffff; border: 1px solid #cb2431; font-weight: 600; }
         #totals-display li.minutes-warn { background-color: #ffc107; border: 1px solid #e0a800; color: #102d69; }
+
         #csv-file-input, #absence-csv-file-input { display: none; }
-        #existing-absences-list h4 { margin-bottom: 5px; margin-top: 15px; border-bottom: 1px dashed #9a9b9d; padding-bottom: 3px; color: #bce4fa; }
+
+        /* Absence List Specifics */
+        #existing-absences-list h4 {
+            margin-bottom: 5px;
+            margin-top: 15px;
+            border-bottom: 1px dashed #9a9b9d;
+            padding-bottom: 3px;
+            color: #bce4fa; /* Light Blue */
+         }
         #existing-absences-list ul { padding-left: 0; margin-top: 5px;}
-        #existing-absences-list li { margin-bottom: 10px; list-style-type: none; border-bottom: 1px solid #4a6aab; padding-bottom: 10px; }
-        #existing-absences-list li strong { color: #ffffff; }
+        #existing-absences-list li {
+             margin-bottom: 10px;
+             list-style-type: none;
+             border-bottom: 1px solid #4a6aab; /* Darker separator */
+             padding-bottom: 10px;
+         }
+         #existing-absences-list li strong {
+             color: #ffffff; /* White time */
+         }
     </style>
 </head>
 <body>
@@ -67,8 +247,7 @@
             <div class="input-group"><label for="time-from-input">Time (From):</label><input type="time" id="time-from-input"></div>
             <div class="input-group"><label for="time-to-input">Time (To):</label><input type="time" id="time-to-input"></div>
         </div>
-        <button id="check-button">Check Availability</button>
-        <div id="status-custom" class="status" style="display:none;"></div>
+        <button id="check-button">Check Availability</button> <div id="status-custom" class="status" style="display:none;"></div>
         <div id="results-custom" class="results"><ul id="teachers-custom" class="teacher-list"></ul></div>
     </div>
 
@@ -113,8 +292,7 @@
     </div>
 
     <div class="container">
-        <h2>Traking Substitution</h2>
-        <p>Record extra minutes worked by staff. This data is saved in your browser.</p>
+        <h2>Traking Substitution</h2> <p>Record extra minutes worked by staff. This data is saved in your browser.</p>
         <div class="input-grid">
             <div class="input-group"><label for="staff-select">Staff Member:</label><select id="staff-select"><option value="">-- Select Staff --</option></select></div>
             <div class="input-group"><label for="date-entry-input">Date Worked:</label><input type="date" id="date-entry-input"></div>
@@ -125,13 +303,12 @@
     </div>
 
     <div class="container">
-        <h2>Traking Substitution - Totals</h2>
-        <div class="input-group"><label for="year-display">Select Year:</label><input type="number" id="year-display" value="2025"></div>
+        <h2>Traking Substitution - Totals</h2> <div class="input-group"><label for="year-display">Select Year:</label><input type="number" id="year-display" value="2025"></div>
         <div class="month-buttons" id="month-buttons"></div>
         <div id="totals-display"><p>Select a month to see totals.</p></div>
         <div class="button-group">
             <button id="export-backup-button" class="primary">Export CSV (Min)</button>
-            <button id="export-summary-button" class="info">Summary CSV (Min)</button>
+            <button id="export-summary-button" class="primary">Summary CSV (Min)</button>
             <button id="import-csv-button" class="secondary">Import CSV (Min)</button>
             <input type="file" id="csv-file-input" accept=".csv">
             <button id="clear-data-button" class="danger">Clear All Saved Data</button>
@@ -159,7 +336,6 @@
             // ---------------------
 
             // --- Get DOM Elements ---
-            // (Elements remain the same as previous version)
             const statusNow = document.getElementById('status-now');
             const teachersNowList = document.getElementById('teachers-now');
             const statusCustom = document.getElementById('status-custom');
@@ -297,7 +473,6 @@
                      return { available: availableTeacherNames.sort(), onCallTimes: onCallTimesMap };
                  } catch (error) { console.error("Critical Error in getAvailabilityAtTime:", error); statusNow.textContent = `Error calculating availability: ${error.message}`; statusNow.classList.add('error'); return defaultResult; }
              }
-
 
             // --- Logic Function 2: Availability for a time range (REVERTED to original logic) ---
              function getAvailabilityForRange(checkDate, checkStartMinutes, checkEndMinutes) {
@@ -439,12 +614,12 @@
                         foundAbsences = true;
                         html += `<h4>${staffName}</h4><ul>`;
                         dayEntries.sort((a, b) => a.start - b.start);
-                        // Use unique data attributes (start/end) instead of index for deletion
-                        dayEntries.forEach((entry) => {
+                        // Using index for deletion as per original working code
+                        dayEntries.forEach((entry, index) => {
                             html += `
                                 <li style="margin-bottom: 10px; list-style-type: none; border-bottom: 1px solid #4a6aab; padding-bottom: 10px;">
                                     <strong>${minutesToHHMM(entry.start)} - ${minutesToHHMM(entry.end)}</strong>
-                                    <button class="danger" data-staff="${staffName}" data-date="${dateKey}" data-start="${entry.start}" data-end="${entry.end}" style="padding: 3px 8px; font-size: 12px; margin-left: 10px; margin-top: 0;">Delete</button>
+                                    <button class="danger" data-staff="${staffName}" data-date="${dateKey}" data-index="${index}" style="padding: 3px 8px; font-size: 12px; margin-left: 10px; margin-top: 0;">Delete</button>
                                 </li>
                             `;
                         });
