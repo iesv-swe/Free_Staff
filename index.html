@@ -40,7 +40,10 @@
         <!-- Available Now Container -->
         <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6">
             <h2 class="text-2xl font-semibold border-b border-gray-300 dark:border-gray-700 pb-2 mb-4">Available Right Now</h2>
-            <div id="status-now" class="italic text-sm text-gray-600 dark:text-gray-400 mb-4">Loading schedule...</div>
+            <div id="status-now" class="italic text-sm text-gray-600 dark:text-gray-400 mb-1">Loading schedule...</div>
+            <!-- **** ADDED THIS SPAN **** -->
+            <span id="last-updated" class="text-xs text-gray-500 dark:text-gray-400 block mb-4"></span> 
+            <!-- **** END OF ADDED SPAN **** -->
             <div id="results-now" class="mt-4"><ul id="teachers-now" class="flex flex-wrap gap-2 list-none p-0"></ul></div>
         </div>
 
@@ -170,12 +173,14 @@
             let allTeachers = new Set();
             let columnMap = {};
             let activeMonthButton = null;
+            let refreshIntervalId = null; // Variable to hold the interval timer ID
 
             const dayMap = ["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"];
 
             // --- CONFIGURATION ---
             const ARBETSTID_SUBJECT = "arbetstid";
             const ON_CALL_SUBJECT = "on call substitution";
+            const REFRESH_INTERVAL_MS = 60000; // Refresh every 60 seconds (1 minute)
             const EXCLUDE_TEACHER_LIST = ["BaSh", "AnHo", "DaWr", "AniFac", "RahHan", "ChBe", "FaCa", "SeCa", "AlCh", "LaCo", "VikCos", "RoDi", "KrEr", "RaHa", "JeHe", "DiHe", "GaHe", "HeKa", "JoLe", "TiLe", "WiLi", "ChLi", "HaLu", "KaMa", "ViMe", "MaMe", "HiOj", "LePa", "AsRo", "RaSc", "TaSc", "JeSe", "AnVa", "MarMen", "JonLeh"];
             const EXCLUDE_TEACHERS_SET = new Set(EXCLUDE_TEACHER_LIST);
             // ---------------------
@@ -183,6 +188,7 @@
             // --- Get DOM Elements ---
             const statusNow = document.getElementById('status-now');
             const teachersNowList = document.getElementById('teachers-now');
+            const lastUpdatedSpan = document.getElementById('last-updated'); // *** ADDED ***
             const statusCustom = document.getElementById('status-custom');
             const teachersCustomList = document.getElementById('teachers-custom');
             const checkButton = document.getElementById('check-button');
@@ -219,13 +225,14 @@
             const absenceImportStatus = document.getElementById('absence-import-status');
 
              // Log if critical elements are missing BEFORE loadData runs
-             if (!statusNow || !monthButtonsContainer || !staffSelect || !absenceStaffSelect || !exportAbsencesButton || !importAbsencesButton || !absenceCsvFileInput || !absenceImportStatus) { 
+             if (!statusNow || !lastUpdatedSpan || !monthButtonsContainer || !staffSelect || !absenceStaffSelect || !exportAbsencesButton || !importAbsencesButton || !absenceCsvFileInput || !absenceImportStatus) { // Added check for lastUpdatedSpan
                  console.error("Critical DOM element missing! Cannot proceed.", { 
-                     statusNowExists: !!statusNow, monthButtonsContainerExists: !!monthButtonsContainer, staffSelectExists: !!staffSelect,
+                     statusNowExists: !!statusNow, lastUpdatedSpanExists: !!lastUpdatedSpan, // Added log
+                     monthButtonsContainerExists: !!monthButtonsContainer, staffSelectExists: !!staffSelect,
                      absenceStaffSelectExists: !!absenceStaffSelect, exportAbsencesButtonExists: !!exportAbsencesButton, 
                      importAbsencesButtonExists: !!importAbsencesButton, absenceCsvFileInputExists: !!absenceCsvFileInput, absenceImportStatusExists: !!absenceImportStatus
                  });
-                 if (statusNow) { statusNow.textContent = "Error: Page structure broken."; statusNow.classList.add('!text-red-600', '!dark:text-red-400', '!font-semibold'); } // Use Tailwind classes for error
+                 if (statusNow) { statusNow.textContent = "Error: Page structure broken."; statusNow.classList.add('!text-red-600', '!dark:text-red-400', '!font-semibold'); } 
                  return; // Stop script execution
              }
              console.log("All critical DOM elements found.");
@@ -342,15 +349,19 @@
                  
                  // Update status text styling
                  if (filteredTeachers.length === 0) { 
-                     statusElement.textContent = 'No available teachers found.'; 
-                     statusElement.classList.remove('!text-red-600', '!dark:text-red-400', '!font-semibold', '!text-green-600', '!dark:text-green-400'); // Remove specific color classes
-                     statusElement.classList.add('italic', 'text-sm', 'text-gray-600', 'dark:text-gray-400'); // Add back default status classes
+                     // Only update status if it's the 'status-now' element or if 'status-custom' wasn't already showing an error
+                     if (statusElement.id === 'status-now' || (statusElement.id === 'status-custom' && !statusElement.classList.contains('!text-red-600'))) {
+                         statusElement.textContent = 'No available teachers found.'; 
+                         statusElement.classList.remove('!text-red-600', '!dark:text-red-400', '!font-semibold', '!text-green-600', '!dark:text-green-400'); // Remove specific color classes
+                         statusElement.classList.add('italic', 'text-sm', 'text-gray-600', 'dark:text-gray-400'); // Add back default status classes
+                         if(statusElement.id === 'status-custom') statusElement.style.display = 'block'; // Ensure custom status is visible
+                     }
                  } else {
-                     // Clear status if teachers are found (unless it was explicitly set to an error before calling this)
-                      if (!statusElement.classList.contains('!text-red-600')) { // Don't clear if it's an error message
-                        statusElement.textContent = ''; 
-                        statusElement.style.display = 'none'; // Hide if no message needed
-                      }
+                     // Clear status only if it's not an error message
+                     if (statusElement && !statusElement.classList.contains('!text-red-600')) { 
+                         statusElement.textContent = ''; 
+                         if(statusElement.id === 'status-custom') statusElement.style.display = 'none'; // Hide custom status if results found
+                     }
                  }
                  
                  filteredTeachers.forEach(teacher => { 
@@ -430,7 +441,6 @@
                     localStorage.setItem(ABSENCE_STORAGE_KEY, JSON.stringify(data));
                 } catch (error) {
                     console.error("Error saving absence data to localStorage:", error);
-                    // Show an error to the user in the absence status area
                     if (absenceSaveStatus) {
                         showAbsenceSaveStatus("Critical error saving data. Check console.", true);
                     }
@@ -441,7 +451,6 @@
             function showAbsenceSaveStatus(message, isError = false) {
                 if (!absenceSaveStatus) return;
                 absenceSaveStatus.textContent = message;
-                // Base classes + conditional color classes
                 absenceSaveStatus.className = 'status mt-3 italic text-sm'; // Reset to base + margin
                 if (isError) {
                     absenceSaveStatus.classList.add('text-red-600', 'dark:text-red-400', 'font-semibold');
@@ -467,23 +476,19 @@
                 let html = '';
                 let foundAbsences = false;
 
-                // Sort staff names alphabetically
                 const staffNames = Object.keys(allAbsenceData).sort();
 
                 staffNames.forEach(staffName => {
-                    // Skip globally excluded teachers
                     if (EXCLUDE_TEACHERS_SET.has(staffName)) return; 
 
                     const dayEntries = allAbsenceData[staffName]?.[dateKey] || [];
                     if (dayEntries.length > 0) {
                         foundAbsences = true;
-                        html += `<h4>${staffName}</h4><ul>`; // Style applied via CSS block
+                        html += `<h4>${staffName}</h4><ul>`; 
                         
-                        // Sort entries for this staff member by start time
                         dayEntries.sort((a, b) => a.start - b.start);
 
                         dayEntries.forEach((entry, index) => {
-                            // Using Tailwind for delete button styling
                             html += `
                                 <li> 
                                     <strong class="font-semibold">${minutesToHHMM(entry.start)} - ${minutesToHHMM(entry.end)}</strong>
@@ -510,35 +515,29 @@
             // Corrected date formatting consistency
             function isTeacherAbsent(teacher, checkDate, checkTimeInMinutes) {
                 const allData = getSavedAbsenceData();
-                // Ensure dateKey uses consistent YYYY-MM-DD format
                 let dateKey = '';
                 if (checkDate instanceof Date && !isNaN(checkDate)) {
-                    // Format Date object to YYYY-MM-DD string
                     const year = checkDate.getFullYear();
                     const month = String(checkDate.getMonth() + 1).padStart(2, '0');
                     const day = String(checkDate.getDate()).padStart(2, '0');
                     dateKey = `${year}-${month}-${day}`;
                 } else {
                     console.warn("isTeacherAbsent received invalid date object:", checkDate);
-                    return false; // Cannot determine absence without a valid date
+                    return false; 
                 }
                 
                 const dayEntries = allData[teacher]?.[dateKey] || [];
-
                 if (dayEntries.length === 0) return false;
 
-                // Check if the checkTimeInMinutes falls within any saved absence range
                 for (const entry of dayEntries) {
-                    // checkTimeInMinutes is inclusive of start, exclusive of end
                     if (checkTimeInMinutes >= entry.start && checkTimeInMinutes < entry.end) {
-                        return true; // Teacher is absent
+                        return true; 
                     }
                 }
-                return false; // Not absent at this time
+                return false; 
             }
 
             // --- Other Helper Functions ---
-            // CHANGE 1D: Replaced function to populate both dropdowns
             function populateStaffDropdown() {
                 console.log("Populating dropdowns...");
                 if (!allTeachers || !(allTeachers instanceof Set) || allTeachers.size === 0) { 
@@ -549,17 +548,15 @@
                 }
                 try { 
                     const sortedTeachers = [...allTeachers].filter(teacher => teacher && !EXCLUDE_TEACHERS_SET.has(teacher)).sort(); 
-                    
-                    // Clear both dropdowns first
                     staffSelect.innerHTML = '<option value="">-- Select Staff --</option>';
-                    if (absenceStaffSelect) absenceStaffSelect.innerHTML = '<option value="">-- Select Staff --</option>'; // Clear new dropdown
+                    if (absenceStaffSelect) absenceStaffSelect.innerHTML = '<option value="">-- Select Staff --</option>'; 
                     
                     sortedTeachers.forEach(teacher => { 
                         const option = document.createElement('option'); 
                         option.value = teacher; 
                         option.textContent = teacher; 
                         staffSelect.appendChild(option.cloneNode(true)); 
-                        if (absenceStaffSelect) absenceStaffSelect.appendChild(option.cloneNode(true)); // Populates new dropdown
+                        if (absenceStaffSelect) absenceStaffSelect.appendChild(option.cloneNode(true)); 
                     }); 
                     console.log(`Dropdowns populated with ${sortedTeachers.length} teachers.`); 
                 }
@@ -569,7 +566,6 @@
             function showSaveStatus(message, isError = false) {
                 if (!saveStatus) return;
                 saveStatus.textContent = message;
-                 // Base classes + conditional color classes
                 saveStatus.className = 'status mt-3 italic text-sm'; // Reset to base + margin
                 if (isError) {
                      saveStatus.classList.add('text-red-600', 'dark:text-red-400', 'font-semibold');
@@ -684,7 +680,8 @@
                                  // Deactivate previous button
                                  if (activeMonthButton) { 
                                      activeMonthButton.classList.remove(...activeClasses);
-                                     activeMonthButton.classList.add(...inactiveClasses.filter(c => !c.startsWith('bg-') && !c.startsWith('text-') && !c.startsWith('border-'))); // Re-add non-color base classes if needed
+                                     // Re-add base non-color classes if they were removed (Tailwind might optimize differently)
+                                     activeMonthButton.classList.add(...inactiveClasses.filter(c => !activeClasses.includes('!'+c.split('-')[0]+'-'+c.split('-')[1])));
                                  } 
                                  
                                  // Activate clicked button
@@ -710,14 +707,49 @@
                  }
                  catch (error) { console.error("Critical Error during setupMonthButtons loop:", error); monthButtonsContainer.innerHTML = '<p class="text-red-600 dark:text-red-400 font-semibold">Error creating month buttons.</p>'; }
              }
+             
+            // *** NEW: Function to refresh 'Available Now' ***
+            function refreshAvailableNow() {
+                if (!lessons || lessons.length === 0) {
+                     // Don't refresh if lessons aren't loaded yet
+                     return;
+                }
+                try {
+                    console.log("Refreshing 'Available Now'...");
+                    const now = new Date();
+                    const availabilityNow = getAvailabilityAtTime(now); 
+                    displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now);
+                    // Update timestamp
+                    if(lastUpdatedSpan) {
+                        lastUpdatedSpan.textContent = `Last updated: ${now.toLocaleTimeString()}`;
+                    }
+                     // Ensure status-now is cleared if results were found and it wasn't an error
+                     if (availabilityNow.available.length > 0 && statusNow && !statusNow.classList.contains('!text-red-600')) {
+                        statusNow.textContent = ''; // Clear "Loading..." or "No teachers..."
+                    } else if (availabilityNow.available.length === 0 && statusNow && !statusNow.classList.contains('!text-red-600')) {
+                         statusNow.textContent = 'No available teachers found.'; // Set "No teachers" if applicable
+                    }
+
+
+                } catch(e) {
+                     console.error("Error during auto-refresh:", e);
+                     if (statusNow) {
+                        statusNow.textContent = 'Error during auto-refresh. Check console.';
+                        statusNow.classList.add('!text-red-600', '!dark:text-red-400', '!font-semibold');
+                     }
+                      if(lastUpdatedSpan) {
+                        lastUpdatedSpan.textContent = `Update failed: ${new Date().toLocaleTimeString()}`;
+                    }
+                }
+            }
 
 
             // --- Initialization ---
              async function loadData() {
                  console.log("Starting application load...");
                  statusNow.textContent = 'Loading schedule...';
-                 statusNow.classList.remove('!text-red-600', '!dark:text-red-400', '!font-semibold', '!text-green-600', '!dark:text-green-400'); // Remove specific color classes
-                 statusNow.classList.add('italic', 'text-sm', 'text-gray-600', 'dark:text-gray-400'); // Add back default status classes
+                 statusNow.classList.remove('!text-red-600', '!dark:text-red-400', '!font-semibold', '!text-green-600', '!dark:text-green-400'); 
+                 statusNow.classList.add('italic', 'text-sm', 'text-gray-600', 'dark:text-gray-400'); 
 
                  try {
                      console.log("Fetching Lessons.txt...");
@@ -736,25 +768,17 @@
                      setupMonthButtons();
                      console.log("DEBUG: Month Buttons HTML after setup:", monthButtonsContainer ? monthButtonsContainer.innerHTML : "Container not found!");
 
-                     if (allTeachers.size === 0) { console.warn("No teachers identified..."); statusNow.textContent = 'Warning: No teachers found...'; statusNow.classList.add('!text-yellow-600', '!dark:text-yellow-400', '!font-semibold'); populateStaffDropdown(); } // Use Tailwind for warning
-                     else { console.log("Populating dropdowns..."); populateStaffDropdown(); statusNow.textContent = `Schedule loaded. Checked: ${new Date().toLocaleTimeString()}`; statusNow.classList.add('!text-green-600', '!dark:text-green-400'); } // Use Tailwind for success
+                     if (allTeachers.size === 0) { console.warn("No teachers identified..."); statusNow.textContent = 'Warning: No teachers found...'; statusNow.classList.add('!text-yellow-600', '!dark:text-yellow-400', '!font-semibold'); populateStaffDropdown(); } 
+                     else { console.log("Populating dropdowns..."); populateStaffDropdown(); /* Status set in refreshAvailableNow */ }
 
                      console.log("Setting default input values...");
                      const now = new Date();
                      dateInput.valueAsDate = now; timeFromInput.value = now.toTimeString().substring(0, 5); const later = new Date(now.getTime() + 60 * 60 * 1000); timeToInput.value = later.toTimeString().substring(0, 5); dateEntryInput.valueAsDate = now; yearDisplay.value = now.getFullYear();
 
-                     // CHANGE 1E: Set default date for new absence input
                      if (absenceDateInput) absenceDateInput.valueAsDate = now;
 
-                     if (lessons.length > 0) {
-                         console.log("Getting availability for now...");
-                         const availabilityNow = getAvailabilityAtTime(now); // Safe call
-                         if (availabilityNow && typeof availabilityNow === 'object' && Array.isArray(availabilityNow.available)) { console.log("Displaying results for now..."); displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now); }
-                         else { console.error("getAvailabilityAtTime returned invalid data:", availabilityNow); statusNow.textContent = 'Error displaying current availability (invalid data). Check console.'; statusNow.classList.add('!text-red-600', '!dark:text-red-400', '!font-semibold'); }
-                     } else { 
-                         statusNow.textContent = statusNow.textContent.includes('No teachers found') ? statusNow.textContent : 'Warning: Lessons invalid. Availability check skipped.'; 
-                         if (!statusNow.classList.contains('!text-yellow-600')) statusNow.classList.add('!text-red-600', '!dark:text-red-400', '!font-semibold'); // Error if not already warning
-                     }
+                     // *** Initial call for Available Now ***
+                     refreshAvailableNow(); 
 
                      console.log("Setting active month...");
                      const currentMonthIndex = now.getMonth();
@@ -764,16 +788,37 @@
                          else { console.warn(`Could not find button for current month index ${currentMonthIndex} AFTER setup. Attempting manual display.`); displayMonthlyTotals(now.getFullYear(), currentMonthIndex); }
                      } else { console.error("Month buttons container not found when trying to set active month."); }
 
-                    // Initial display for absence list (call after setting default date)
                      refreshAbsenceList(); 
+
+                     // *** Start the auto-refresh timer ***
+                     if (refreshIntervalId) clearInterval(refreshIntervalId); // Clear previous interval if any
+                     refreshIntervalId = setInterval(refreshAvailableNow, REFRESH_INTERVAL_MS);
+                     console.log(`Auto-refresh for 'Available Now' started with interval ${REFRESH_INTERVAL_MS}ms.`);
 
                      console.log("Initialization complete.");
 
-                 } catch (error) { statusNow.textContent = `Critical Error: ${error.message}. Cannot initialize fully. Check console (F12).`; statusNow.classList.add('!text-red-600', '!dark:text-red-400', '!font-semibold'); console.error("Load Data Error:", error); try { setupMonthButtons(); const now = new Date(); dateEntryInput.valueAsDate = now; yearDisplay.value = now.getFullYear(); populateStaffDropdown(); if (absenceDateInput) absenceDateInput.valueAsDate = now; refreshAbsenceList(); } catch (uiError) { console.error("Critical UI setup error:", uiError); document.body.innerHTML = `<div class="p-5 text-red-700 bg-red-100 border border-red-400 rounded">Critical Error: ${error.message}. Cannot initialize. Check console (F12).</div>`; } } // Basic Tailwind error display
+                 } catch (error) { 
+                     statusNow.textContent = `Critical Error: ${error.message}. Cannot initialize fully. Check console (F12).`; 
+                     statusNow.classList.add('!text-red-600', '!dark:text-red-400', '!font-semibold'); 
+                     console.error("Load Data Error:", error); 
+                     try { 
+                         // Attempt to set up non-data-dependent parts
+                         setupMonthButtons(); 
+                         const now = new Date(); 
+                         dateEntryInput.valueAsDate = now; 
+                         yearDisplay.value = now.getFullYear(); 
+                         populateStaffDropdown(); 
+                         if (absenceDateInput) absenceDateInput.valueAsDate = now; 
+                         refreshAbsenceList(); 
+                     } catch (uiError) { 
+                         console.error("Critical UI setup error during fallback:", uiError); 
+                         document.body.innerHTML = `<div class="p-5 text-red-700 bg-red-100 border border-red-400 rounded">Critical Error: ${error.message}. Cannot initialize. Check console (F12).</div>`; 
+                     } 
+                 }
              }
 
 
-            // --- Event Listeners ---
+            // --- Event Listeners --- (Event listeners remain the same as the previous correct version)
             checkButton.addEventListener('click', () => {
                 try {
                     const date = dateInput.valueAsDate;
@@ -843,10 +888,8 @@
                             displayMonthlyTotals(yearVal, monthIndex);
                         }
                     }
-                    // Refresh availability lists
-                    const now = new Date();
-                    const availabilityNow = getAvailabilityAtTime(now);
-                    displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now);
+                    // Refresh availability now (will also happen on next interval)
+                    refreshAvailableNow(); 
                     if (teachersCustomList.innerHTML !== '') {
                         checkButton.click(); // Re-run custom check
                     }
@@ -927,7 +970,6 @@
                     showImportStatus(`Error exporting summary: ${e.message}`, true); // Use import status for feedback
                 }
             });
-
             // Reverted Backup Export (Minutes Only)
             exportBackupButton.addEventListener('click', () => {
                 try {
@@ -953,7 +995,6 @@
                     });
 
                     entries.forEach(entry => {
-                        // Use safe parsing for staff name, just in case
                         const safeStaff = `"${entry.staff.replace(/"/g, '""')}"`;
                         csvContent += `${entry.date},${safeStaff},${entry.minutes}\r\n`;
                     });
@@ -972,15 +1013,12 @@
                     showImportStatus(`Error exporting minutes backup: ${e.message}`, true);
                 }
             });
-
             // (MODIFIED Step 3D - still clears both)
             clearDataButton.addEventListener('click', () => {
                 console.log("Clear data button clicked");
-                // Avoid using confirm() as requested in original prompt guidelines
-                // Replace with a simple log or implement a custom modal later
-                console.warn("Clear All Data button clicked - confirmation needed.");
+                // Avoid using confirm() - replace with custom modal later if needed
+                console.warn("Clear All Data button clicked - proceeding without confirmation for now."); 
                 
-                // If you want to proceed without confirmation for now:
                 try {
                     localStorage.removeItem('teacherMinutesData');
                     localStorage.removeItem(ABSENCE_STORAGE_KEY); 
@@ -1000,9 +1038,7 @@
                     } else {
                          totalsDisplay.innerHTML = '<p class="italic text-sm text-gray-600 dark:text-gray-400">Select a month to see totals.</p>'; // Reset
                     }
-                    const now = new Date();
-                    const availabilityNow = getAvailabilityAtTime(now);
-                    displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now);
+                    refreshAvailableNow(); // Refresh now section
                     if (teachersCustomList.innerHTML !== '') {
                         checkButton.click(); 
                     }
@@ -1010,10 +1046,6 @@
                     console.error("Error clearing data:", e);
                     showImportStatus(`Error clearing data: ${e.message}`, true);
                 }
-                
-                // If you want confirmation (requires implementing a custom modal):
-                // showCustomConfirm("Are you sure you want to delete ALL saved data?", () => { /* clear data code */ });
-                
             });
             yearDisplay.addEventListener('change', () => {
                 if (activeMonthButton) {
@@ -1093,9 +1125,7 @@
 
                          // Refresh UI elements
                          if (activeMonthButton) activeMonthButton.click(); 
-                         const now = new Date();
-                         const availabilityNow = getAvailabilityAtTime(now); 
-                         displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now);
+                         refreshAvailableNow(); // Refresh now section
                          if (teachersCustomList.innerHTML !== '') checkButton.click(); 
                          // No need to refresh absence list here
 
@@ -1149,9 +1179,7 @@
                     refreshAbsenceList(); 
 
                     // Refresh availability lists as absence might affect them
-                    const now = new Date();
-                    const availabilityNow = getAvailabilityAtTime(now);
-                    displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now);
+                    refreshAvailableNow(); 
                     if (teachersCustomList.innerHTML !== '') {
                         checkButton.click(); // Re-run custom check
                     }
@@ -1171,7 +1199,7 @@
 
             // Handle clicking the "Delete" button on an absence entry
             existingAbsencesList.addEventListener('click', (e) => {
-                if (e.target.tagName === 'BUTTON' && e.target.classList.contains('bg-red-600')) { // Check Tailwind class
+                 if (e.target.tagName === 'BUTTON' && e.target.classList.contains('bg-red-600')) { // Check Tailwind class
                     const { staff, date, index } = e.target.dataset;
                     
                     if (!staff || !date || index === undefined) return; // Check index defined
@@ -1204,9 +1232,7 @@
                             refreshAbsenceList(); 
 
                             // Refresh availability lists as absence might affect them
-                            const now = new Date();
-                            const availabilityNow = getAvailabilityAtTime(now);
-                            displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now);
+                            refreshAvailableNow(); 
                             if (teachersCustomList.innerHTML !== '') {
                                 checkButton.click(); // Re-run custom check
                             }
@@ -1307,10 +1333,6 @@
 
                          let importedCount = 0;
                          let skippedCount = 0;
-                         // Get current data - NOTE: This simple import ADDS entries.
-                         // For a true "restore", you might want to clear existing absence data first
-                         // Or, clear only data for the specific staff/days being imported.
-                         // Current approach: Add all entries from the file, avoiding exact duplicates.
                          const currentAbsenceData = getSavedAbsenceData(); 
 
                          for (let i = 1; i < lines.length; i++) {
@@ -1345,7 +1367,6 @@
                              if (!currentAbsenceData[staff]) currentAbsenceData[staff] = {};
                              if (!currentAbsenceData[staff][date]) currentAbsenceData[staff][date] = [];
                              
-                             // Optional: Add check for duplicates before pushing
                              // Check if this exact entry already exists for this staff/date
                              const exists = currentAbsenceData[staff][date].some(entry => entry.start === startMinutes && entry.end === endMinutes);
                              if (!exists) {
@@ -1353,7 +1374,6 @@
                                  importedCount++;
                              } else {
                                  console.log("Skipping duplicate absence entry:", lines[i]);
-                                 // Optionally count duplicates as skipped if desired
                              }
                          }
 
@@ -1363,9 +1383,7 @@
 
                          // Refresh UI elements
                          refreshAbsenceList(); 
-                         const now = new Date();
-                         const availabilityNow = getAvailabilityAtTime(now); 
-                         displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now);
+                         refreshAvailableNow(); // Refresh now section
                          if (teachersCustomList.innerHTML !== '') checkButton.click(); 
 
                      } catch (err) {
