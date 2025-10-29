@@ -487,31 +487,32 @@
         }
 
         /**
-         * A simple, robust CSV line parser that handles quoted fields.
+         * A simple, robust CSV line parser that handles quoted fields and custom delimiters.
          * @param {string} line A single line from a CSV file.
+         * @param {string} [delimiter=','] The delimiter character (',' or ';'). Defaults to ','.
          * @returns {string[]} An array of field values.
          */
-        function parseCsvLine(line) {
+        function parseCsvLine(line, delimiter = ',') { // Added delimiter parameter
             const result = [];
             let currentField = '';
             let inQuotes = false;
             for (let i = 0; i < line.length; i++) {
                 const char = line[i];
                 if (char === '"') {
-                    if (inQuotes && line[i + 1] === '"') {
+                    if (inQuotes && line[i + 1] === '"') { // Handle escaped quotes ""
                         currentField += '"';
-                        i++;
+                        i++; // Skip the second quote
                     } else {
                         inQuotes = !inQuotes;
                     }
-                } else if (char === ',' && !inQuotes) {
+                } else if (char === delimiter && !inQuotes) { // Use the specified delimiter
                     result.push(currentField.trim());
                     currentField = '';
                 } else {
                     currentField += char;
                 }
             }
-            result.push(currentField.trim());
+            result.push(currentField.trim()); // Add the last field
             return result;
         }
 
@@ -1024,11 +1025,13 @@
 
         /**
          * Handles the "Export Summary CSV" button click.
+         * NOW USES SEMICOLONS.
          */
         function handleExportSummary() {
             try {
                 const allData = getStorageData(MINUTES_STORAGE_KEY);
-                let csvContent = "data:text/csv;charset=utf-8,Date of Export,Staff Name,Month,Month Total,Week,Week Total\r\n";
+                // USE SEMICOLON as separator
+                let csvContent = "data:text/csv;charset=utf-8,Date of Export;Staff Name;Month;Month Total;Week;Week Total\r\n"; 
                 const exportDate = new Date().toISOString().split('T')[0];
                 let entries = [];
                 for (const teacher in allData) {
@@ -1056,12 +1059,15 @@
                     const allMonthKeys = Object.keys(totalsByMonth).sort();
                     const allWeekKeys = Object.keys(totalsByWeek).sort();
                     let i = 0, j = 0;
+                    // Ensure quotes around teacher name if it contains delimiter or quotes
+                    const safeTeacher = `"${teacher.replace(/"/g, '""')}"`; 
                     while (i < allMonthKeys.length || j < allWeekKeys.length) {
                         const monthKey = allMonthKeys[i] || '';
                         const monthTotal = totalsByMonth[monthKey] || '';
                         const weekKey = allWeekKeys[j] || '';
                         const weekTotal = totalsByWeek[weekKey] || '';
-                        csvContent += `${exportDate},${teacher},${monthKey},${monthTotal},${weekKey},${weekTotal}\r\n`;
+                        // USE SEMICOLON as separator
+                        csvContent += `${exportDate};${safeTeacher};${monthKey};${monthTotal};${weekKey};${weekTotal}\r\n`; 
                         i++; j++;
                     }
                 });
@@ -1080,11 +1086,13 @@
 
         /**
          * Handles the "Export CSV (Min)" button click (full backup).
+         * NOW USES SEMICOLONS.
          */
         function handleExportBackup() {
             try {
                 const allData = getStorageData(MINUTES_STORAGE_KEY);
-                let csvContent = "data:text/csv;charset=utf-8,Date,Staff,Minutes\r\n";
+                 // USE SEMICOLON as separator
+                let csvContent = "data:text/csv;charset=utf-8,Date;Staff;Minutes\r\n";
                 let entries = [];
                 for (const teacher in allData) {
                     const teacherData = allData[teacher];
@@ -1101,8 +1109,10 @@
                     return a.staff.localeCompare(b.staff);
                 });
                 entries.forEach(entry => {
+                    // Ensure quotes around teacher name
                     const safeStaff = `"${entry.staff.replace(/"/g, '""')}"`;
-                    csvContent += `${entry.date},${safeStaff},${entry.minutes}\r\n`;
+                    // USE SEMICOLON as separator
+                    csvContent += `${entry.date};${safeStaff};${entry.minutes}\r\n`; 
                 });
                 const encodedUri = encodeURI(csvContent);
                 const link = document.createElement("a");
@@ -1124,6 +1134,8 @@
          */
         function handleClearData() {
             console.log("Clear data button clicked");
+            // NOTE: Using confirm() here. In some environments (like isolated iframes),
+            // confirm might not work as expected. A custom modal would be more robust.
             const reallyClear = confirm("Are you sure you want to delete ALL saved extra minutes AND absence data? This cannot be undone.");
             if (reallyClear) {
                 try {
@@ -1172,12 +1184,13 @@
          * Handles the "Import CSV (Min)" button click (triggers file input).
          */
         function handleImportMinutesClick() {
-            csvFileInput.value = null;
+            csvFileInput.value = null; // Reset file input
             csvFileInput.click();
         }
 
         /**
          * Handles the file selection for importing minutes.
+         * NOW DETECTS COMMA OR SEMICOLON.
          * @param {Event} event The file input change event.
          */
         function handleMinutesFileSelect(event) {
@@ -1191,48 +1204,74 @@
                 try {
                     const text = e.target.result;
                     const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
-                    if (lines.length < 2) throw new Error("CSV file is empty or has no data.");
-                    const header = lines[0].toLowerCase().split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+                    if (lines.length < 2) throw new Error("CSV file is empty or has no header/data.");
+
+                    // --- Delimiter Detection ---
+                    let delimiter = ','; // Default to comma
+                    if (lines[0].includes(';')) { // Basic check if semicolon exists
+                         // More robust check: count delimiters in header
+                         if (lines[0].split(';').length > lines[0].split(',').length) {
+                             delimiter = ';';
+                         }
+                    }
+                    console.log("Detected delimiter:", delimiter);
+                    // --------------------------
+
+                    const header = lines[0].toLowerCase().split(delimiter).map(h => h.trim().replace(/^"|"$/g, ''));
                     const dateIndex = header.indexOf('date');
                     const staffIndex = header.indexOf('staff');
                     const minutesIndex = header.indexOf('minutes');
+                    
                     if (dateIndex === -1 || staffIndex === -1 || minutesIndex === -1) {
-                        throw new Error("Invalid Minutes CSV Header. Must contain 'Date', 'Staff', and 'Minutes' columns.");
+                        throw new Error(`Invalid Minutes CSV Header. Must contain 'Date', 'Staff', and 'Minutes' columns separated by '${delimiter}'.`);
                     }
+
                     let importedCount = 0;
                     let skippedCount = 0;
                     const currentMinutesData = getStorageData(MINUTES_STORAGE_KEY);
+
                     for (let i = 1; i < lines.length; i++) {
-                        const columns = parseCsvLine(lines[i]);
-                        if (columns.length < 3) {
-                            console.warn("Skipping short line:", lines[i]);
+                        // Use the detected delimiter with parseCsvLine
+                        const columns = parseCsvLine(lines[i], delimiter); 
+                        
+                        if (columns.length <= Math.max(dateIndex, staffIndex, minutesIndex)) { // Check if enough columns exist
+                            console.warn(`Skipping short/malformed line ${i + 1}:`, lines[i]);
                             skippedCount++;
                             continue;
                         }
+
                         const date = columns[dateIndex]?.trim();
                         const staff = columns[staffIndex]?.trim();
                         const minutesStr = columns[minutesIndex]?.trim();
                         const minutes = parseInt(minutesStr, 10);
-                        if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !staff || !minutesStr || isNaN(minutes) || minutes <= 0) { // Added date format check
-                            console.warn("Skipping invalid minutes line:", lines[i]);
+
+                        // Validate data
+                        if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !staff || !minutesStr || isNaN(minutes) || minutes <= 0) {
+                            console.warn(`Skipping invalid data on line ${i + 1}:`, lines[i]);
                             skippedCount++;
                             continue;
                         }
+
                         if (!currentMinutesData[staff]) currentMinutesData[staff] = {};
                         currentMinutesData[staff][date] = minutes; // Overwrites existing
                         importedCount++;
                     }
+
                     saveMinutesData(currentMinutesData);
                     showImportStatus(`Minutes Import complete: ${importedCount} minute entries imported/overwritten. ${skippedCount} lines skipped.`, false);
                     
                     // Refresh UI
-                    if (activeMonthButton) activeMonthButton.click();
-                    refreshAllAvailabilityViews();
+                    if (activeMonthButton) activeMonthButton.click(); // Re-render totals for the current month
+                    refreshAllAvailabilityViews(); // Refresh availability lists
 
                 } catch (err) {
                     console.error("Error processing minutes CSV:", err);
                     showImportStatus(`Minutes Import Error: ${err.message}`, true);
                 }
+            };
+            reader.onerror = (err) => {
+                 console.error("FileReader error:", err);
+                 showImportStatus(`Error reading file: ${err}`, true);
             };
             reader.readAsText(file);
         }
@@ -1316,11 +1355,13 @@
 
         /**
          * Handles the "Export Absences CSV" button click.
+         * NOW USES SEMICOLONS.
          */
         function handleExportAbsences() {
             try {
                 const absenceData = getStorageData(ABSENCE_STORAGE_KEY);
-                let csvContent = "data:text/csv;charset=utf-8,Date,Staff,StartTime,EndTime\r\n";
+                // USE SEMICOLON as separator
+                let csvContent = "data:text/csv;charset=utf-8,Date;Staff;StartTime;EndTime\r\n"; 
                 let entries = [];
                 for (const teacher in absenceData) {
                     const teacherDateData = absenceData[teacher];
@@ -1338,18 +1379,20 @@
                         });
                     }
                 }
-                entries.sort((a, b) => {
+                entries.sort((a, b) => { // Sort logic remains the same
                     if (a.date < b.date) return -1;
                     if (a.date > b.date) return 1;
                     if (a.staff < b.staff) return -1;
                     if (a.staff > b.staff) return 1;
-                    let startA = timeToMinutes(a.startTime); // Use original timeToMinutes
-                    let startB = timeToMinutes(b.startTime); // Use original timeToMinutes
-                    return startA - b.startB; // This was a typo, fixed
+                    let startA = timeToMinutes(a.startTime); 
+                    let startB = timeToMinutes(b.startTime); 
+                    return startA - startB; // Fixed typo here
                 });
                 entries.forEach(entry => {
+                     // Ensure quotes around teacher name
                     const safeStaff = `"${entry.staff.replace(/"/g, '""')}"`;
-                    csvContent += `${entry.date},${safeStaff},${entry.startTime},${entry.endTime}\r\n`;
+                    // USE SEMICOLON as separator
+                    csvContent += `${entry.date};${safeStaff};${entry.startTime};${entry.endTime}\r\n`; 
                 });
                 const encodedUri = encodeURI(csvContent);
                 const link = document.createElement("a");
@@ -1370,12 +1413,13 @@
          * Handles the "Import Absences CSV" button click (triggers file input).
          */
         function handleImportAbsencesClick() {
-            absenceCsvFileInput.value = null;
+            absenceCsvFileInput.value = null; // Reset file input
             absenceCsvFileInput.click();
         }
 
         /**
          * Handles the file selection for importing absences.
+         * NOW DETECTS COMMA OR SEMICOLON.
          * @param {Event} event The file input change event.
          */
         function handleAbsenceFileSelect(event) {
@@ -1390,61 +1434,91 @@
                     const text = e.target.result;
                     const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
                     if (lines.length < 2) throw new Error("Absence CSV file is empty or has no header/data.");
-                    const header = lines[0].toLowerCase().split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+
+                     // --- Delimiter Detection ---
+                    let delimiter = ','; // Default to comma
+                    if (lines[0].includes(';')) { // Basic check
+                         if (lines[0].split(';').length > lines[0].split(',').length) {
+                             delimiter = ';';
+                         }
+                    }
+                    console.log("Detected delimiter:", delimiter);
+                    // --------------------------
+
+                    const header = lines[0].toLowerCase().split(delimiter).map(h => h.trim().replace(/^"|"$/g, ''));
                     const dateIndex = header.indexOf('date');
                     const staffIndex = header.indexOf('staff');
                     const startTimeIndex = header.indexOf('starttime');
                     const endTimeIndex = header.indexOf('endtime');
+
                     if (dateIndex === -1 || staffIndex === -1 || startTimeIndex === -1 || endTimeIndex === -1) {
-                        throw new Error("Invalid Absence CSV Header. Must contain 'Date', 'Staff', 'StartTime', and 'EndTime' columns.");
+                        throw new Error(`Invalid Absence CSV Header. Must contain 'Date', 'Staff', 'StartTime', and 'EndTime' columns separated by '${delimiter}'.`);
                     }
+
                     let importedCount = 0;
                     let skippedCount = 0;
                     const currentAbsenceData = getStorageData(ABSENCE_STORAGE_KEY);
+
                     for (let i = 1; i < lines.length; i++) {
-                        const columns = parseCsvLine(lines[i]);
-                        if (columns.length < 4) {
-                            console.warn("Skipping short absence line:", lines[i]);
+                         // Use the detected delimiter with parseCsvLine
+                        const columns = parseCsvLine(lines[i], delimiter); 
+
+                        if (columns.length <= Math.max(dateIndex, staffIndex, startTimeIndex, endTimeIndex)) { // Check enough columns
+                            console.warn(`Skipping short/malformed absence line ${i + 1}:`, lines[i]);
                             skippedCount++;
                             continue;
                         }
+
                         const date = columns[dateIndex]?.trim();
                         const staff = columns[staffIndex]?.trim();
                         const startTimeStr = columns[startTimeIndex]?.trim();
                         const endTimeStr = columns[endTimeIndex]?.trim();
-                        if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !staff || !startTimeStr || !endTimeStr) { // Added date format check
-                            console.warn("Skipping absence line with missing/invalid data:", lines[i]);
+
+                        // Validate data
+                        if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !staff || !startTimeStr || !endTimeStr) {
+                            console.warn(`Skipping absence line ${i + 1} with missing/invalid data:`, lines[i]);
                             skippedCount++;
                             continue;
                         }
+
                         const startMinutes = timeToMinutes(startTimeStr); // Uses original timeToMinutes
                         const endMinutes = timeToMinutes(endTimeStr);     // Uses original timeToMinutes
+
                         if (startMinutes >= endMinutes && !(startMinutes === 0 && endMinutes === 0)) {
-                            console.warn("Skipping absence line with invalid time range:", lines[i]);
+                            console.warn(`Skipping absence line ${i + 1} with invalid time range:`, lines[i]);
                             skippedCount++;
                             continue;
                         }
+
+                        // Add the absence if it's not already there
                         if (!currentAbsenceData[staff]) currentAbsenceData[staff] = {};
                         if (!currentAbsenceData[staff][date]) currentAbsenceData[staff][date] = [];
+                        
                         const exists = currentAbsenceData[staff][date].some(entry => entry.start === startMinutes && entry.end === endMinutes);
                         if (!exists) {
                             currentAbsenceData[staff][date].push({ start: startMinutes, end: endMinutes });
                             importedCount++;
                         } else {
-                            console.log("Skipping duplicate absence entry:", lines[i]);
+                            console.log(`Skipping duplicate absence entry on line ${i + 1}:`, lines[i]);
+                            // Don't increment skippedCount for duplicates unless you want to report them
                         }
                     }
+
                     saveAbsenceData(currentAbsenceData);
                     showAbsenceImportStatus(`Absences Import complete: ${importedCount} new entries added. ${skippedCount} lines skipped.`, false);
                     
                     // Refresh UI
-                    refreshAbsenceList();
-                    refreshAllAvailabilityViews();
+                    refreshAbsenceList(); // Update the displayed list for the current day
+                    refreshAllAvailabilityViews(); // Update availability lists
 
                 } catch (err) {
                     console.error("Error processing absence CSV:", err);
                     showAbsenceImportStatus(`Absence Import Error: ${err.message}`, true);
                 }
+            };
+            reader.onerror = (err) => {
+                 console.error("FileReader error:", err);
+                 showAbsenceImportStatus(`Error reading file: ${err}`, true);
             };
             reader.readAsText(file);
         }
@@ -1592,3 +1666,4 @@
     </script>
 </body>
 </html>
+
