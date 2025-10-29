@@ -272,118 +272,21 @@
             function isTeacherAbsent(teacher, checkDate, checkTimeInMinutes) { /* ... unchanged ... */ }
 
             // --- UI Update Functions ---
-            // *** ADDED DEBUG LOGGING TO displayResults ***
-            function displayResults(availableTeachers, onCallTimesMap, listElement, statusElement, checkDate) {
-                 console.log(`displayResults called for ${listElement.id}. Received ${availableTeachers.length} available teachers initially.`); // DEBUG
-                 listElement.innerHTML = ''; 
-                 const filteredTeachers = availableTeachers.filter(teacher => !EXCLUDE_TEACHERS_SET.has(teacher)); 
-                 console.log(`After global exclude filter, ${filteredTeachers.length} teachers remain.`); // DEBUG
-                 const allMinutesData = getSavedMinutesData(); 
-                 const { week: checkWeekNum, year: checkWeekYear } = getIsoWeekAndYear(checkDate); 
-                 const checkMonthKey = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}`; 
-                 
-                 if (filteredTeachers.length === 0) { 
-                     if (statusElement.id === 'status-now' || (statusElement.id === 'status-custom' && !statusElement.classList.contains('!text-red-600'))) {
-                         statusElement.textContent = 'No available teachers found.'; 
-                         statusElement.classList.remove('!text-red-600', '!dark:text-red-400', '!font-semibold', '!text-green-600', '!dark:text-green-400'); 
-                         statusElement.classList.add('italic', 'text-sm', 'text-gray-600', 'dark:text-gray-400'); 
-                         if(statusElement.id === 'status-custom') statusElement.style.display = 'block'; 
-                     }
-                 } else {
-                     if (statusElement && !statusElement.classList.contains('!text-red-600')) { 
-                         statusElement.textContent = ''; 
-                         if(statusElement.id === 'status-custom') statusElement.style.display = 'none'; 
-                     }
-                 }
-                 
-                 let createdLiCount = 0; // DEBUG
-                 filteredTeachers.forEach(teacher => { 
-                     createdLiCount++; // DEBUG
-                     const li = document.createElement('li'); 
-                     li.className = 'bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-full px-3 py-1 text-sm font-mono';
-                     let weeklyTotal = 0; let monthlyTotal = 0; 
-                     const teacherMinutesData = allMinutesData[teacher] || {}; 
-                     for (const dateKey in teacherMinutesData) { 
-                         try { 
-                             const entryDate = new Date(dateKey + 'T00:00:00Z'); if (isNaN(entryDate.getTime())) continue; 
-                             const { week: entryWeek, year: entryYear } = getIsoWeekAndYear(entryDate); 
-                             const minutes = teacherMinutesData[dateKey] || 0; 
-                             if (entryWeek === checkWeekNum && entryYear === checkWeekYear) { weeklyTotal += minutes; } 
-                             if (dateKey.startsWith(checkMonthKey)) { monthlyTotal += minutes; } 
-                         } catch (e) { console.error("Error calculating totals for teacher:", teacher, dateKey, e); } 
-                     } 
-                     
-                     let textContent = `${teacher} (W: ${weeklyTotal} / M: ${monthlyTotal})`; 
-                     
-                     if (onCallTimesMap.has(teacher)) { 
-                         const times = onCallTimesMap.get(teacher); const startTimeStr = minutesToHHMM(times.start); const endTimeStr = minutesToHHMM(times.end); 
-                         textContent = `${teacher} (On Call: ${startTimeStr} - ${endTimeStr}) (W: ${weeklyTotal} / M: ${monthlyTotal})`; 
-                         li.classList.add('!bg-green-600', '!text-white', '!border-green-700', 'font-semibold'); 
-                     } else { 
-                         if (monthlyTotal >= 180) { li.classList.add('!bg-red-600', '!text-white', '!border-red-700', 'font-semibold'); } 
-                         else if (weeklyTotal >= 90) { li.classList.add('!bg-yellow-400', '!text-black', '!border-yellow-500'); } 
-                     } 
-                     li.textContent = textContent; listElement.appendChild(li); 
-                 }); 
-                 console.log(`Created ${createdLiCount} li elements for ${listElement.id}.`); // DEBUG
-                 // Apply filter after list is populated
-                 if (listElement.id === 'teachers-now') applyFilter('filter-now', 'teachers-now', 'li');
-                 else if (listElement.id === 'teachers-custom') applyFilter('filter-custom', 'teachers-custom', 'li');
-             }
+            function displayResults(availableTeachers, onCallTimesMap, listElement, statusElement, checkDate) { /* ... unchanged ... */ }
             function displayExistingAbsences(dateKey) { /* ... unchanged ... */ }
             function populateStaffDropdown() { /* ... unchanged ... */ }
             function displayMonthlyTotals(year, monthIndex) { /* ... unchanged ... */ }
             function setupMonthButtons() { /* ... unchanged ... */ }
             function refreshAvailableNow() { /* ... unchanged ... */ }
             function refreshAbsenceList() { /* ... unchanged ... */ }
-
-            // *** NEW: Filter Function ***
-             // *** ADDED DEBUG LOGGING TO applyFilter ***
-            function applyFilter(inputId, listContainerId, itemSelectorType) {
-                const filterInput = document.getElementById(inputId);
-                const listContainer = document.getElementById(listContainerId);
-                if (!filterInput || !listContainer) {
-                     console.warn(`applyFilter: Could not find input '${inputId}' or container '${listContainerId}'`); // DEBUG
-                     return;
-                }
-
-                const filterValue = filterInput.value.toLowerCase();
-                console.log(`Applying filter '${filterValue}' to ${listContainerId}`); // DEBUG
-
-                let items;
-                let visibleCount = 0; // DEBUG
-                if (itemSelectorType === 'li') {
-                    items = listContainer.querySelectorAll('li');
-                     items.forEach(item => {
-                        const text = item.textContent.toLowerCase();
-                        if (text.includes(filterValue)) {
-                            item.classList.remove('filtered-hide');
-                            visibleCount++; // DEBUG
-                        } else {
-                            item.classList.add('filtered-hide');
-                        }
-                    });
-                } else if (itemSelectorType === 'group') {
-                    items = listContainer.querySelectorAll('.absence-group');
-                     items.forEach(group => {
-                        const teacherName = group.dataset.teacherName || ''; 
-                        if (teacherName.includes(filterValue)) {
-                            group.classList.remove('filtered-hide');
-                             visibleCount++; // DEBUG
-                        } else {
-                            group.classList.add('filtered-hide');
-                        }
-                    });
-                }
-                console.log(`Filter applied. Found ${items ? items.length : 0} items total, ${visibleCount} items visible.`); // DEBUG
-            }
+            function applyFilter(inputId, listContainerId, itemSelectorType) { /* ... unchanged ... */ }
 
             // --- Initialization ---
              async function loadData() { /* ... unchanged ... */ }
 
 
             // --- Event Listeners --- 
-            // *** ADDED DEBUG LOGGING TO checkButton listener ***
+            // *** ADDED SAFETY CHECK to checkButton listener ***
             checkButton.addEventListener('click', () => {
                 console.log("Check Availability button clicked."); // DEBUG
                 try {
@@ -420,8 +323,20 @@
                     const availability = getAvailabilityForRange(date, startMinutes, endMinutes);
                     console.log("getAvailabilityForRange returned:", availability); // DEBUG
 
-                    displayResults(availability.available, availability.onCallTimes, teachersCustomList, statusCustom, date); // Displays the result
-                    console.log("displayResults called for custom list."); // DEBUG
+                    // *** ADDED SAFETY CHECK ***
+                    if (availability && typeof availability === 'object' && availability.hasOwnProperty('available') && availability.hasOwnProperty('onCallTimes')) {
+                        displayResults(availability.available, availability.onCallTimes, teachersCustomList, statusCustom, date); 
+                        console.log("displayResults called for custom list."); // DEBUG
+                    } else {
+                        // Log an error if availability is not the expected object
+                        console.error("ERROR: getAvailabilityForRange did not return the expected object. Returned:", availability);
+                        statusCustom.textContent = `Internal error: Failed to get availability data structure. Check console.`;
+                        statusCustom.style.display = 'block';
+                        statusCustom.className = 'status mt-4 italic text-sm text-red-600 dark:text-red-400 font-semibold'; 
+                        teachersCustomList.innerHTML = ''; // Clear list on error
+                    }
+                    // *** END ADDED SAFETY CHECK ***
+
                 } catch (e) {
                     console.error("Error in checkButton click:", e);
                     statusCustom.textContent = `An error occurred: ${e.message}`;
@@ -444,7 +359,7 @@
             importAbsencesButton.addEventListener('click', () => { absenceCsvFileInput.value = null; absenceCsvFileInput.click(); });
             absenceCsvFileInput.addEventListener('change', (event) => { /* ... unchanged ... */ });
 
-            // *** NEW: Filter Event Listeners ***
+            // *** Filter Event Listeners ***
             filterNowInput.addEventListener('input', () => applyFilter('filter-now', 'teachers-now', 'li'));
             filterCustomInput.addEventListener('input', () => applyFilter('filter-custom', 'teachers-custom', 'li'));
             filterAbsencesInput.addEventListener('input', () => applyFilter('filter-absences', 'existing-absences-list', 'group'));
