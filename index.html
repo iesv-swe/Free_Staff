@@ -268,7 +268,46 @@
             
             // --- Availability Logic ---
             function getAvailabilityAtTime(dateTime) { /* ... unchanged ... */ }
-            function getAvailabilityForRange(checkDate, checkStartMinutes, checkEndMinutes) { /* ... unchanged ... */ }
+             // *** MODIFIED: Added failsafe return ***
+            function getAvailabilityForRange(checkDate, checkStartMinutes, checkEndMinutes) {
+                 const defaultResult = { available: [], onCallTimes: new Map() };
+                 try {
+                     if (!Array.isArray(lessons) || lessons.length === 0) { console.log("getAvailabilityForRange: No lessons."); return defaultResult; }
+                     let workingTeachers = new Set(); const onCallTimesMap = new Map(); const busyTeachers = new Set();
+                     const weekInfo = getIsoWeekAndYear(checkDate); if (!weekInfo) { console.error("getIsoWeekAndYear failed in getAvailabilityForRange"); return defaultResult; } const { week: checkWeekNum } = weekInfo;
+                     const checkDay = dayMap[checkDate.getDay()];
+                     
+                     lessons.forEach(lesson => {
+                         try { 
+                             const lessonDay = lesson[columnMap['day']]?.trim(); const weekString = lesson[columnMap['realweeks']]; const subject = lesson[columnMap['subject']]?.trim().toLowerCase(); const startStr = lesson[columnMap['starttime']]; const lenStr = lesson[columnMap['length']]; const teacherStr = lesson[columnMap['teacher']]; 
+                             if (!lessonDay || !weekString || !subject || !startStr || !lenStr) return; 
+                             const lessonWeeks = parseRealWeeks(weekString); if (lessonDay !== checkDay || !lessonWeeks.has(checkWeekNum)) return; 
+                             const lessonStart = timeToMinutes(startStr); const lessonLength = parseInt(lenStr, 10); if (isNaN(lessonLength) || lessonLength <= 0) return; 
+                             const lessonEnd = lessonStart + lessonLength; const teachers = parseTeachers(teacherStr); 
+                             const containsQuery = (lessonStart <= checkStartMinutes && lessonEnd >= checkEndMinutes); 
+                             const overlapsQuery = (lessonStart < checkEndMinutes && lessonEnd > checkStartMinutes); 
+                             
+                             if (subject === ARBETSTID_SUBJECT) { if (containsQuery) teachers.forEach(t => workingTeachers.add(t)); } 
+                             else if (subject === ON_CALL_SUBJECT) { if (containsQuery) { teachers.forEach(t => { workingTeachers.add(t); if (!onCallTimesMap.has(t)) { onCallTimesMap.set(t, { start: lessonStart, end: lessonEnd }); } }); } } 
+                             else if (overlapsQuery) { teachers.forEach(t => busyTeachers.add(t)); } 
+                         } catch (e) { console.error("Error processing lesson row (getAvailabilityForRange):", lesson, e); }
+                     });
+
+                     let availableAndNotBusy = [...workingTeachers].filter(teacher => !busyTeachers.has(teacher));
+                     let availableTeacherNames = availableAndNotBusy.filter(teacher => !isTeacherAbsent(teacher, checkDate, checkStartMinutes));
+                     
+                     return { available: availableTeacherNames.sort(), onCallTimes: onCallTimesMap }; // Successful return
+                 } catch (error) { 
+                     console.error("Critical Error in getAvailabilityForRange:", error); 
+                     statusCustom.textContent = `Error calculating availability: ${error.message}`; 
+                     statusCustom.style.display = 'block'; 
+                     statusCustom.classList.add('!text-red-600', '!dark:text-red-400', '!font-semibold'); 
+                     return defaultResult; // Return default on catch
+                 }
+                 // *** Failsafe Return ***
+                 console.error("getAvailabilityForRange reached unexpected end, returning default.");
+                 return defaultResult; 
+            }
             function isTeacherAbsent(teacher, checkDate, checkTimeInMinutes) { /* ... unchanged ... */ }
 
             // --- UI Update Functions ---
