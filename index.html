@@ -5,209 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teacher Availability</title>
     <style>
-        /* Base Dark Theme */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            line-height: 1.6;
-            background-color: #102d69; /* Navy Blue background */
-            color: #dbdad8; /* Light Grey text */
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-        }
-
-        .logo {
-            width: 180px;
-            height: auto;
-            margin-bottom: 10px;
-            /* Optional: Add filter if logo looks better inverted on dark bg */
-            /* filter: invert(1) hue-rotate(180deg); */
-        }
-
-        h1, h2 {
-            border-bottom: 2px solid #00a0df; /* IES Logo Blue border */
-            padding-bottom: 10px;
-            color: #ffffff; /* White headings */
-        }
-
-        /* Container Styling */
-        .container {
-            /* Slightly lighter dark blue or dark grey for contrast */
-            background-color: #1a3a7f; /* Derived darker blue */
-            border: 1px solid #9a9b9d; /* IES Logo Grey border */
-            border-radius: 6px;
-            padding: 24px;
-            margin-bottom: 20px;
-            color: #dbdad8; /* Ensure text inside container is light */
-        }
-
-        /* Input Fields */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; background-color: #102d69; color: #dbdad8; max-width: 800px; margin: 20px auto; padding: 20px; }
+        .logo { width: 180px; height: auto; margin-bottom: 10px; /* filter: invert(1) hue-rotate(180deg); */ }
+        h1, h2 { border-bottom: 2px solid #00a0df; padding-bottom: 10px; color: #ffffff; }
+        /* Single .container rule */
+        .container { background-color: #1a3a7f; border: 1px solid #9a9b9d; border-radius: 6px; padding: 24px; margin-bottom: 20px; color: #dbdad8; }
         .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .input-group { margin-bottom: 15px; }
-        .input-group label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 5px;
-            color: #ffffff; /* White labels */
-         }
-        .input-group input, .input-group select {
-            width: 95%;
-            padding: 8px 12px;
-            border: 1px solid #9a9b9d; /* IES Logo Grey border */
-            border-radius: 6px;
-            background-color: #2a4a8f; /* Darker input background */
-            color: #ffffff; /* White text in inputs */
-        }
-        /* Style placeholder text color if needed */
-        .input-group input::placeholder {
-             color: #9a9b9d;
-        }
-
-        /* Buttons */
-        button {
-            /* Default button: IES Logo Blue */
-            background-color: #00a0df;
-            color: #ffffff;
-            font-weight: 600;
-            padding: 10px 16px;
-            border: 1px solid #007ead; /* Darker blue border */
-            border-radius: 6px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        button:hover {
-            background-color: #007ead; /* Darker blue on hover */
-            border-color: #005c8a;
-        }
-
-        /* Secondary Button: IES Logo Grey */
-        button.secondary {
-            background-color: #9a9b9d;
-            color: #102d69; /* Navy text for contrast */
-            border-color: #7a7b7d;
-        }
-        button.secondary:hover {
-            background-color: #7a7b7d;
-            border-color: #5a5b5d;
-        }
-
-        /* Danger Button: Keep Red */
-        button.danger {
-            background-color: #d73a49;
-            color: #ffffff;
-            border-color: rgba(27, 31, 35, 0.15); /* Keep original border or adjust */
-        }
+        .input-group label { display: block; font-weight: 600; margin-bottom: 5px; color: #ffffff; }
+        .input-group input, .input-group select { width: 95%; padding: 8px 12px; border: 1px solid #9a9b9d; border-radius: 6px; background-color: #2a4a8f; color: #ffffff; }
+        .input-group input::placeholder { color: #9a9b9d; }
+        button { background-color: #00a0df; color: #ffffff; font-weight: 600; padding: 10px 16px; border: 1px solid #007ead; border-radius: 6px; cursor: pointer; margin-top: 10px; }
+        button:hover { background-color: #007ead; border-color: #005c8a; }
+        button.secondary { background-color: #9a9b9d; color: #102d69; border-color: #7a7b7d; }
+        button.secondary:hover { background-color: #7a7b7d; border-color: #5a5b5d; }
+        button.danger { background-color: #d73a49; color: #ffffff; border-color: rgba(27, 31, 35, 0.15); }
         button.danger:hover { background-color: #cb2431; }
-
-        /* Map .primary and .info to IES Logo Blue (or remove if not needed) */
-        button.primary, button.info {
-            background-color: #00a0df;
-            color: #ffffff;
-            border-color: #007ead;
-        }
-        button.primary:hover, button.info:hover {
-             background-color: #007ead;
-             border-color: #005c8a;
-        }
-
+        button.primary, button.info { background-color: #00a0df; color: #ffffff; border-color: #007ead; }
+        button.primary:hover, button.info:hover { background-color: #007ead; border-color: #005c8a; }
         .button-group { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 15px; }
         .absence-button-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; }
-
-        /* Results & Status */
         .results { margin-top: 20px; }
-        .status {
-            font-style: italic;
-            color: #9a9b9d; /* IES Logo Grey for default status */
-        }
-        .status.error { color: #d73a49; font-weight: 600; } /* Keep Red */
-        .status.success { color: #2ea44f; font-weight: 600; } /* Keep Green */
-
-        /* Teacher List Items */
+        .status { font-style: italic; color: #9a9b9d; }
+        .status.error { color: #d73a49; font-weight: 600; }
+        .status.success { color: #2ea44f; font-weight: 600; }
         .teacher-list { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; }
-        .teacher-list li {
-            background-color: #2a4a8f; /* Dark background */
-            border: 1px solid #9a9b9d; /* IES Logo Grey border */
-            color: #dbdad8; /* Light Grey text */
-            border-radius: 10px;
-            padding: 5px 12px;
-            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-        }
-        .teacher-list li.on-call {
-            background-color: #00a0df; /* IES Logo Blue */
-            color: #ffffff; /* White text */
-            border-color: #007ead; /* Darker blue border */
-            font-weight: 600;
-        }
-        /* Keep warning colors */
+        .teacher-list li { background-color: #2a4a8f; border: 1px solid #9a9b9d; color: #dbdad8; border-radius: 10px; padding: 5px 12px; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; }
+        .teacher-list li.on-call { background-color: #00a0df; color: #ffffff; border-color: #007ead; font-weight: 600; }
         .teacher-list li.minutes-danger { background-color: #d73a49; color: #ffffff; border: 1px solid #cb2431; font-weight: 600; }
-        .teacher-list li.minutes-warn { background-color: #ffc107; border: 1px solid #e0a800; color: #102d69; } /* Dark text on yellow */
-
-        /* Month Buttons */
+        .teacher-list li.minutes-warn { background-color: #ffc107; border: 1px solid #e0a800; color: #102d69; }
         .month-buttons { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 15px; }
-        .month-buttons button {
-             /* Use Secondary style */
-            background-color: #9a9b9d;
-            color: #102d69;
-            border-color: #7a7b7d;
-            flex-grow: 1;
-            margin-top: 0;
-            padding: 5px 8px;
-            font-weight: normal; /* Override bold */
-        }
-         .month-buttons button:hover {
-            background-color: #7a7b7d;
-            border-color: #5a5b5d;
-         }
-        .month-buttons button.active {
-            /* Use Primary style */
-            background-color: #00a0df;
-            color: #ffffff;
-            border-color: #007ead;
-            font-weight: 600;
-        }
-
-        /* Totals Display */
-        #totals-display {
-            background-color: #1a3a7f; /* Same as container */
-            border: 1px solid #9a9b9d; /* IES Logo Grey border */
-            border-radius: 6px;
-            padding: 15px;
-            min-height: 50px;
-            color: #dbdad8; /* Light Grey text */
-        }
-        #totals-display h3 { margin-top: 0; color: #ffffff; } /* White heading */
-        #totals-display li {
-            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-            list-style: none;
-            padding: 4px 8px; margin: 2px 0;
-            border-radius: 4px;
-            background-color: #2a4a8f; /* Slightly darker item background */
-            border: 1px solid #9a9b9d;
-         }
-        /* Keep warning colors */
+        .month-buttons button { background-color: #9a9b9d; color: #102d69; border-color: #7a7b7d; flex-grow: 1; margin-top: 0; padding: 5px 8px; font-weight: normal; }
+        .month-buttons button:hover { background-color: #7a7b7d; border-color: #5a5b5d; }
+        .month-buttons button.active { background-color: #00a0df; color: #ffffff; border-color: #007ead; font-weight: 600; }
+        #totals-display { background-color: #1a3a7f; border: 1px solid #9a9b9d; border-radius: 6px; padding: 15px; min-height: 50px; color: #dbdad8; }
+        #totals-display h3 { margin-top: 0; color: #ffffff; }
+        #totals-display li { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; list-style: none; padding: 4px 8px; margin: 2px 0; border-radius: 4px; background-color: #2a4a8f; border: 1px solid #9a9b9d; }
         #totals-display li.minutes-danger { background-color: #d73a49; color: #ffffff; border: 1px solid #cb2431; font-weight: 600; }
-        #totals-display li.minutes-warn { background-color: #ffc107; border: 1px solid #e0a800; color: #102d69; } /* Dark text on yellow */
-
+        #totals-display li.minutes-warn { background-color: #ffc107; border: 1px solid #e0a800; color: #102d69; }
         #csv-file-input, #absence-csv-file-input { display: none; }
-
-        /* Absence List Specifics */
-        #existing-absences-list h4 {
-            margin-bottom: 5px;
-            margin-top: 15px;
-            border-bottom: 1px dashed #9a9b9d; /* IES Logo Grey dashed border */
-            padding-bottom: 3px;
-            color: #bce4fa; /* Light Blue for sub-headings */
-         }
+        #existing-absences-list h4 { margin-bottom: 5px; margin-top: 15px; border-bottom: 1px dashed #9a9b9d; padding-bottom: 3px; color: #bce4fa; }
         #existing-absences-list ul { padding-left: 0; margin-top: 5px;}
-        #existing-absences-list li {
-             margin-bottom: 10px;
-             list-style-type: none;
-             border-bottom: 1px solid #4a6aab; /* Darker separator line */
-             padding-bottom: 10px;
-         }
-         #existing-absences-list li strong {
-             color: #ffffff; /* White time */
-         }
+        #existing-absences-list li { margin-bottom: 10px; list-style-type: none; border-bottom: 1px solid #4a6aab; padding-bottom: 10px; }
+        #existing-absences-list li strong { color: #ffffff; }
     </style>
 </head>
 <body>
@@ -258,7 +98,8 @@
         <button id="save-absence-button">Save Absence Entry</button>
         <div id="absence-save-status" class="status" style="display:none; margin-top:10px;"></div>
 
-        <h3 style="margin-top: 20px; border-top: 1px solid #00a0df; padding-top: 15px;">Existing Absences for Selected Day</h3> <div id="existing-absences-list" style="padding-left: 0;">
+        <h3 style="margin-top: 20px; border-top: 1px solid #00a0df; padding-top: 15px;">Existing Absences for Selected Day</h3>
+        <div id="existing-absences-list" style="padding-left: 0;">
             <p class="status">Select a date to see existing entries.</p>
         </div>
 
@@ -272,7 +113,7 @@
     </div>
 
     <div class="container">
-        <h2>Extra Minutes Tracker</h2>
+        <h2>Traking Substitution</h2>
         <p>Record extra minutes worked by staff. This data is saved in your browser.</p>
         <div class="input-grid">
             <div class="input-group"><label for="staff-select">Staff Member:</label><select id="staff-select"><option value="">-- Select Staff --</option></select></div>
@@ -284,7 +125,7 @@
     </div>
 
     <div class="container">
-        <h2>Extra Minutes Totals</h2>
+        <h2>Traking Substitution - Totals</h2>
         <div class="input-group"><label for="year-display">Select Year:</label><input type="number" id="year-display" value="2025"></div>
         <div class="month-buttons" id="month-buttons"></div>
         <div id="totals-display"><p>Select a month to see totals.</p></div>
@@ -297,6 +138,7 @@
         </div>
         <div id="import-status" class="status" style="display:none; margin-top:10px;"></div>
     </div>
+
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -317,6 +159,7 @@
             // ---------------------
 
             // --- Get DOM Elements ---
+            // (Elements remain the same as previous version)
             const statusNow = document.getElementById('status-now');
             const teachersNowList = document.getElementById('teachers-now');
             const statusCustom = document.getElementById('status-custom');
@@ -351,6 +194,7 @@
             const absenceCsvFileInput = document.getElementById('absence-csv-file-input');
             const absenceImportStatus = document.getElementById('absence-import-status');
 
+
              if (!statusNow || !monthButtonsContainer || !staffSelect || !absenceStaffSelect || !exportAbsencesButton || !importAbsencesButton || !absenceCsvFileInput || !absenceImportStatus) {
                 console.error("Critical DOM element missing! Cannot proceed.", {
                     statusNowExists: !!statusNow,
@@ -382,20 +226,19 @@
                     return { week: weekNo, year: year, weekKey: `${year}-W${String(weekNo).padStart(2, '0')}` };
                 } catch (error) { console.error("Critical error inside getIsoWeekAndYear:", error, "Input date:", d); return defaultWeek; }
             }
-            // Modified to return NaN for invalid input
-            function timeToMinutes(timeStr) {
-                if (!timeStr) return NaN;
-                const parts = timeStr.split(':');
-                if (parts.length !== 2) return NaN;
-                const hours = parseInt(parts[0], 10);
-                const minutes = parseInt(parts[1], 10);
-                if (isNaN(hours) || isNaN(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return NaN;
-                return (hours * 60) + minutes;
-            }
+            // Use original timeToMinutes from the working version
+             function timeToMinutes(timeStr) {
+                 if (!timeStr) return 0; // Original returns 0
+                 timeStr = timeStr.replace(':', '');
+                 if (timeStr.length < 4) timeStr = '0' + timeStr;
+                 const hours = parseInt(timeStr.substring(0, 2), 10);
+                 const minutes = parseInt(timeStr.substring(2, 4), 10);
+                 return (isNaN(hours) || isNaN(minutes)) ? 0 : (hours * 60) + minutes; // Original returns 0
+             }
             function minutesToHHMM(totalMinutes) {
                 if (isNaN(totalMinutes) || totalMinutes < 0) return "00:00";
                 const hours = Math.floor(totalMinutes / 60);
-                const minutes = Math.floor(totalMinutes) % 60; // Use floor for minutes
+                const minutes = Math.floor(totalMinutes) % 60;
                 return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
             }
             function parseRealWeeks(weekString) {
@@ -444,7 +287,7 @@
                      const weekInfo = getIsoWeekAndYear(dateTime); if (!weekInfo) { console.error("getIsoWeekAndYear failed in getAvailabilityAtTime"); return defaultResult; } const { week: checkWeekNum, year: checkWeekYear } = weekInfo;
                      const checkDay = dayMap[dateTime.getDay()]; const checkTimeInMinutes = (dateTime.getHours() * 60) + dateTime.getMinutes();
                      lessons.forEach(lesson => {
-                         try { const lessonDay = lesson[columnMap['day']]?.trim(); const weekString = lesson[columnMap['realweeks']]; const subject = lesson[columnMap['subject']]?.trim().toLowerCase(); const startStr = lesson[columnMap['starttime']]; const lenStr = lesson[columnMap['length']]; const teacherStr = lesson[columnMap['teacher']]; if (!lessonDay || !weekString || !subject || !startStr || !lenStr) return; const lessonWeeks = parseRealWeeks(weekString); if (lessonDay !== checkDay || !lessonWeeks.has(checkWeekNum)) return; const lessonStart = timeToMinutes(startStr); const lessonLength = parseInt(lenStr, 10); if (isNaN(lessonLength) || lessonLength <= 0 || isNaN(lessonStart)) return; const lessonEnd = lessonStart + lessonLength; if (checkTimeInMinutes >= lessonStart && checkTimeInMinutes < lessonEnd) { const teachers = parseTeachers(teacherStr); if (subject === ARBETSTID_SUBJECT) { teachers.forEach(t => workingTeachers.add(t)); } else if (subject === ON_CALL_SUBJECT) { teachers.forEach(t => { workingTeachers.add(t); if (!onCallTimesMap.has(t)) { onCallTimesMap.set(t, { start: lessonStart, end: lessonEnd }); } }); } else { teachers.forEach(t => busyTeachers.add(t)); } } } catch (e) { console.error("Error processing lesson row (getAvailabilityAtTime):", lesson, e); }
+                         try { const lessonDay = lesson[columnMap['day']]?.trim(); const weekString = lesson[columnMap['realweeks']]; const subject = lesson[columnMap['subject']]?.trim().toLowerCase(); const startStr = lesson[columnMap['starttime']]; const lenStr = lesson[columnMap['length']]; const teacherStr = lesson[columnMap['teacher']]; if (!lessonDay || !weekString || !subject || !startStr || !lenStr) return; const lessonWeeks = parseRealWeeks(weekString); if (lessonDay !== checkDay || !lessonWeeks.has(checkWeekNum)) return; const lessonStart = timeToMinutes(startStr); const lessonLength = parseInt(lenStr, 10); if (isNaN(lessonLength) || lessonLength <= 0 || lessonStart === 0 && startStr !== '00:00' && startStr !== '0000') return; /* Check for 0 from invalid time */ const lessonEnd = lessonStart + lessonLength; if (checkTimeInMinutes >= lessonStart && checkTimeInMinutes < lessonEnd) { const teachers = parseTeachers(teacherStr); if (subject === ARBETSTID_SUBJECT) { teachers.forEach(t => workingTeachers.add(t)); } else if (subject === ON_CALL_SUBJECT) { teachers.forEach(t => { workingTeachers.add(t); if (!onCallTimesMap.has(t)) { onCallTimesMap.set(t, { start: lessonStart, end: lessonEnd }); } }); } else { teachers.forEach(t => busyTeachers.add(t)); } } } catch (e) { console.error("Error processing lesson row (getAvailabilityAtTime):", lesson, e); }
                      });
 
                      let availableAndNotBusy = [...workingTeachers].filter(teacher => !busyTeachers.has(teacher));
@@ -455,139 +298,77 @@
                  } catch (error) { console.error("Critical Error in getAvailabilityAtTime:", error); statusNow.textContent = `Error calculating availability: ${error.message}`; statusNow.classList.add('error'); return defaultResult; }
              }
 
-            // *** START BUGFIX HELPERS for getAvailabilityForRange ***
-            function mergeIntervals(intervals) {
-                if (!intervals || intervals.length === 0) return [];
-                // Sort by start time
-                intervals.sort((a, b) => a.start - b.start);
-                const merged = [];
-                let current = intervals[0];
-                for (let i = 1; i < intervals.length; i++) {
-                    const next = intervals[i];
-                    if (next.start <= current.end) { // Overlap or contiguous
-                        current.end = Math.max(current.end, next.end);
-                    } else {
-                        merged.push({ ...current }); // Push a copy
-                        current = next;
-                    }
-                }
-                merged.push({ ...current }); // Push the last interval
-                return merged;
-            }
 
-            function isRangeCovered(blocks, queryStart, queryEnd) {
-                const mergedBlocks = mergeIntervals(blocks);
-                for (const block of mergedBlocks) {
-                    if (block.start <= queryStart && block.end >= queryEnd) {
-                        return true;
-                    }
-                }
-                return false;
-            }
-            // *** END BUGFIX HELPERS ***
+            // --- Logic Function 2: Availability for a time range (REVERTED to original logic) ---
+             function getAvailabilityForRange(checkDate, checkStartMinutes, checkEndMinutes) {
+                 const defaultResult = { available: [], onCallTimes: new Map() };
+                 try {
+                     if (!Array.isArray(lessons) || lessons.length === 0) { console.log("getAvailabilityForRange: No lessons."); return defaultResult; }
+                     let workingTeachers = new Set(); const onCallTimesMap = new Map(); const busyTeachers = new Set();
+                     const weekInfo = getIsoWeekAndYear(checkDate); if (!weekInfo) { console.error("getIsoWeekAndYear failed in getAvailabilityForRange"); return defaultResult; } const { week: checkWeekNum, year: checkWeekYear } = weekInfo;
+                     const checkDay = dayMap[checkDate.getDay()];
 
-            // --- Logic Function 2: Availability for a time range (REVISED) ---
-            function getAvailabilityForRange(checkDate, checkStartMinutes, checkEndMinutes) {
-                const defaultResult = { available: [], onCallTimes: new Map() };
-                try {
-                    if (!Array.isArray(lessons) || lessons.length === 0) { console.log("getAvailabilityForRange: No lessons."); return defaultResult; }
+                     lessons.forEach(lesson => {
+                         try {
+                             const lessonDay = lesson[columnMap['day']]?.trim();
+                             const weekString = lesson[columnMap['realweeks']];
+                             const subject = lesson[columnMap['subject']]?.trim().toLowerCase();
+                             const startStr = lesson[columnMap['starttime']];
+                             const lenStr = lesson[columnMap['length']];
+                             const teacherStr = lesson[columnMap['teacher']];
+                             if (!lessonDay || !weekString || !subject || !startStr || !lenStr) return;
+                             const lessonWeeks = parseRealWeeks(weekString);
+                             if (lessonDay !== checkDay || !lessonWeeks.has(checkWeekNum)) return;
+                             const lessonStart = timeToMinutes(startStr); // Uses original timeToMinutes
+                             const lessonLength = parseInt(lenStr, 10);
+                             // Original check for invalid lessonStart returning 0
+                             if (isNaN(lessonLength) || lessonLength <= 0 || (lessonStart === 0 && startStr !== '00:00' && startStr !== '0000')) return;
+                             const lessonEnd = lessonStart + lessonLength;
+                             const teachers = parseTeachers(teacherStr);
+                             const containsQuery = (lessonStart <= checkStartMinutes && lessonEnd >= checkEndMinutes); // Original check
+                             const overlapsQuery = (lessonStart < checkEndMinutes && lessonEnd > checkStartMinutes); // Original check
 
-                    const weekInfo = getIsoWeekAndYear(checkDate);
-                    if (!weekInfo) { console.error("getIsoWeekAndYear failed in getAvailabilityForRange"); return defaultResult; }
+                             if (subject === ARBETSTID_SUBJECT) {
+                                 if (containsQuery) teachers.forEach(t => workingTeachers.add(t)); // Original logic
+                             } else if (subject === ON_CALL_SUBJECT) {
+                                 if (containsQuery) { // Original logic
+                                     teachers.forEach(t => {
+                                         workingTeachers.add(t);
+                                         if (!onCallTimesMap.has(t)) { onCallTimesMap.set(t, { start: lessonStart, end: lessonEnd }); }
+                                     });
+                                 }
+                             } else if (overlapsQuery) { // Original logic
+                                 teachers.forEach(t => busyTeachers.add(t));
+                             }
+                         } catch (e) { console.error("Error processing lesson row (getAvailabilityForRange):", lesson, e); }
+                     });
 
-                    const { week: checkWeekNum, year: checkWeekYear } = weekInfo;
-                    const checkDay = dayMap[checkDate.getDay()];
+                     let availableAndNotBusy = [...workingTeachers].filter(teacher => !busyTeachers.has(teacher));
 
-                    const teacherWorkBlocks = new Map();
-                    const teacherBusyBlocks = new Map();
-                    const originalOnCallTimes = new Map(); // Store original on-call block for display
+                     // *** USE IMPROVED ABSENCE CHECK ACROSS THE RANGE ***
+                     let availableTeacherNames = availableAndNotBusy.filter(teacher =>
+                         !isTeacherAbsentForRange(teacher, checkDate, checkStartMinutes, checkEndMinutes)
+                     );
+                     // ****************************************************
 
-                    lessons.forEach(lesson => {
-                        try {
-                            const lessonDay = lesson[columnMap['day']]?.trim();
-                            const weekString = lesson[columnMap['realweeks']];
-                            if (!lessonDay || !weekString) return;
-
-                            const lessonWeeks = parseRealWeeks(weekString);
-                            if (lessonDay !== checkDay || !lessonWeeks.has(checkWeekNum)) return;
-
-                            const subject = lesson[columnMap['subject']]?.trim().toLowerCase();
-                            const startStr = lesson[columnMap['starttime']];
-                            const lenStr = lesson[columnMap['length']];
-                            const teacherStr = lesson[columnMap['teacher']];
-                            if (!subject || !startStr || !lenStr) return;
-
-                            const lessonStart = timeToMinutes(startStr);
-                            const lessonLength = parseInt(lenStr, 10);
-                            if (isNaN(lessonLength) || lessonLength <= 0 || isNaN(lessonStart)) return;
-
-                            const lessonEnd = lessonStart + lessonLength;
-                            const teachers = parseTeachers(teacherStr);
-                            const block = { start: lessonStart, end: lessonEnd };
-
-                            teachers.forEach(t => {
-                                if (subject === ARBETSTID_SUBJECT || subject === ON_CALL_SUBJECT) {
-                                    if (!teacherWorkBlocks.has(t)) teacherWorkBlocks.set(t, []);
-                                    teacherWorkBlocks.get(t).push(block);
-                                    if (subject === ON_CALL_SUBJECT) {
-                                         // Store the *first* encountered on-call block for display consistency
-                                        if (!originalOnCallTimes.has(t)) {
-                                            originalOnCallTimes.set(t, block);
-                                        }
-                                    }
-                                } else {
-                                    if (!teacherBusyBlocks.has(t)) teacherBusyBlocks.set(t, []);
-                                    teacherBusyBlocks.get(t).push(block);
-                                }
-                            });
-                        } catch (e) { console.error("Error processing lesson row (getAvailabilityForRange):", lesson, e); }
-                    });
-
-                    // 1. Find teachers whose *merged* work blocks cover the query range
-                    const workingTeachers = new Set();
-                    for (const [teacher, blocks] of teacherWorkBlocks.entries()) {
-                        if (isRangeCovered(blocks, checkStartMinutes, checkEndMinutes)) {
-                            workingTeachers.add(teacher);
-                        }
-                    }
-
-                    // 2. Find teachers whose busy blocks *overlap* the query range
-                    const busyTeachers = new Set();
-                    for (const [teacher, blocks] of teacherBusyBlocks.entries()) {
-                        const overlaps = blocks.some(block => block.start < checkEndMinutes && block.end > checkStartMinutes);
-                        if (overlaps) {
-                            busyTeachers.add(teacher);
-                        }
-                    }
-
-                    // 3. Filter working teachers by busy status
-                    let availableAndNotBusy = [...workingTeachers].filter(teacher => !busyTeachers.has(teacher));
-
-                    // 4. Filter by absence status using the range check
-                    let availableTeacherNames = availableAndNotBusy.filter(teacher =>
-                        !isTeacherAbsentForRange(teacher, checkDate, checkStartMinutes, checkEndMinutes)
-                    );
-
-                    // Use the originalOnCallTimes for display purposes
-                    return { available: availableTeacherNames.sort(), onCallTimes: originalOnCallTimes };
-                } catch (error) {
-                    console.error("Critical Error in getAvailabilityForRange:", error);
-                    statusCustom.textContent = `Error calculating availability: ${error.message}`;
-                    statusCustom.style.display = 'block';
-                    statusCustom.classList.add('error');
-                    return defaultResult;
-                }
-            }
-
+                     return { available: availableTeacherNames.sort(), onCallTimes: onCallTimesMap };
+                 } catch (error) {
+                     console.error("Critical Error in getAvailabilityForRange:", error);
+                     statusCustom.textContent = `Error calculating availability: ${error.message}`;
+                     statusCustom.style.display = 'block';
+                     statusCustom.classList.add('error');
+                     return defaultResult;
+                 }
+             }
 
             // --- Display Function (Availability) ---
-             // No changes needed here, uses the onCallTimes map passed in
+             // No changes needed here
              function displayResults(availableTeachers, onCallTimesMap, listElement, statusElement, checkDate) {
                  listElement.innerHTML = ''; const filteredTeachers = availableTeachers.filter(teacher => !EXCLUDE_TEACHERS_SET.has(teacher)); const allData = getSavedMinutesData(); const { week: checkWeekNum, year: checkWeekYear } = getIsoWeekAndYear(checkDate); const checkMonthKey = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}`; if (filteredTeachers.length === 0) { statusElement.textContent = 'No available teachers found.'; statusElement.classList.remove('error'); } else { filteredTeachers.forEach(teacher => { const li = document.createElement('li'); let weeklyTotal = 0; let monthlyTotal = 0; const teacherData = allData[teacher] || {}; for (const dateKey in teacherData) { try { const entryDate = new Date(dateKey + 'T00:00:00Z'); if (isNaN(entryDate.getTime())) continue; const { week: entryWeek, year: entryYear } = getIsoWeekAndYear(entryDate); const minutes = teacherData[dateKey] || 0; if (entryWeek === checkWeekNum && entryYear === checkWeekYear) { weeklyTotal += minutes; } if (dateKey.startsWith(checkMonthKey)) { monthlyTotal += minutes; } } catch (e) { console.error("Error calculating totals for teacher:", teacher, dateKey, e); } } let textContent = `${teacher} (W: ${weeklyTotal} / M: ${monthlyTotal})`; if (onCallTimesMap.has(teacher)) { const times = onCallTimesMap.get(teacher); const startTimeStr = minutesToHHMM(times.start); const endTimeStr = minutesToHHMM(times.end); textContent = `${teacher} (On Call: ${startTimeStr} - ${endTimeStr}) (W: ${weeklyTotal} / M: ${monthlyTotal})`; li.classList.add('on-call'); } else { if (monthlyTotal >= 180) { li.classList.add('minutes-danger'); } else if (weeklyTotal >= 90) { li.classList.add('minutes-warn'); } } li.textContent = textContent; listElement.appendChild(li); }); }
              }
 
             // --- Extra Minutes Helper Functions ---
-            const MINUTES_STORAGE_KEY = 'teacherMinutesData'; // Defined key
+            const MINUTES_STORAGE_KEY = 'teacherMinutesData';
             function getSavedMinutesData() {
                 try {
                     const data = localStorage.getItem(MINUTES_STORAGE_KEY);
@@ -692,8 +473,11 @@
                 const dayEntries = allData[teacher]?.[dateKey] || [];
                 if (dayEntries.length === 0) return false;
                 for (const entry of dayEntries) {
-                    if (checkTimeInMinutes >= entry.start && checkTimeInMinutes < entry.end) {
-                        return true;
+                    // Original timeToMinutes could return 0 for invalid times, check entry validity
+                    if (typeof entry.start === 'number' && typeof entry.end === 'number' && entry.start < entry.end) {
+                       if (checkTimeInMinutes >= entry.start && checkTimeInMinutes < entry.end) {
+                           return true;
+                       }
                     }
                 }
                 return false;
@@ -714,9 +498,12 @@
                 const dayEntries = allData[teacher]?.[dateKey] || [];
                 if (dayEntries.length === 0) return false;
                 for (const entry of dayEntries) {
-                    // Check for overlap: (AbsenceStart < QueryEnd) AND (AbsenceEnd > QueryStart)
-                    if (entry.start < queryEnd && entry.end > queryStart) {
-                        return true;
+                    // Check entry validity before overlap check
+                     if (typeof entry.start === 'number' && typeof entry.end === 'number' && entry.start < entry.end) {
+                        // Check for overlap: (AbsenceStart < QueryEnd) AND (AbsenceEnd > QueryStart)
+                        if (entry.start < queryEnd && entry.end > queryStart) {
+                            return true;
+                        }
                     }
                 }
                 return false;
@@ -840,7 +627,12 @@
                  statusNow.classList.remove('error', 'success');
                  try {
                      console.log("Fetching Lessons.txt...");
-                     const response = await fetch('Lessons.txt'); if (!response.ok) throw new Error(`Fetch failed: ${response.statusText} (${response.status})`); console.log("Fetched OK."); const text = await response.text(); const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0); if (lines.length < 2) throw new Error('Lessons.txt is empty or invalid.'); console.log(`Read ${lines.length} lines.`);
+                     // Add cache-busting query parameter
+                     const response = await fetch(`Lessons.txt?v=${new Date().getTime()}`);
+                     if (!response.ok) throw new Error(`Fetch failed: ${response.statusText} (${response.status})`);
+                     console.log("Fetched OK."); const text = await response.text();
+                     const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+                     if (lines.length < 2) throw new Error('Lessons.txt is empty or invalid.'); console.log(`Read ${lines.length} lines.`);
                      const header = lines[0].split('\t'); columnMap = {}; header.forEach((c, i) => { columnMap[c.trim()] = i; }); console.log("Parsed header."); const requiredCols = ['subject', 'teacher', 'day', 'starttime', 'length', 'realweeks']; for (const col of requiredCols) { if (columnMap[col] === undefined) throw new Error(`Missing required column: ${col}`); } console.log("Required columns found.");
                      const expectedColumns = header.length;
                      lessons = lines.slice(1).map((line, index) => { const columns = line.split('\t'); if (columns.length !== expectedColumns) { while (columns.length < expectedColumns) columns.push(''); if (columns.length > expectedColumns) columns.length = expectedColumns; } return columns; }).filter(row => row); console.log(`Parsed ${lessons.length} lesson rows.`);
@@ -900,12 +692,12 @@
                         return;
                     }
 
-                    const startMinutes = timeToMinutes(timeFrom);
-                    const endMinutes = timeToMinutes(timeTo);
+                    const startMinutes = timeToMinutes(timeFrom); // Uses original timeToMinutes
+                    const endMinutes = timeToMinutes(timeTo);   // Uses original timeToMinutes
 
-                    // Add NaN check from timeToMinutes
-                    if (isNaN(startMinutes) || isNaN(endMinutes) || startMinutes >= endMinutes) {
-                        statusCustom.textContent = 'Invalid time: "From" time must be before "To" time and formatted correctly (HH:MM).';
+                    // Original logic treats invalid time as 0, check start >= end
+                    if (startMinutes >= endMinutes && !(startMinutes === 0 && endMinutes === 0)) { // Allow 00:00 to 00:00 maybe? safer check.
+                        statusCustom.textContent = 'Invalid time: "From" time must be before "To" time.';
                         statusCustom.style.display = 'block';
                         statusCustom.classList.add('error');
                         teachersCustomList.innerHTML = '';
@@ -916,7 +708,7 @@
                     statusCustom.style.display = 'block';
                     statusCustom.classList.remove('error');
 
-                    // Calls the REVISED getAvailabilityForRange
+                    // Calls the REVERTED getAvailabilityForRange (with improved absence check)
                     const availability = getAvailabilityForRange(date, startMinutes, endMinutes);
                     displayResults(availability.available, availability.onCallTimes, teachersCustomList, statusCustom, date);
                 } catch (e) {
@@ -1160,11 +952,11 @@
                     showAbsenceSaveStatus('Please select staff, date, and a full time range.', true);
                     return;
                 }
-                const startMinutes = timeToMinutes(timeFrom);
-                const endMinutes = timeToMinutes(timeTo);
-                 // Check if times are valid numbers
-                if (isNaN(startMinutes) || isNaN(endMinutes) || startMinutes >= endMinutes) {
-                    showAbsenceSaveStatus('Invalid time: "From" time must be before "To" time and formatted correctly (HH:MM).', true);
+                const startMinutes = timeToMinutes(timeFrom); // Uses original timeToMinutes
+                const endMinutes = timeToMinutes(timeTo);   // Uses original timeToMinutes
+                 // Original logic treats invalid time as 0, check start >= end
+                if (startMinutes >= endMinutes && !(startMinutes === 0 && endMinutes === 0)) {
+                    showAbsenceSaveStatus('Invalid time: "From" time must be before "To" time.', true);
                     return;
                 }
                 try {
@@ -1191,45 +983,45 @@
                 displayExistingAbsences(date);
             }
             absenceDateInput.addEventListener('change', refreshAbsenceList);
-            // Use event delegation and data attributes for deletion
+            // Reverted deletion logic to use index, as used in original working version
             existingAbsencesList.addEventListener('click', (e) => {
-                if (e.target.tagName === 'BUTTON' && e.target.classList.contains('danger')) {
-                    const { staff, date, start, end } = e.target.dataset; // Use start/end
-                    const startMin = parseInt(start, 10);
-                    const endMin = parseInt(end, 10);
-                    if (!staff || !date || isNaN(startMin) || isNaN(endMin)) {
-                        console.error("Invalid data attributes for deletion:", e.target.dataset);
-                        return;
-                    }
-                    try {
-                        const allData = getSavedAbsenceData();
-                        if (allData[staff]?.[date]) {
-                             // Find the specific entry to remove based on start/end times
-                            const entryIndex = allData[staff][date].findIndex(
-                                entry => entry.start === startMin && entry.end === endMin
-                            );
-                            if (entryIndex > -1) {
-                                allData[staff][date].splice(entryIndex, 1); // Remove the specific entry
-                                if (allData[staff][date].length === 0) delete allData[staff][date];
-                                if (Object.keys(allData[staff] || {}).length === 0) delete allData[staff];
-                                saveAbsenceData(allData);
-                                showAbsenceSaveStatus('Absence entry deleted.', false);
-                                refreshAbsenceList();
-                                const now = new Date();
-                                const availabilityNow = getAvailabilityAtTime(now);
-                                displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now);
-                                if (teachersCustomList.innerHTML !== '') checkButton.click();
-                            } else {
-                                console.warn("Attempted to delete non-existent absence entry (by time):", {staff, date, startMin, endMin});
-                            }
-                        } else {
-                             console.warn("Attempted to delete non-existent absence data group:", {staff, date});
-                        }
-                    } catch (err) {
-                        console.error("Error deleting absence:", err);
-                        showAbsenceSaveStatus(`Error deleting: ${err.message}`, true);
-                    }
-                }
+                 if (e.target.tagName === 'BUTTON' && e.target.classList.contains('danger')) {
+                     const { staff, date, index } = e.target.dataset; // Use index again
+
+                     if (!staff || !date || index === undefined) {
+                         console.error("Missing data attributes for deletion:", e.target.dataset);
+                         return;
+                     }
+
+                     try {
+                         const idx = parseInt(index, 10); // Parse index
+                         if (isNaN(idx)) {
+                             console.error("Invalid index for deletion:", index);
+                             return;
+                         }
+
+                         const allData = getSavedAbsenceData();
+                         if (allData[staff]?.[date]?.[idx] !== undefined) { // Check if entry exists at index
+                             allData[staff][date].splice(idx, 1); // Remove by index
+
+                             if (allData[staff][date].length === 0) delete allData[staff][date];
+                             if (Object.keys(allData[staff] || {}).length === 0) delete allData[staff];
+
+                             saveAbsenceData(allData);
+                             showAbsenceSaveStatus('Absence entry deleted.', false);
+                             refreshAbsenceList(); // Refresh list to update indices
+                             const now = new Date();
+                             const availabilityNow = getAvailabilityAtTime(now);
+                             displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now);
+                             if (teachersCustomList.innerHTML !== '') checkButton.click();
+                         } else {
+                             console.warn("Attempted to delete non-existent absence entry (by index):", {staff, date, index});
+                         }
+                     } catch (err) {
+                         console.error("Error deleting absence:", err);
+                         showAbsenceSaveStatus(`Error deleting: ${err.message}`, true);
+                     }
+                 }
             });
             exportAbsencesButton.addEventListener('click', () => {
                 try {
@@ -1241,12 +1033,15 @@
                         for (const dateKey in teacherDateData) {
                             const dayEntries = teacherDateData[dateKey] || [];
                             dayEntries.forEach(entry => {
-                                entries.push({
-                                    date: dateKey,
-                                    staff: teacher,
-                                    startTime: minutesToHHMM(entry.start),
-                                    endTime: minutesToHHMM(entry.end)
-                                });
+                                // Ensure start/end are valid numbers before converting
+                                if (typeof entry.start === 'number' && typeof entry.end === 'number') {
+                                    entries.push({
+                                        date: dateKey,
+                                        staff: teacher,
+                                        startTime: minutesToHHMM(entry.start),
+                                        endTime: minutesToHHMM(entry.end)
+                                    });
+                                }
                             });
                         }
                     }
@@ -1256,7 +1051,9 @@
                         if (a.staff < b.staff) return -1;
                         if (a.staff > b.staff) return 1;
                         // Sort by numeric start time
-                        return timeToMinutes(a.startTime) - timeToMinutes(b.startTime);
+                        let startA = timeToMinutes(a.startTime); // Use original timeToMinutes
+                        let startB = timeToMinutes(b.startTime); // Use original timeToMinutes
+                        return startA - startB;
                     });
                     entries.forEach(entry => {
                         const safeStaff = `"${entry.staff.replace(/"/g, '""')}"`;
@@ -1319,9 +1116,10 @@
                                 skippedCount++;
                                 continue;
                             }
-                            const startMinutes = timeToMinutes(startTimeStr);
-                            const endMinutes = timeToMinutes(endTimeStr);
-                            if (isNaN(startMinutes) || isNaN(endMinutes) || startMinutes >= endMinutes) {
+                            const startMinutes = timeToMinutes(startTimeStr); // Uses original timeToMinutes
+                            const endMinutes = timeToMinutes(endTimeStr);   // Uses original timeToMinutes
+                            // Original logic treats invalid time as 0, check start >= end
+                            if (startMinutes >= endMinutes && !(startMinutes === 0 && endMinutes === 0)) {
                                 console.warn("Skipping absence line with invalid time range:", lines[i]);
                                 skippedCount++;
                                 continue;
@@ -1334,7 +1132,6 @@
                                 importedCount++;
                             } else {
                                 console.log("Skipping duplicate absence entry:", lines[i]);
-                                // Optionally count duplicates as skipped
                             }
                         }
                         saveAbsenceData(currentAbsenceData);
