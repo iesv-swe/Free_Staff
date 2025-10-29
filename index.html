@@ -1,387 +1,293 @@
 <!DOCTYPE html>
 <html lang="en">
+<html lang="en" class="dark"> <!-- Added dark mode preference -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teacher Availability</title>
     <style>
-        body {
-            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: #f0f2f5;
-            color: #1a1a1a;
-            margin: 0;
-            padding: 20px;
-        }
-        .main-container {
-            max-width: 800px;
-            margin: auto;
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            padding: 24px;
-        }
-        .container-block {
-            background-color: #fdfdfd;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        h1 {
-            font-size: 2em;
-            font-weight: bold;
-            border-bottom: 2px solid #e0e0e0;
-            padding-bottom: 10px;
-            margin-top: 0;
-            text-align: left;
-        }
-        h2 {
-            font-size: 1.5em;
-            font-weight: 600;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 8px;
-            margin-top: 0;
-        }
-        h3 {
-            font-size: 1.25em;
-            font-weight: 600;
-            margin-top: 20px;
-            border-top: 1px solid #eee;
-            padding-top: 15px;
-        }
-        /* Form Elements */
-        input[type="text"],
-        input[type="date"],
-        input[type="time"],
-        input[type="number"],
-        select {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            box-sizing: border-box; /* Important */
-            font-size: 1em;
-            background-color: #fff;
-        }
-        label {
-            display: block;
-            font-weight: 500;
-            margin-bottom: 5px;
-        }
-        button {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 0.9em;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        button:hover {
-            opacity: 0.85;
-        }
-        /* Form Layout */
-        .form-grid-2 {
-            display: grid;
-            grid-template-columns: 1fr; /* Default to 1 column */
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-        /* Media query for larger screens */
-        @media (min-width: 640px) {
-            .form-grid-2 {
-                grid-template-columns: 1fr 1fr; /* 2 columns on sm screens and up */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; background-color: #333333; color: #24292e; max-width: 800px; margin: 20px auto; padding: 20px; }
+        .logo { width: 180px; height: auto; margin-bottom: 10px; }
+        h1, h2 { border-bottom: 2px solid #eaecef; padding-bottom: 10px; }
+        .container { background-color: #e0e0e0; border: 1px solid #d1d5da; border-radius: 6px; padding: 24px; margin-bottom: 20px; }
+        .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-weight: 600; margin-bottom: 5px; }
+        .input-group input, .input-group select { width: 95%; padding: 8px 12px; border: 1px solid #d1d5da; border-radius: 6px; background-color: #fff; }
+        button { background-color: #2ea44f; color: #ffffff; font-weight: 600; padding: 10px 16px; border: 1px solid rgba(27, 31, 35, 0.15); border-radius: 6px; cursor: pointer; margin-top: 10px; }
+        button:hover { background-color: #2c974b; }
+        button.secondary { background-color: #f6f8fa; color: #24292e; border-color: rgba(27, 31, 35, 0.15);} /* Added border */
+        button.secondary:hover { background-color: #f3f4f6; }
+        button.danger { background-color: #d73a49; border-color: rgba(27, 31, 35, 0.15); }
+        button.danger:hover { background-color: #cb2431; }
+        /* Changed .success to .info for blue */
+        button.info { background-color: #0366d6; color: #ffffff; border-color: rgba(27, 31, 35, 0.15);} 
+        button.info:hover { background-color: #005cc5; }
+        button.primary { background-color: #6f42c1; color: #ffffff; border-color: rgba(27, 31, 35, 0.15); }
+        button.primary:hover { background-color: #5833a6; }
+        .button-group { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 15px; }
+         /* Button group specific to absence section */
+        .absence-button-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; } 
+        .results { margin-top: 20px; }
+        .status { font-style: italic; color: #586069; }
+        .status.error { color: #d73a49; font-weight: 600; }
+        .status.success { color: #2ea44f; font-weight: 600; }
+        .teacher-list { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; }
+        .teacher-list li { background-color: #f6f8fa; border: 1px solid #d1d5da; border-radius: 10px; padding: 5px 12px; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; }
+        .teacher-list li.on-call { background-color: #2ea44f; color: #ffffff; border-color: #2c974b; font-weight: 600; }
+        .teacher-list li.minutes-danger { background-color: #d73a49; color: #ffffff; border: 1px solid #cb2431; font-weight: 600; }
+        .teacher-list li.minutes-warn { background-color: #ffc107; border: 1px solid #e0a800; color: #212529; }
+        .month-buttons { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 15px; }
+        .month-buttons button { flex-grow: 1; margin-top: 0; padding: 5px 8px; }
+        .month-buttons button.active { background-color: #0366d6; color: #ffffff; border-color: #0366d6; font-weight: 600; }
+        #totals-display { background-color: #f6f8fa; border: 1px solid #d1d5da; border-radius: 6px; padding: 15px; min-height: 50px; }
+        #totals-display h3 { margin-top: 0; }
+        #totals-display li { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; list-style: none; padding: 4px 8px; margin: 2px 0; border-radius: 4px; }
+        #totals-display li.minutes-danger { background-color: #d73a49; color: #ffffff; border: 1px solid #cb2431; font-weight: 600; }
+        #totals-display li.minutes-warn { background-color: #ffc107; border: 1px solid #e0a800; color: #212529; }
+        #csv-file-input, #absence-csv-file-input { display: none; } /* Hide both file inputs */
+        /* Style for absence list grouping */
+        #existing-absences-list h4 { margin-bottom: 5px; margin-top: 15px; border-bottom: 1px dashed #ccc; padding-bottom: 3px;}
+        #existing-absences-list ul { padding-left: 0; margin-top: 5px;}
+        #existing-absences-list li { margin-bottom: 10px; list-style-type: none; border-bottom: 1px solid #eee; padding-bottom: 10px;}
+    </style>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Optional: Configure Tailwind for dark mode based on class
+        tailwind.config = {
+            darkMode: 'class', // or 'media'
+             theme: {
+                 extend: {
+                    fontFamily: {
+                        // Optional: Ensure Inter font is used if Tailwind defaults change
+                        sans: ['Inter', 'sans-serif'], 
+                        mono: ['SFMono-Regular', 'Consolas', 'Liberation Mono', 'Menlo', 'monospace']
+                    }
+                 }
             }
         }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        /* Specific Buttons */
-        .btn-green { background-color: #28a745; color: white; }
-        .btn-red { background-color: #dc3545; color: white; }
-        .btn-purple { background-color: #6f42c1; color: white; }
-        .btn-blue { background-color: #007bff; color: white; }
-        .btn-gray { background-color: #6c757d; color: white; }
-        .btn-light { background-color: #f8f9fa; color: #212529; border: 1px solid #ddd; }
-        .btn-delete-mini {
-            padding: 3px 8px;
-            font-size: 0.8em;
-            background-color: #dc3545;
-            color: white;
-            border-radius: 4px;
-        }
-        /* Status Messages */
-        .status {
-            font-style: italic;
-            font-size: 0.9em;
-            color: #555;
-            margin-top: 10px;
-            display: none; /* Hidden by default */
-        }
-        .status-visible { display: block; }
-        .status-error { color: #dc3545; font-weight: 600; }
-        .status-success { color: #28a745; font-weight: 600; }
-        
-        /* Teacher Lists */
-        .teacher-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            list-style: none;
-            padding: 0;
-            margin-top: 10px;
-        }
-        .teacher-list li {
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-weight: 500;
-            font-size: 0.9em;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        .teacher-available { background-color: #28a745; color: white; }
-        .teacher-on-call { background-color: #ffc107; color: #212529; }
-        .teacher-absent {
-            background-color: #6c757d;
-            color: #eee;
-            text-decoration: line-through;
-            opacity: 0.7;
-        }
-        /* Absence List */
-        #existing-absences-list h4 {
-            margin-bottom: 5px;
-            margin-top: 15px;
-            border-bottom: 1px dashed #ccc;
-            padding-bottom: 5px;
-            font-size: 1.1em;
-            font-weight: 600;
-        }
-        #existing-absences-list ul {
-            padding-left: 0;
-            margin-top: 5px;
-            list-style: none;
-        }
-        #existing-absences-list li {
-            margin-bottom: 8px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        /* Totals Table */
-        #totals-display {
-            background-color: #f9f9f9;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-            padding: 10px;
-            min-height: 80px;
-            overflow-x: auto;
-        }
-        #totals-table {
-            width: 100%;
-            border-collapse: collapse;
-            border: 1px solid #ccc;
-        }
-        #totals-table th, #totals-table td {
-            padding: 8px;
-            border: 1px solid #ccc;
-            text-align: left;
-        }
-        #totals-table th {
-            background-color: #f1f1f1;
-            font-weight: 600;
-        }
-        #totals-table tr:last-child {
-            font-weight: bold;
-            background-color: #f8f8f8;
-        }
-        /* Month Buttons */
-        #month-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            margin-bottom: 15px;
-        }
-        #month-buttons button {
-            background-color: #e9ecef;
-            color: #333;
-            font-size: 0.85em;
-            padding: 5px 10px;
-        }
-        #month-buttons button.active-month {
-            background-color: #007bff;
-            color: white;
-        }
-        /* Filter */
-        .filter-input {
-            margin-bottom: 15px;
-            width: 100%;
-            max-width: 300px; /* Limit filter width */
-        }
-        .filtered-hide {
-            display: none !important;
-        }
-        /* Button Groups */
-        .button-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        .hidden { display: none; }
-        .logo {
-            width: 160px;
-            height: auto;
-            margin-bottom: 15px;
-            display: block; /* Make it a block element */
-            margin-left: 0; /* Align left by default */
-        }
-        @media (max-width: 640px) {
-            .logo {
-                margin-left: auto; /* Center on small screens */
-                margin-right: auto;
-            }
-            h1 {
-                text-align: center;
-            }
-        }
+    </script>
+    <!-- Removed the old <style> block -->
+     <style>
+        /* Minimal styles for specific overrides if needed - keeping it clean */
+        /* Style for absence list grouping (using Tailwind classes mostly now) */
+        #existing-absences-list h4 { @apply mb-1 mt-4 border-b border-dashed border-gray-300 dark:border-gray-600 pb-1 text-lg font-semibold; }
+        #existing-absences-list ul { @apply pl-0 mt-2 list-none; }
+        #existing-absences-list li { @apply mb-3 border-b border-gray-200 dark:border-gray-700 pb-3; }
      </style>
 </head>
 <body>
 
-    <div class="main-container">
+    <img src="logo.png" alt="Logo" class="logo">
+    <h1>Teacher Availability</h1>
 
-        <img src="logo.png" alt="Logo" class="logo" onerror="this.style.display='none'">
-        <h1>Teacher Availability</h1>
+    <div class="container">
+        <h2>Available Right Now</h2>
+        <div id="status-now" class="status">Loading schedule...</div>
+        <div id="results-now" class="results"><ul id="teachers-now" class="teacher-list"></ul></div>
+    </div>
+    <div class="container">
+        <h2>Check Availability for a Time Range</h2>
+        <div class="input-group"><label for="date-input">Date:</label><input type="date" id="date-input"></div>
+        <div class="input-grid">
+            <div class="input-group"><label for="time-from-input">Time (From):</label><input type="time" id="time-from-input"></div>
+            <div class="input-group"><label for="time-to-input">Time (To):</label><input type="time" id="time-to-input"></div>
+<body class="bg-gray-200 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans leading-relaxed">
+
+    <div class="max-w-4xl mx-auto p-4 md:p-6 lg:p-8"> <!-- Main content container -->
+
+        <img src="logo.png" alt="Logo" class="w-40 h-auto mb-4 mx-auto sm:mx-0"> <!-- Centered on small screens -->
+        <h1 class="text-3xl font-bold border-b border-gray-300 dark:border-gray-700 pb-3 mb-6 text-center sm:text-left">Teacher Availability</h1>
 
         <!-- Available Now Container -->
-        <div class="container-block">
-            <h2>Available Right Now</h2>
-            <div id="status-now" class="status status-visible">Loading schedule...</div>
-            <span id="last-updated" style="font-size: 0.8em; color: #555; display: block; margin-bottom: 10px;"></span>
-            <!-- Filter Input for Available Now -->
-            <input type="text" id="filter-now" placeholder="Filter by name..." class="filter-input">
-            <div id="results-now"><ul id="teachers-now" class="teacher-list"></ul></div>
+        <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6">
+            <h2 class="text-2xl font-semibold border-b border-gray-300 dark:border-gray-700 pb-2 mb-4">Available Right Now</h2>
+            <div id="status-now" class="italic text-sm text-gray-600 dark:text-gray-400 mb-4">Loading schedule...</div>
+            <div id="results-now" class="mt-4"><ul id="teachers-now" class="flex flex-wrap gap-2 list-none p-0"></ul></div>
         </div>
+        <button id="check-button">Check Availability</button>
+        <div id="status-custom" class="status" style="display:none;"></div>
+        <div id="results-custom" class="results"><ul id="teachers-custom" class="teacher-list"></ul></div>
+    </div>
+
+    <!-- START OF NEW HTML SECTION (1A) -->
+    <div class="container">
+        <h2>Log Staff Absence (Training, Meetings, etc.)</h2>
+        <p>Log a time range when a staff member is unavailable. This will remove them from the availability lists for that specific time.</p>
+        <div class="input-grid">
+            <div class="input-group">
+                <label for="absence-staff-select">Staff Member:</label>
+                <select id="absence-staff-select"><option value="">-- Select Staff --</option></select>
 
         <!-- Check Availability Container -->
-        <div class="container-block">
-            <h2>Check Availability for a Time Range</h2>
-            <div class="form-group">
-                <label for="date-input">Date:</label>
-                <input type="date" id="date-input">
+        <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6">
+            <h2 class="text-2xl font-semibold border-b border-gray-300 dark:border-gray-700 pb-2 mb-4">Check Availability for a Time Range</h2>
+            <div class="mb-4">
+                <label for="date-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date:</label>
+                <input type="date" id="date-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
             </div>
-            <div class="form-grid-2">
+            <div class="input-group">
+                <label for="absence-date-input">Date of Absence:</label>
+                <input type="date" id="absence-date-input">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label for="time-from-input">Time (From):</label>
-                    <input type="time" id="time-from-input">
+                    <label for="time-from-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time (From):</label>
+                    <input type="time" id="time-from-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
                 </div>
                 <div>
-                    <label for="time-to-input">Time (To):</label>
-                    <input type="time" id="time-to-input">
+                    <label for="time-to-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time (To):</label>
+                    <input type="time" id="time-to-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
                 </div>
             </div>
-            <button id="check-button" class="btn-green">Check Availability</button>
-            <div id="status-custom" class="status"></div>
-            <!-- Filter Input for Custom Range -->
-            <input type="text" id="filter-custom" placeholder="Filter by name..." class="filter-input" style="margin-top: 15px;">
-            <div id="results-custom"><ul id="teachers-custom" class="teacher-list"></ul></div>
+            <button id="check-button" class="py-2 px-4 bg-green-600 text-white rounded-md font-semibold shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-gray-800">Check Availability</button>
+            <div id="status-custom" class="italic text-sm text-gray-600 dark:text-gray-400 mt-4" style="display:none;"></div>
+            <div id="results-custom" class="mt-4"><ul id="teachers-custom" class="flex flex-wrap gap-2 list-none p-0"></ul></div>
         </div>
+        <div class="input-grid">
+            <div class="input-group">
+                <label for="absence-time-from-input">Time (From):</label>
+                <input type="time" id="absence-time-from-input">
 
         <!-- Log Staff Absence Container -->
-        <div class="container-block">
-            <h2>Log Staff Absence (Training, Meetings, etc.)</h2>
-            <p style="font-size: 0.9em; color: #555; margin-bottom: 15px;">Log a time range when a staff member is unavailable. This will remove them from the availability lists for that specific time.</p>
-            <div class="form-grid-2">
+        <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6">
+            <h2 class="text-2xl font-semibold border-b border-gray-300 dark:border-gray-700 pb-2 mb-4">Log Staff Absence (Training, Meetings, etc.)</h2>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Log a time range when a staff member is unavailable. This will remove them from the availability lists for that specific time.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label for="absence-staff-select">Staff Member:</label>
-                    <select id="absence-staff-select">
+                    <label for="absence-staff-select" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Staff Member:</label>
+                    <select id="absence-staff-select" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
                         <option value="">-- Select Staff --</option>
                     </select>
                 </div>
                 <div>
-                    <label for="absence-date-input">Date of Absence:</label>
-                    <input type="date" id="absence-date-input">
+                    <label for="absence-date-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date of Absence:</label>
+                    <input type="date" id="absence-date-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
                 </div>
             </div>
-            <div class="form-grid-2">
+            <div class="input-group">
+                <label for="absence-time-to-input">Time (To):</label>
+                <input type="time" id="absence-time-to-input">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label for="absence-time-from-input">Time (From):</label>
-                    <input type="time" id="absence-time-from-input">
+                    <label for="absence-time-from-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time (From):</label>
+                    <input type="time" id="absence-time-from-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
                 </div>
                 <div>
-                    <label for="absence-time-to-input">Time (To):</label>
-                    <input type="time" id="absence-time-to-input">
+                    <label for="absence-time-to-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time (To):</label>
+                    <input type="time" id="absence-time-to-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
                 </div>
             </div>
-            <button id="save-absence-button" class="btn-green">Save Absence Entry</button>
-            <div id="absence-save-status" class="status"></div>
+            <button id="save-absence-button" class="py-2 px-4 bg-green-600 text-white rounded-md font-semibold shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-gray-800">Save Absence Entry</button>
+            <div id="absence-save-status" class="italic text-sm text-gray-600 dark:text-gray-400 mt-3" style="display:none;"></div>
             
             <!-- Existing Absences -->
-            <input type="text" id="filter-absences" placeholder="Filter by name..." class="filter-input" style="margin-top: 20px;">
-            <h3>Existing Absences for Selected Day</h3>
-            <div id="existing-absences-list" style="font-size: 0.9em;">
-                <p class="status status-visible">Select a date to see existing entries.</p>
+            <h3 class="text-xl font-semibold mt-6 border-t border-gray-300 dark:border-gray-700 pt-4 mb-2">Existing Absences for Selected Day</h3>
+            <div id="existing-absences-list" class="text-sm">
+                <p class="status italic text-gray-600 dark:text-gray-400">Select a date to see existing entries.</p>
             </div>
-
-            <!-- Absence Import/Export Buttons -->
-            <div class="button-group">
-                 <button id="export-absences-button" class="btn-purple">Export Absences CSV</button>
-                 <button id="import-absences-button" class="btn-light">Import Absences CSV</button>
-                 <input type="file" id="absence-csv-file-input" class="hidden">
-            </div>
-              <div id="absence-import-status" class="status"></div>
+        </div>
+        <button id="save-absence-button">Save Absence Entry</button>
+        <div id="absence-save-status" class="status" style="display:none; margin-top:10px;"></div>
+        
+        <h3 style="margin-top: 20px; border-top: 1px solid #eaecef; padding-top: 15px;">Existing Absences for Selected Day</h3>
+        <div id="existing-absences-list" style="padding-left: 0;"> <!-- Changed padding-left -->
+            <p class="status">Select a date to see existing entries.</p> <!-- Updated text -->
         </div>
 
+        <!-- New Buttons for Absence Import/Export -->
+        <div class="absence-button-group">
+             <button id="export-absences-button" class="primary">Export Absences CSV</button>
+             <button id="import-absences-button" class="secondary">Import Absences CSV</button>
+             <input type="file" id="absence-csv-file-input" accept=".csv">
+            <!-- Absence Import/Export Buttons -->
+            <div class="flex gap-4 flex-wrap mt-6">
+                 <button id="export-absences-button" class="py-2 px-4 bg-purple-600 text-white rounded-md font-semibold shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:focus:ring-offset-gray-800">Export Absences CSV</button>
+                 <button id="import-absences-button" class="py-2 px-4 bg-white dark:bg-gray-200 text-gray-700 dark:text-gray-800 border border-gray-300 dark:border-gray-500 rounded-md font-semibold shadow-sm hover:bg-gray-50 dark:hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">Import Absences CSV</button>
+                 <input type="file" id="absence-csv-file-input" accept=".csv" class="hidden">
+            </div>
+             <div id="absence-import-status" class="italic text-sm text-gray-600 dark:text-gray-400 mt-3" style="display:none;"></div>
+        </div>
+         <div id="absence-import-status" class="status" style="display:none; margin-top:10px;"></div>
+
+    </div>
+    <!-- END OF NEW HTML SECTION -->
+
+    <div class="container">
+        <h2>Extra Minutes Tracker</h2>
+        <p>Record extra minutes worked by staff. This data is saved in your browser.</p>
+        <div class="input-grid">
+            <div class="input-group"><label for="staff-select">Staff Member:</label><select id="staff-select"><option value="">-- Select Staff --</option></select></div>
+            <div class="input-group"><label for="date-entry-input">Date Worked:</label><input type="date" id="date-entry-input"></div>
         <!-- Extra Minutes Tracker Container -->
-        <div class="container-block">
-            <h2>Extra Minutes Tracker</h2>
-            <p style="font-size: 0.9em; color: #555; margin-bottom: 15px;">Record extra minutes worked by staff. This data is saved in your browser.</p>
-            <div class="form-grid-2">
+        <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6">
+            <h2 class="text-2xl font-semibold border-b border-gray-300 dark:border-gray-700 pb-2 mb-4">Extra Minutes Tracker</h2>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Record extra minutes worked by staff. This data is saved in your browser.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label for="staff-select">Staff Member:</label>
-                    <select id="staff-select">
+                    <label for="staff-select" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Staff Member:</label>
+                    <select id="staff-select" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
                         <option value="">-- Select Staff --</option>
                     </select>
                 </div>
                 <div>
-                    <label for="date-entry-input">Date Worked:</label>
-                    <input type="date" id="date-entry-input">
+                    <label for="date-entry-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date Worked:</label>
+                    <input type="date" id="date-entry-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
                 </div>
             </div>
-            <div class="form-group">
-                <label for="minutes-input">Add Extra Minutes:</label>
-                <input type="number" id="minutes-input" placeholder="e.g., 60">
+            <div class="mb-4">
+                <label for="minutes-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Add Extra Minutes:</label>
+                <input type="number" id="minutes-input" placeholder="e.g., 60" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
             </div>
-            <button id="save-minutes-button" class="btn-green">Save Minutes</button>
-            <div id="save-status" class="status"></div>
+            <button id="save-minutes-button" class="py-2 px-4 bg-green-600 text-white rounded-md font-semibold shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-gray-800">Save Minutes</button>
+            <div id="save-status" class="italic text-sm text-gray-600 dark:text-gray-400 mt-3" style="display:none;"></div>
         </div>
+        <div class="input-group"><label for="minutes-input">Add Extra Minutes:</label><input type="number" id="minutes-input" placeholder="e.g., 60"></div>
+        <button id="save-minutes-button">Save Minutes</button>
+        <div id="save-status" class="status" style="display:none; margin-top:10px;"></div>
+    </div>
+
+    <div class="container">
+        <h2>Extra Minutes Totals</h2>
+        <div class="input-group"><label for="year-display">Select Year:</label><input type="number" id="year-display" value="2025"></div>
+        <div class="month-buttons" id="month-buttons"></div>
+        <div id="totals-display"><p>Select a month to see totals.</p></div>
+        <div class="button-group">
+            <!-- *** UPDATED BUTTONS *** -->
+            <button id="export-backup-button" class="primary">Export CSV (Min)</button> <!-- Changed text & class to primary (purple) -->
+            <button id="export-summary-button" class="info">Summary CSV (Min)</button>    <!-- Changed text & class to info (blue) -->
+            <button id="import-csv-button" class="secondary">Import CSV (Min)</button>     <!-- Changed text -->
+            <!-- *** END UPDATED BUTTONS *** -->
+            <input type="file" id="csv-file-input" accept=".csv">
+            <button id="clear-data-button" class="danger">Clear All Saved Data</button>
 
         <!-- Extra Minutes Totals Container -->
-        <div class="container-block">
-            <h2>Extra Minutes Totals</h2>
-            <div class="form-group" style="max-width: 200px;">
-                <label for="year-display">Select Year:</label>
-                <input type="number" id="year-display" value="2025">
+        <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6">
+            <h2 class="text-2xl font-semibold border-b border-gray-300 dark:border-gray-700 pb-2 mb-4">Extra Minutes Totals</h2>
+            <div class="mb-4 max-w-xs"> <!-- Limit width of year input -->
+                <label for="year-display" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Select Year:</label>
+                <input type="number" id="year-display" value="2025" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
             </div>
             <!-- Month Buttons - dynamically populated -->
-            <div id="month-buttons"></div> 
+            <div class="flex flex-wrap gap-2 mb-4" id="month-buttons"></div> 
             
-            <!-- Totals Display Area - Will be replaced by table -->
-            <div id="totals-display"> 
-                <p class="status status-visible">Select a month to see totals.</p>
+            <!-- Totals Display Area -->
+            <div id="totals-display" class="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md p-4 min-h-[80px]">
+                <p class="italic text-sm text-gray-600 dark:text-gray-400">Select a month to see totals.</p>
             </div>
             
             <!-- Minutes Import/Export/Clear Buttons -->
-            <div class="button-group">
-                <button id="export-backup-button" class="btn-purple">Export CSV (Min)</button> 
-                <button id="export-summary-button" class="btn-blue">Summary CSV (Min)</button>    
-                <button id="import-csv-button" class="btn-light">Import CSV (Min)</button>     
-                <input type="file" id="csv-file-input" class="hidden">
-                <button id="clear-data-button" class="btn-red">Clear All Saved Data</button>
+            <div class="flex flex-wrap gap-4 mt-6">
+                <button id="export-backup-button" class="py-2 px-4 bg-purple-600 text-white rounded-md font-semibold shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:focus:ring-offset-gray-800">Export CSV (Min)</button> 
+                <button id="export-summary-button" class="py-2 px-4 bg-blue-600 text-white rounded-md font-semibold shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800">Summary CSV (Min)</button>    
+                <button id="import-csv-button" class="py-2 px-4 bg-white dark:bg-gray-200 text-gray-700 dark:text-gray-800 border border-gray-300 dark:border-gray-500 rounded-md font-semibold shadow-sm hover:bg-gray-50 dark:hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">Import CSV (Min)</button>     
+                <input type="file" id="csv-file-input" accept=".csv" class="hidden">
+                <button id="clear-data-button" class="py-2 px-4 bg-red-600 text-white rounded-md font-semibold shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:focus:ring-offset-gray-800">Clear All Saved Data</button>
             </div>
-            <div id="import-status" class="status"></div>
+            <div id="import-status" class="italic text-sm text-gray-600 dark:text-gray-400 mt-3" style="display:none;"></div>
         </div>
+        <div id="import-status" class="status" style="display:none; margin-top:10px;"></div>
+    </div>
 
     </div> <!-- End Main content container -->
 
@@ -389,20 +295,16 @@
         document.addEventListener('DOMContentLoaded', () => {
             console.log("DOM fully loaded and parsed."); // Log DOM readiness
 
-            // --- Global Variables ---
             let lessons = [];
             let allTeachers = new Set();
             let columnMap = {};
             let activeMonthButton = null;
-            let refreshIntervalId = null; 
+
+            const dayMap = ["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"];
 
             // --- CONFIGURATION ---
-            const dayMap = ["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"];
             const ARBETSTID_SUBJECT = "arbetstid";
             const ON_CALL_SUBJECT = "on call substitution";
-            const REFRESH_INTERVAL_MS = 60000; 
-            const MINUTES_STORAGE_KEY = 'teacherMinutesData'; 
-            const ABSENCE_STORAGE_KEY = 'teacherAbsenceData';
             const EXCLUDE_TEACHER_LIST = ["BaSh", "AnHo", "DaWr", "AniFac", "RahHan", "ChBe", "FaCa", "SeCa", "AlCh", "LaCo", "VikCos", "RoDi", "KrEr", "RaHa", "JeHe", "DiHe", "GaHe", "HeKa", "JoLe", "TiLe", "WiLi", "ChLi", "HaLu", "KaMa", "ViMe", "MaMe", "HiOj", "LePa", "AsRo", "RaSc", "TaSc", "JeSe", "AnVa", "MarMen", "JonLeh"];
             const EXCLUDE_TEACHERS_SET = new Set(EXCLUDE_TEACHER_LIST);
             // ---------------------
@@ -410,7 +312,6 @@
             // --- Get DOM Elements ---
             const statusNow = document.getElementById('status-now');
             const teachersNowList = document.getElementById('teachers-now');
-            const lastUpdatedSpan = document.getElementById('last-updated');
             const statusCustom = document.getElementById('status-custom');
             const teachersCustomList = document.getElementById('teachers-custom');
             const checkButton = document.getElementById('check-button');
@@ -431,6 +332,8 @@
             const importCsvButton = document.getElementById('import-csv-button');
             const csvFileInput = document.getElementById('csv-file-input');
             const importStatus = document.getElementById('import-status');
+
+            // Absence section elements
             const absenceStaffSelect = document.getElementById('absence-staff-select');
             const absenceDateInput = document.getElementById('absence-date-input');
             const absenceTimeFromInput = document.getElementById('absence-time-from-input');
@@ -438,1044 +341,1003 @@
             const saveAbsenceButton = document.getElementById('save-absence-button');
             const absenceSaveStatus = document.getElementById('absence-save-status');
             const existingAbsencesList = document.getElementById('existing-absences-list');
+            // New Absence Import/Export Elements
             const exportAbsencesButton = document.getElementById('export-absences-button');
             const importAbsencesButton = document.getElementById('import-absences-button');
             const absenceCsvFileInput = document.getElementById('absence-csv-file-input');
             const absenceImportStatus = document.getElementById('absence-import-status');
-            // Filter Inputs
-            const filterNowInput = document.getElementById('filter-now');
-            const filterCustomInput = document.getElementById('filter-custom');
-            const filterAbsencesInput = document.getElementById('filter-absences');
 
-            // --- Initial Checks ---
-             if (!statusNow || !lastUpdatedSpan || !monthButtonsContainer || !staffSelect || !absenceStaffSelect || !exportAbsencesButton || !importAbsencesButton || !absenceCsvFileInput || !absenceImportStatus || !filterNowInput || !filterCustomInput || !filterAbsencesInput ) { 
-                 console.error("Critical DOM element missing! Cannot proceed.", { statusNow, lastUpdatedSpan, monthButtonsContainer, staffSelect, absenceStaffSelect, exportAbsencesButton, importAbsencesButton, absenceCsvFileInput, absenceImportStatus, filterNowInput, filterCustomInput, filterAbsencesInput });
-                 if (statusNow) { 
-                     statusNow.textContent = "Error: Page structure broken."; 
-                     statusNow.className = 'status status-visible status-error';
-                } 
-                 return; 
+             // Log if critical elements are missing BEFORE loadData runs
+             if (!statusNow || !monthButtonsContainer || !staffSelect || !absenceStaffSelect || !exportAbsencesButton || !importAbsencesButton || !absenceCsvFileInput || !absenceImportStatus) { // Added checks for new elements
+             if (!statusNow || !monthButtonsContainer || !staffSelect || !absenceStaffSelect || !exportAbsencesButton || !importAbsencesButton || !absenceCsvFileInput || !absenceImportStatus) { 
+                 console.error("Critical DOM element missing! Cannot proceed.", { 
+                     statusNowExists: !!statusNow, 
+                     monthButtonsContainerExists: !!monthButtonsContainer, 
+                     staffSelectExists: !!staffSelect,
+                     absenceStaffSelectExists: !!absenceStaffSelect,
+                     exportAbsencesButtonExists: !!exportAbsencesButton, // Added logs
+                     importAbsencesButtonExists: !!importAbsencesButton,
+                     absenceCsvFileInputExists: !!absenceCsvFileInput,
+                     absenceImportStatusExists: !!absenceImportStatus
+                     statusNowExists: !!statusNow, monthButtonsContainerExists: !!monthButtonsContainer, staffSelectExists: !!staffSelect,
+                     absenceStaffSelectExists: !!absenceStaffSelect, exportAbsencesButtonExists: !!exportAbsencesButton, 
+                     importAbsencesButtonExists: !!importAbsencesButton, absenceCsvFileInputExists: !!absenceCsvFileInput, absenceImportStatusExists: !!absenceImportStatus
+                 });
+                 if (statusNow) { statusNow.textContent = "Error: Page structure broken."; statusNow.classList.add('error'); }
+                 if (statusNow) { statusNow.textContent = "Error: Page structure broken."; statusNow.classList.add('!text-red-600', '!dark:text-red-400', '!font-semibold'); } // Use Tailwind classes for error
+                 return; // Stop script execution
              }
              console.log("All critical DOM elements found.");
 
-            // --- Utility Functions ---
+
+            // --- Helper Functions ---
             function getIsoWeekAndYear(d) {
-                // Creates a new date object from the input date, forcing UTC interpretation
-                d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-                // Move date to Thursday of the same week
-                d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-                // Get the start of the year
-                var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-                // Check for Timezone offset differences in case of DST changes
-                if (yearStart.getTimezoneOffset() !== d.getTimezoneOffset()) {
-                   // Adjust yearStart time if timezone offset is different
-                   yearStart.setUTCHours(d.getHours() + (d.getTimezoneOffset() - yearStart.getTimezoneOffset()) / 60);
-                }
-                // Calculate week number
-                var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-                return { year: d.getUTCFullYear(), week: weekNo };
+                const defaultWeek = { week: 0, year: 0, weekKey: '0000-W00'};
+                try {
+                    if (!(d instanceof Date) || isNaN(d.getTime())) { console.error("getIsoWeekAndYear received invalid date:", d); return defaultWeek; }
+                    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+                    const dayOfWeek = date.getUTCDay();
+                    date.setUTCDate(date.getUTCDate() + 4 - (dayOfWeek || 7));
+                    const year = date.getUTCFullYear();
+                    const yearStart = new Date(Date.UTC(year, 0, 1));
+                    const weekNo = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+                    if (isNaN(weekNo) || isNaN(year)) { console.error("getIsoWeekAndYear calculation resulted in NaN:", {date: d, weekNo, year}); return defaultWeek; }
+                    return { week: weekNo, year: year, weekKey: `${year}-W${String(weekNo).padStart(2, '0')}` };
+                } catch (error) { console.error("Critical error inside getIsoWeekAndYear:", error, "Input date:", d); return defaultWeek; }
             }
-            
             function timeToMinutes(timeStr) {
-                 if (!timeStr) return 0;
-                 const [hours, minutes] = timeStr.split(':').map(Number);
-                 return (hours || 0) * 60 + (minutes || 0);
+                if (!timeStr) return 0; timeStr = timeStr.replace(':', ''); if (timeStr.length < 4) timeStr = '0' + timeStr; const hours = parseInt(timeStr.substring(0, 2), 10); const minutes = parseInt(timeStr.substring(2, 4), 10); return (isNaN(hours) || isNaN(minutes)) ? 0 : (hours * 60) + minutes;
             }
-            
             function minutesToHHMM(totalMinutes) {
-                const hours = Math.floor(totalMinutes / 60);
-                const minutes = totalMinutes % 60;
-                return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+                if (isNaN(totalMinutes)) return "00:00"; const hours = Math.floor(totalMinutes / 60); const minutes = totalMinutes % 60; return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
             }
-
             function parseRealWeeks(weekString) {
-                const weeks = new Set();
-                if (!weekString) return weeks;
-                const parts = weekString.split(',');
-                parts.forEach(part => {
-                    part = part.trim();
-                    if (part.includes('-')) {
-                        const [start, end] = part.split('-').map(Number);
-                        if (!isNaN(start) && !isNaN(end)) {
-                            for (let i = start; i <= end; i++) {
-                                weeks.add(i);
-                            }
-                        }
-                    } else {
-                        const weekNum = parseInt(part, 10);
-                        if (!isNaN(weekNum)) {
-                            weeks.add(weekNum);
-                        }
-                    }
-                });
-                return weeks;
+                const weeks = new Set(); if (!weekString) return weeks; weekString.split(',').forEach(range => { const parts = range.trim().split('-'); if (parts.length === 1 && parts[0]) { const weekNum = parseInt(parts[0], 10); if (!isNaN(weekNum)) weeks.add(weekNum); } else if (parts.length === 2 && parts[0] && parts[1]) { try { const start = parseInt(parts[0], 10); const end = parseInt(parts[1], 10); if (!isNaN(start) && !isNaN(end)) { for (let i = start; i <= end; i++) { weeks.add(i); } } } catch(e){ console.error("Error parsing week range:", range, e); } } }); return weeks;
             }
-            
             function parseTeachers(teacherString) {
-                 if (!teacherString) return [];
-                 // Split by " / " and filter out any empty strings that might result
-                 return teacherString.split(' / ').map(t => t.trim()).filter(t => t.length > 0);
-            }
-
-            function parseCsvLine(line) {
-                // Regex to handle quoted fields, including escaped quotes ("")
-                const regex = /(?:"([^"]*(?:""[^"]*)*)"|([^,]*))(?:,|$)/g;
-                const values = [];
-                let match;
-                while (match = regex.exec(line)) {
-                    if (match[1] !== undefined) {
-                        // Field was quoted
-                        values.push(match[1].replace(/""/g, '"'));
-                    } else {
-                        // Field was not quoted
-                        values.push(match[2] || '');
+                try {
+                    // Handle names potentially quoted in CSV
+                    if (teacherString && teacherString.startsWith('"') && teacherString.endsWith('"')) {
+                        teacherString = teacherString.substring(1, teacherString.length - 1).replace(/""/g, '"');
                     }
-                    if (match[0].slice(-1) !== ',') break; // End of line
+                    if (!teacherString || typeof teacherString !== 'string') return [];
+                    const teachers = teacherString.split(',').map(t => t.trim()).filter(t => t && t.length > 0);
+                    return Array.isArray(teachers) ? teachers : [];
+                } catch (error) { console.error("Error inside parseTeachers:", error, "Input:", teacherString); return []; }
+            }
+             // Function to safely parse CSV lines, handling quoted fields with commas
+            function parseCsvLine(line) {
+                const result = [];
+                let currentField = '';
+                let inQuotes = false;
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    if (char === '"') {
+                        if (inQuotes && line[i + 1] === '"') {
+                            // Escaped quote
+                            currentField += '"';
+                            i++; // Skip the next quote
+                        } else {
+                            inQuotes = !inQuotes;
+                        }
+                    } else if (char === ',' && !inQuotes) {
+                        result.push(currentField.trim());
+                        currentField = '';
+                    } else {
+                        currentField += char;
+                    }
                 }
-                return values;
+                result.push(currentField.trim()); // Add the last field
+                return result;
             }
 
-            function dateToYYYYMMDD(dateObj) {
-                // Ensures date is formatted as YYYY-MM-DD regardless of timezone
-                return dateObj.toISOString().split('T')[0];
-            }
+            // --- Logic Function 1: Availability at a specific moment ---
+             function getAvailabilityAtTime(dateTime) {
+                 const defaultResult = { available: [], onCallTimes: new Map() };
+                 try {
+                     if (!Array.isArray(lessons) || lessons.length === 0) { console.log("getAvailabilityAtTime: No lessons data."); return defaultResult; }
+                     const workingTeachers = new Set(); const onCallTimesMap = new Map(); const busyTeachers = new Set();
+                     const weekInfo = getIsoWeekAndYear(dateTime); if (!weekInfo) { console.error("getIsoWeekAndYear failed in getAvailabilityAtTime"); return defaultResult; } const { week: checkWeekNum, year: checkWeekYear } = weekInfo;
+                     const checkDay = dayMap[dateTime.getDay()]; const checkTimeInMinutes = (dateTime.getHours() * 60) + dateTime.getMinutes();
+                     lessons.forEach(lesson => {
+                         try { const lessonDay = lesson[columnMap['day']]?.trim(); const weekString = lesson[columnMap['realweeks']]; const subject = lesson[columnMap['subject']]?.trim().toLowerCase(); const startStr = lesson[columnMap['starttime']]; const lenStr = lesson[columnMap['length']]; const teacherStr = lesson[columnMap['teacher']]; if (!lessonDay || !weekString || !subject || !startStr || !lenStr) return; const lessonWeeks = parseRealWeeks(weekString); if (lessonDay !== checkDay || !lessonWeeks.has(checkWeekNum)) return; const lessonStart = timeToMinutes(startStr); const lessonLength = parseInt(lenStr, 10); if (isNaN(lessonLength) || lessonLength <= 0) return; const lessonEnd = lessonStart + lessonLength; if (checkTimeInMinutes >= lessonStart && checkTimeInMinutes < lessonEnd) { const teachers = parseTeachers(teacherStr); if (subject === ARBETSTID_SUBJECT) { teachers.forEach(t => workingTeachers.add(t)); } else if (subject === ON_CALL_SUBJECT) { teachers.forEach(t => { workingTeachers.add(t); if (!onCallTimesMap.has(t)) { onCallTimesMap.set(t, { start: lessonStart, end: lessonEnd }); } }); } else { teachers.forEach(t => busyTeachers.add(t)); } } } catch (e) { console.error("Error processing lesson row (getAvailabilityAtTime):", lesson, e); }
+                     });
 
-            // --- Local Storage Functions ---
+                     // CHANGE 3C: Integrate absence check
+                     let availableAndNotBusy = [...workingTeachers].filter(teacher => !busyTeachers.has(teacher));
+                     let availableTeacherNames = availableAndNotBusy.filter(teacher => !isTeacherAbsent(teacher, dateTime, checkTimeInMinutes));
+
+                     return { available: availableTeacherNames.sort(), onCallTimes: onCallTimesMap };
+                 } catch (error) { console.error("Critical Error in getAvailabilityAtTime:", error); statusNow.textContent = `Error calculating availability: ${error.message}`; statusNow.classList.add('error'); return defaultResult; }
+                 } catch (error) { console.error("Critical Error in getAvailabilityAtTime:", error); statusNow.textContent = `Error calculating availability: ${error.message}`; statusNow.classList.add('!text-red-600', '!dark:text-red-400', '!font-semibold'); return defaultResult; }
+             }
+
+            // --- Logic Function 2: Availability for a time range ---
+             function getAvailabilityForRange(checkDate, checkStartMinutes, checkEndMinutes) {
+                 const defaultResult = { available: [], onCallTimes: new Map() };
+                 try {
+                     if (!Array.isArray(lessons) || lessons.length === 0) { console.log("getAvailabilityForRange: No lessons."); return defaultResult; }
+                     let workingTeachers = new Set(); const onCallTimesMap = new Map(); const busyTeachers = new Set();
+                     const weekInfo = getIsoWeekAndYear(checkDate); if (!weekInfo) { console.error("getIsoWeekAndYear failed in getAvailabilityForRange"); return defaultResult; } const { week: checkWeekNum, year: checkWeekYear } = weekInfo;
+                     const checkDay = dayMap[checkDate.getDay()];
+                     lessons.forEach(lesson => {
+                         try { const lessonDay = lesson[columnMap['day']]?.trim(); const weekString = lesson[columnMap['realweeks']]; const subject = lesson[columnMap['subject']]?.trim().toLowerCase(); const startStr = lesson[columnMap['starttime']]; const lenStr = lesson[columnMap['length']]; const teacherStr = lesson[columnMap['teacher']]; if (!lessonDay || !weekString || !subject || !startStr || !lenStr) return; const lessonWeeks = parseRealWeeks(weekString); if (lessonDay !== checkDay || !lessonWeeks.has(checkWeekNum)) return; const lessonStart = timeToMinutes(startStr); const lessonLength = parseInt(lenStr, 10); if (isNaN(lessonLength) || lessonLength <= 0) return; const lessonEnd = lessonStart + lessonLength; const teachers = parseTeachers(teacherStr); const containsQuery = (lessonStart <= checkStartMinutes && lessonEnd >= checkEndMinutes); const overlapsQuery = (lessonStart < checkEndMinutes && lessonEnd > checkStartMinutes); if (subject === ARBETSTID_SUBJECT) { if (containsQuery) teachers.forEach(t => workingTeachers.add(t)); } else if (subject === ON_CALL_SUBJECT) { if (containsQuery) { teachers.forEach(t => { workingTeachers.add(t); if (!onCallTimesMap.has(t)) { onCallTimesMap.set(t, { start: lessonStart, end: lessonEnd }); } }); } } else if (overlapsQuery) { teachers.forEach(t => busyTeachers.add(t)); } } catch (e) { console.error("Error processing lesson row (getAvailabilityForRange):", lesson, e); }
+                     });
+
+                     // CHANGE 3C: Integrate absence check (checks start time of range)
+                     let availableAndNotBusy = [...workingTeachers].filter(teacher => !busyTeachers.has(teacher));
+                     let availableTeacherNames = availableAndNotBusy.filter(teacher => !isTeacherAbsent(teacher, checkDate, checkStartMinutes));
+
+                     return { available: availableTeacherNames.sort(), onCallTimes: onCallTimesMap };
+                 } catch (error) { console.error("Critical Error in getAvailabilityForRange:", error); statusCustom.textContent = `Error calculating availability: ${error.message}`; statusCustom.style.display = 'block'; statusCustom.classList.add('error'); return defaultResult; }
+                 } catch (error) { console.error("Critical Error in getAvailabilityForRange:", error); statusCustom.textContent = `Error calculating availability: ${error.message}`; statusCustom.style.display = 'block'; statusCustom.classList.add('!text-red-600', '!dark:text-red-400', '!font-semibold'); return defaultResult; }
+             }
+
+            // --- Display Function (Availability) ---
+             function displayResults(availableTeachers, onCallTimesMap, listElement, statusElement, checkDate) {
+                 listElement.innerHTML = ''; const filteredTeachers = availableTeachers.filter(teacher => !EXCLUDE_TEACHERS_SET.has(teacher)); const allData = getSavedMinutesData(); const { week: checkWeekNum, year: checkWeekYear } = getIsoWeekAndYear(checkDate); const checkMonthKey = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}`; if (filteredTeachers.length === 0) { statusElement.textContent = 'No available teachers found.'; statusElement.classList.remove('error'); } else { filteredTeachers.forEach(teacher => { const li = document.createElement('li'); let weeklyTotal = 0; let monthlyTotal = 0; const teacherData = allData[teacher] || {}; for (const dateKey in teacherData) { try { const entryDate = new Date(dateKey + 'T00:00:00Z'); if (isNaN(entryDate.getTime())) continue; const { week: entryWeek, year: entryYear } = getIsoWeekAndYear(entryDate); const minutes = teacherData[dateKey] || 0; if (entryWeek === checkWeekNum && entryYear === checkWeekYear) { weeklyTotal += minutes; } if (dateKey.startsWith(checkMonthKey)) { monthlyTotal += minutes; } } catch (e) { console.error("Error calculating totals for teacher:", teacher, dateKey, e); } } let textContent = `${teacher} (W: ${weeklyTotal} / M: ${monthlyTotal})`; if (onCallTimesMap.has(teacher)) { const times = onCallTimesMap.get(teacher); const startTimeStr = minutesToHHMM(times.start); const endTimeStr = minutesToHHMM(times.end); textContent = `${teacher} (On Call: ${startTimeStr} - ${endTimeStr}) (W: ${weeklyTotal} / M: ${monthlyTotal})`; li.classList.add('on-call'); } else { if (monthlyTotal >= 180) { li.classList.add('minutes-danger'); } else if (weeklyTotal >= 90) { li.classList.add('minutes-warn'); } } li.textContent = textContent; listElement.appendChild(li); }); }
+                 listElement.innerHTML = ''; 
+                 const filteredTeachers = availableTeachers.filter(teacher => !EXCLUDE_TEACHERS_SET.has(teacher)); 
+                 const allData = getSavedMinutesData(); 
+                 const { week: checkWeekNum, year: checkWeekYear } = getIsoWeekAndYear(checkDate); 
+                 const checkMonthKey = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}`; 
+                 
+                 // Update status text styling
+                 if (filteredTeachers.length === 0) { 
+                     statusElement.textContent = 'No available teachers found.'; 
+                     statusElement.classList.remove('!text-red-600', '!dark:text-red-400', '!font-semibold', '!text-green-600', '!dark:text-green-400'); // Remove specific color classes
+                     statusElement.classList.add('italic', 'text-sm', 'text-gray-600', 'dark:text-gray-400'); // Add back default status classes
+                 } else {
+                     // Clear status if teachers are found (unless it was explicitly set to an error before calling this)
+                      if (!statusElement.classList.contains('!text-red-600')) { // Don't clear if it's an error message
+                        statusElement.textContent = ''; 
+                        statusElement.style.display = 'none'; // Hide if no message needed
+                      }
+                 }
+                 
+                 filteredTeachers.forEach(teacher => { 
+                     const li = document.createElement('li'); 
+                     // Base Tailwind classes for list items
+                     li.className = 'bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-full px-3 py-1 text-sm font-mono';
+                     
+                     let weeklyTotal = 0; 
+                     let monthlyTotal = 0; 
+                     const teacherData = allData[teacher] || {}; 
+                     for (const dateKey in teacherData) { 
+                         try { 
+                             const entryDate = new Date(dateKey + 'T00:00:00Z'); 
+                             if (isNaN(entryDate.getTime())) continue; 
+                             const { week: entryWeek, year: entryYear } = getIsoWeekAndYear(entryDate); 
+                             const minutes = teacherData[dateKey] || 0; 
+                             if (entryWeek === checkWeekNum && entryYear === checkWeekYear) { weeklyTotal += minutes; } 
+                             if (dateKey.startsWith(checkMonthKey)) { monthlyTotal += minutes; } 
+                         } catch (e) { console.error("Error calculating totals for teacher:", teacher, dateKey, e); } 
+                     } 
+                     
+                     let textContent = `${teacher} (W: ${weeklyTotal} / M: ${monthlyTotal})`; 
+                     
+                     // Apply Tailwind classes dynamically
+                     if (onCallTimesMap.has(teacher)) { 
+                         const times = onCallTimesMap.get(teacher); 
+                         const startTimeStr = minutesToHHMM(times.start); 
+                         const endTimeStr = minutesToHHMM(times.end); 
+                         textContent = `${teacher} (On Call: ${startTimeStr} - ${endTimeStr}) (W: ${weeklyTotal} / M: ${monthlyTotal})`; 
+                         li.classList.add('!bg-green-600', '!text-white', '!border-green-700', 'font-semibold'); // Using !important prefix just in case base styles interfere initially
+                     } else { 
+                         if (monthlyTotal >= 180) { 
+                             li.classList.add('!bg-red-600', '!text-white', '!border-red-700', 'font-semibold'); 
+                         } else if (weeklyTotal >= 90) { 
+                             li.classList.add('!bg-yellow-400', '!text-black', '!border-yellow-500'); 
+                         } 
+                     } 
+                     li.textContent = textContent; 
+                     listElement.appendChild(li); 
+                 }); 
+             }
+
+            // --- Extra Minutes Helper Functions ---
             function getSavedMinutesData() {
                 try {
-                    const data = localStorage.getItem(MINUTES_STORAGE_KEY);
+                    const data = localStorage.getItem('teacherMinutesData');
                     return data ? JSON.parse(data) : {};
-                } catch (e) {
-                    console.error("Error reading minutes from localStorage:", e);
-                    return {}; // Return empty object on error
-                }
-            }
-
-            function saveMinutesData(data) {
-                try {
-                    localStorage.setItem(MINUTES_STORAGE_KEY, JSON.stringify(data));
-                } catch (e) {
-                    console.error("Error saving minutes to localStorage:", e);
-                }
-            }
-
-            function getSavedAbsenceData() {
-                 try {
-                    const data = localStorage.getItem(ABSENCE_STORAGE_KEY);
-                    return data ? JSON.parse(data) : {};
-                } catch (e) {
-                    console.error("Error reading absences from localStorage:", e);
+                } catch (error) {
+                    console.error("Error reading data from localStorage:", error);
                     return {};
                 }
             }
-            
+            function saveMinutesData(data) {
+                try {
+                    localStorage.setItem('teacherMinutesData', JSON.stringify(data));
+                } catch (error) {
+                    console.error("Error saving data to localStorage:", error);
+                    showSaveStatus("Critical error saving data. Check console.", true);
+                }
+            }
+
+            // --- Absence Data Helper Functions (Step 2) ---
+            const ABSENCE_STORAGE_KEY = 'teacherAbsenceData';
+
+            function getSavedAbsenceData() {
+                try {
+                    const data = localStorage.getItem(ABSENCE_STORAGE_KEY);
+                    return data ? JSON.parse(data) : {};
+                } catch (error) {
+                    console.error("Error reading absence data from localStorage:", error);
+                    return {};
+                }
+            }
+
             function saveAbsenceData(data) {
-                 try {
+                try {
                     localStorage.setItem(ABSENCE_STORAGE_KEY, JSON.stringify(data));
-                } catch (e) {
-                    console.error("Error saving absences to localStorage:", e);
+                } catch (error) {
+                    console.error("Error saving absence data to localStorage:", error);
+                    // Show an error to the user in the absence status area
+                    if (absenceSaveStatus) {
+                        showAbsenceSaveStatus("Critical error saving data. Check console.", true);
+                    }
                 }
             }
 
-            // --- Status Update Functions ---
-            function showSaveStatus(message, isError = false) {
-                saveStatus.textContent = message;
-                saveStatus.className = 'status status-visible'; // Base classes
-                if (isError) { 
-                    saveStatus.classList.add('status-error'); 
-                } else { 
-                    saveStatus.classList.add('status-success'); 
-                }
-                setTimeout(() => { saveStatus.className = 'status'; }, 3000); // Hide after 3s
-            }
-
-            function showImportStatus(message, isError = false) {
-                importStatus.textContent = message;
-                importStatus.className = 'status status-visible';
-                if (isError) { 
-                    importStatus.classList.add('status-error'); 
-                } else { 
-                    importStatus.classList.add('status-success'); 
-                }
-                setTimeout(() => { importStatus.className = 'status'; }, 5000);
-            }
-            
+            // Updated to use Tailwind classes
             function showAbsenceSaveStatus(message, isError = false) {
+                if (!absenceSaveStatus) return;
                 absenceSaveStatus.textContent = message;
-                absenceSaveStatus.className = 'status status-visible';
-                if (isError) { 
-                    absenceSaveStatus.classList.add('status-error'); 
-                } else { 
-                    absenceSaveStatus.classList.add('status-success'); 
-                }
-                setTimeout(() => { absenceSaveStatus.className = 'status'; }, 3000);
-            }
-
-            function showAbsenceImportStatus(message, isError = false) {
-                absenceImportStatus.textContent = message;
-                absenceImportStatus.className = 'status status-visible';
-                if (isError) { 
-                    absenceImportStatus.classList.add('status-error'); 
-                } else { 
-                    absenceImportStatus.classList.add('status-success'); 
-                }
-                setTimeout(() => { absenceImportStatus.className = 'status'; }, 5000);
-            }
-            
-            // --- Availability Logic ---
-            function getAvailabilityAtTime(dateTime) {
-                const defaultResult = { available: [], onCallTimes: new Map() };
-                try {
-                    if (!Array.isArray(lessons) || lessons.length === 0) { 
-                        console.log("getAvailabilityAtTime: No lessons loaded."); 
-                        return defaultResult; 
-                    }
-                    
-                    const weekInfo = getIsoWeekAndYear(dateTime);
-                    if (!weekInfo) { 
-                        console.error("getIsoWeekAndYear failed in getAvailabilityAtTime"); 
-                        return defaultResult; 
-                    }
-                    const { week: currentWeekNum } = weekInfo;
-                    
-                    const currentDay = dayMap[dateTime.getDay()];
-                    const currentTimeInMinutes = dateTime.getHours() * 60 + dateTime.getMinutes();
-                    
-                    let workingTeachers = new Set();
-                    const onCallTimesMap = new Map();
-                    let busyTeachers = new Set();
-                    
-                    lessons.forEach(lesson => {
-                        try {
-                            const lessonDay = lesson[columnMap['day']]?.trim();
-                            const weekString = lesson[columnMap['realweeks']];
-                            const subject = lesson[columnMap['subject']]?.trim().toLowerCase();
-                            const startStr = lesson[columnMap['starttime']];
-                            const lenStr = lesson[columnMap['length']];
-                            const teacherStr = lesson[columnMap['teacher']];
-                            
-                            if (!lessonDay || !weekString || !subject || !startStr || !lenStr) return;
-                            
-                            const lessonWeeks = parseRealWeeks(weekString);
-                            if (lessonDay !== currentDay || !lessonWeeks.has(currentWeekNum)) return;
-                            
-                            const lessonStart = timeToMinutes(startStr);
-                            const lessonLength = parseInt(lenStr, 10);
-                            if (isNaN(lessonLength) || lessonLength <= 0) return;
-                            const lessonEnd = lessonStart + lessonLength;
-                            const teachers = parseTeachers(teacherStr);
-                            
-                            const isHappeningNow = (currentTimeInMinutes >= lessonStart && currentTimeInMinutes < lessonEnd);
-                            
-                            if (subject === ARBETSTID_SUBJECT) {
-                                if (isHappeningNow) {
-                                    teachers.forEach(t => workingTeachers.add(t));
-                                }
-                            } else if (subject === ON_CALL_SUBJECT) {
-                                if (isHappeningNow) {
-                                    teachers.forEach(t => {
-                                        workingTeachers.add(t);
-                                        if (!onCallTimesMap.has(t)) {
-                                            onCallTimesMap.set(t, { start: lessonStart, end: lessonEnd });
-                                        }
-                                    });
-                                }
-                            } else if (isHappeningNow) {
-                                teachers.forEach(t => busyTeachers.add(t));
-                            }
-                        } catch (e) {
-                            console.error("Error processing lesson row (getAvailabilityAtTime):", lesson, e);
-                        }
-                    });
-                    
-                    let availableAndNotBusy = [...workingTeachers].filter(teacher => !busyTeachers.has(teacher));
-                    // Check absence status against the current time
-                    let availableTeacherNames = availableAndNotBusy.filter(teacher => !isTeacherAbsent(teacher, dateTime, currentTimeInMinutes));
-                    
-                    return { available: availableTeacherNames.sort(), onCallTimes: onCallTimesMap };
-                } catch (error) {
-                    console.error("Critical Error in getAvailabilityAtTime:", error);
-                    return defaultResult;
-                }
-            }
-
-            function getAvailabilityForRange(checkDate, checkStartMinutes, checkEndMinutes) {
-                const defaultResult = { available: [], onCallTimes: new Map() };
-                try {
-                    if (!Array.isArray(lessons) || lessons.length === 0) { 
-                        console.log("getAvailabilityForRange: No lessons."); 
-                        return defaultResult; 
-                    }
-                    let workingTeachers = new Set(); 
-                    const onCallTimesMap = new Map(); 
-                    const busyTeachers = new Set();
-                    
-                    const weekInfo = getIsoWeekAndYear(checkDate); 
-                    if (!weekInfo) { 
-                        console.error("getIsoWeekAndYear failed in getAvailabilityForRange"); 
-                        return defaultResult; 
-                    } 
-                    const { week: checkWeekNum } = weekInfo;
-                    const checkDay = dayMap[checkDate.getDay()];
-                    
-                    lessons.forEach(lesson => {
-                        try { 
-                            const lessonDay = lesson[columnMap['day']]?.trim(); 
-                            const weekString = lesson[columnMap['realweeks']]; 
-                            const subject = lesson[columnMap['subject']]?.trim().toLowerCase(); 
-                            const startStr = lesson[columnMap['starttime']]; 
-                            const lenStr = lesson[columnMap['length']]; 
-                            const teacherStr = lesson[columnMap['teacher']]; 
-                            
-                            if (!lessonDay || !weekString || !subject || !startStr || !lenStr) return; 
-                            
-                            const lessonWeeks = parseRealWeeks(weekString); 
-                            if (lessonDay !== checkDay || !lessonWeeks.has(checkWeekNum)) return; 
-                            
-                            const lessonStart = timeToMinutes(startStr); 
-                            const lessonLength = parseInt(lenStr, 10); 
-                            if (isNaN(lessonLength) || lessonLength <= 0) return; 
-                            const lessonEnd = lessonStart + lessonLength; 
-                            const teachers = parseTeachers(teacherStr); 
-                            
-                            // Check if lesson *fully contains* the query range
-                            const containsQuery = (lessonStart <= checkStartMinutes && lessonEnd >= checkEndMinutes); 
-                            // Check if lesson *overlaps at all* with the query range
-                            const overlapsQuery = (lessonStart < checkEndMinutes && lessonEnd > checkStartMinutes); 
-                            
-                            if (subject === ARBETSTID_SUBJECT) { 
-                                if (containsQuery) teachers.forEach(t => workingTeachers.add(t)); 
-                            } else if (subject === ON_CALL_SUBJECT) { 
-                                if (containsQuery) { 
-                                    teachers.forEach(t => { 
-                                        workingTeachers.add(t); 
-                                        if (!onCallTimesMap.has(t)) { 
-                                            onCallTimesMap.set(t, { start: lessonStart, end: lessonEnd }); 
-                                        } 
-                                    }); 
-                                } 
-                            } else if (overlapsQuery) { // Any other lesson that overlaps makes them busy
-                                teachers.forEach(t => busyTeachers.add(t)); 
-                            } 
-                        } catch (e) { console.error("Error processing lesson row (getAvailabilityForRange):", lesson, e); }
-                    });
-                    
-                    let availableAndNotBusy = [...workingTeachers].filter(teacher => !busyTeachers.has(teacher));
-                    // Check absence status at the *start* of the requested range
-                    let availableTeacherNames = availableAndNotBusy.filter(teacher => !isTeacherAbsent(teacher, checkDate, checkStartMinutes));
-                    
-                    return { available: availableTeacherNames.sort(), onCallTimes: onCallTimesMap }; // Successful return
-                } catch (error) { 
-                    console.error("Critical Error in getAvailabilityForRange:", error); 
-                    statusCustom.textContent = `Error calculating availability: ${error.message}`; 
-                    statusCustom.className = 'status status-visible status-error';
-                    return defaultResult; // Return default on catch
-                }
-            }
-            
-            function isTeacherAbsent(teacher, checkDate, checkTimeInMinutes) {
-                const dateKey = dateToYYYYMMDD(checkDate);
-                const absenceData = getSavedAbsenceData();
-                const dayAbsences = absenceData[dateKey];
-
-                if (dayAbsences && dayAbsences[teacher]) {
-                    for (const entry of dayAbsences[teacher]) {
-                        // Check if the checkTime falls within any absence range
-                        if (checkTimeInMinutes >= entry.start && checkTimeInMinutes < entry.end) {
-                            return true; // Teacher is absent
-                        }
-                    }
-                }
-                return false; // Teacher is not absent
-            }
-
-            // --- UI Update Functions ---
-            function displayResults(availableTeachers, onCallTimesMap, listElement, statusElement, checkDate) {
-                listElement.innerHTML = ''; // Clear previous results
-                const dateKey = checkDate ? dateToYYYYMMDD(checkDate) : null;
-                const absenceData = getSavedAbsenceData();
-                const dayAbsences = dateKey ? (absenceData[dateKey] || {}) : {};
-
-                if (availableTeachers.length === 0) {
-                    statusElement.textContent = 'No teachers found available for the selected criteria.';
-                    statusElement.className = 'status status-visible'; // Reset to default
-                    return;
-                }
-
-                // Separate On Call from regular available
-                const onCallTeachers = [];
-                const regularTeachers = [];
-
-                availableTeachers.forEach(teacher => {
-                    if (onCallTimesMap.has(teacher)) {
-                        onCallTeachers.push(teacher);
-                    } else {
-                        regularTeachers.push(teacher);
-                    }
-                });
-
-                // Function to create a list item
-                const createTeacherLi = (teacher) => {
-                    const onCallInfo = onCallTimesMap.get(teacher);
-                    const li = document.createElement('li');
-                    li.textContent = teacher;
-                    
-                    // Check for absence
-                    let isAbsent = false;
-                    if (dayAbsences[teacher]) {
-                        // For "now", check current time. For "range", check start of range.
-                        let checkTime;
-                        if (listElement === teachersNowList) {
-                             checkTime = new Date().getHours() * 60 + new Date().getMinutes();
-                        } else {
-                             checkTime = onCallInfo ? onCallInfo.start : timeToMinutes(timeFromInput.value);
-                             if (isNaN(checkTime) && checkDate) { // Fallback for "now"
-                                checkTime = checkDate.getHours() * 60 + checkDate.getMinutes();
-                             }
-                        }
-                        
-                        // We re-use the isTeacherAbsent function for a definitive check
-                        isAbsent = isTeacherAbsent(teacher, checkDate, checkTime);
-                    }
-
-                    if (onCallInfo) {
-                        // Style for On Call
-                        const onCallStart = minutesToHHMM(onCallInfo.start);
-                        const onCallEnd = minutesToHHMM(onCallInfo.end);
-                        li.textContent += ` (On Call ${onCallStart}-${onCallEnd})`;
-                        li.className = 'teacher-on-call';
-                    } else {
-                        // Style for Available
-                        li.className = 'teacher-available';
-                    }
-                    
-                    // Override styling if absent
-                    if (isAbsent && listElement === teachersNowList) { 
-                        // Only strike-through if it's the "now" list
-                        li.textContent += ' (Absent)';
-                        li.className = 'teacher-absent';
-                    }
-                    
-                    return li;
-                };
-
-                // Add regular teachers first, then on-call teachers
-                regularTeachers.forEach(teacher => listElement.appendChild(createTeacherLi(teacher)));
-                onCallTeachers.forEach(teacher => listElement.appendChild(createTeacherLi(teacher)));
-                
-                let timeStr;
-                if (listElement === teachersNowList) {
-                    timeStr = `as of ${new Date().toLocaleTimeString()}`;
+                absenceSaveStatus.className = 'status'; // Reset classes
+                // Base classes + conditional color classes
+                absenceSaveStatus.className = 'status mt-3 italic text-sm'; // Reset to base + margin
+                if (isError) {
+                    absenceSaveStatus.classList.add('error');
+                    absenceSaveStatus.classList.add('text-red-600', 'dark:text-red-400', 'font-semibold');
                 } else {
-                    timeStr = `for ${checkDate.toDateString()} from ${timeFromInput.value} to ${timeToInput.value}`;
+                    absenceSaveStatus.classList.add('success');
+                    absenceSaveStatus.classList.add('text-green-600', 'dark:text-green-400', 'font-semibold');
                 }
-                
-                statusElement.textContent = `Found ${availableTeachers.length} available teachers ${timeStr}.`;
-                statusElement.className = 'status status-visible'; // Reset to default
+                absenceSaveStatus.style.display = 'block';
+                setTimeout(() => {
+                    if (absenceSaveStatus) absenceSaveStatus.style.display = 'none';
+                }, 4000);
             }
 
+            // --- New Absence Helper Functions (Step 3A - MODIFIED) ---
+            // Display absences for ALL staff on the selected date
             function displayExistingAbsences(dateKey) {
-                const absenceData = getSavedAbsenceData();
-                const dayAbsences = absenceData[dateKey];
-                existingAbsencesList.innerHTML = ''; // Clear previous
-
-                if (!dayAbsences || Object.keys(dayAbsences).length === 0) {
-                    existingAbsencesList.innerHTML = `<p class="status status-visible">No absences logged for ${dateKey}.</p>`;
+                if (!existingAbsencesList) return;
+                if (!dateKey) {
+                    existingAbsencesList.innerHTML = '<p class="status">Select a date to see existing entries.</p>';
+                    existingAbsencesList.innerHTML = '<p class="status italic text-sm text-gray-600 dark:text-gray-400">Select a date to see existing entries.</p>';
                     return;
                 }
 
-                // Group by teacher
-                const sortedTeachers = Object.keys(dayAbsences).sort();
-                
-                for (const teacher of sortedTeachers) {
-                    const entries = dayAbsences[teacher];
-                    if (entries && entries.length > 0) {
-                        // Create a group container for filtering
-                        const groupDiv = document.createElement('div');
-                        groupDiv.setAttribute('data-teacher-name', teacher.toLowerCase());
-                        groupDiv.className = 'absence-group';
+                const allAbsenceData = getSavedAbsenceData();
+                let html = '';
+                let foundAbsences = false;
 
-                        const heading = document.createElement('h4');
-                        heading.textContent = teacher;
-                        groupDiv.appendChild(heading);
-                        
-                        const ul = document.createElement('ul');
-                        entries.forEach(entry => {
-                            const li = document.createElement('li');
-                            
-                            const textSpan = document.createElement('span');
-                            textSpan.textContent = `${minutesToHHMM(entry.start)} - ${minutesToHHMM(entry.end)}`;
-                            li.appendChild(textSpan);
+                // Sort staff names alphabetically
+                const staffNames = Object.keys(allAbsenceData).sort();
 
-                            const deleteButton = document.createElement('button');
-                            deleteButton.textContent = 'Delete';
-                            deleteButton.className = 'btn-delete-mini';
-                            deleteButton.dataset.teacher = teacher;
-                            deleteButton.dataset.start = entry.start;
-                            deleteButton.dataset.end = entry.end;
-                            deleteButton.dataset.date = dateKey;
-                            li.appendChild(deleteButton);
-                            
-                            ul.appendChild(li);
+                staffNames.forEach(staffName => {
+                    // Skip globally excluded teachers
+                    if (EXCLUDE_TEACHERS_SET.has(staffName)) return; 
+
+                    const dayEntries = allAbsenceData[staffName]?.[dateKey] || [];
+                    if (dayEntries.length > 0) {
+                        foundAbsences = true;
+                        html += `<h4>${staffName}</h4><ul>`; // Add heading for this staff member
+                        html += `<h4>${staffName}</h4><ul>`; // Style applied via CSS block
+
+                        // Sort entries for this staff member by start time
+                        dayEntries.sort((a, b) => a.start - b.start);
+
+                        dayEntries.forEach((entry, index) => {
+                            // Using Tailwind for delete button styling
+                            html += `
+                                <li style="margin-bottom: 10px; list-style-type: none; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                                    <strong>${minutesToHHMM(entry.start)} - ${minutesToHHMM(entry.end)}</strong>
+                                    <button class="danger" data-staff="${staffName}" data-date="${dateKey}" data-index="${index}" style="padding: 3px 8px; font-size: 12px; margin-left: 10px; margin-top: 0;">Delete</button>
+                                <li> 
+                                    <strong class="font-semibold">${minutesToHHMM(entry.start)} - ${minutesToHHMM(entry.end)}</strong>
+                                    <button 
+                                        class="ml-3 py-0.5 px-2 text-xs font-medium rounded shadow-sm bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:focus:ring-offset-gray-800" 
+                                        data-staff="${staffName}" data-date="${dateKey}" data-index="${index}">
+                                        Delete
+                                    </button>
+                                </li>
+                            `;
                         });
-                        groupDiv.appendChild(ul);
-                        existingAbsencesList.appendChild(groupDiv);
+                        html += '</ul>';
                     }
-                }
-            }
-
-            function populateStaffDropdown() {
-                const sortedTeachers = [...allTeachers].sort();
-                staffSelect.innerHTML = '<option value="">-- Select Staff --</option>';
-                absenceStaffSelect.innerHTML = '<option value="">-- Select Staff --</option>';
-                
-                sortedTeachers.forEach(teacher => {
-                    const option1 = document.createElement('option');
-                    option1.value = teacher;
-                    option1.textContent = teacher;
-                    staffSelect.appendChild(option1);
-                    
-                    const option2 = document.createElement('option');
-                    option2.value = teacher;
-                    option2.textContent = teacher;
-                    absenceStaffSelect.appendChild(option2);
                 });
+
+                if (!foundAbsences) {
+                    existingAbsencesList.innerHTML = '<p class="status">No absences logged for any staff on this day.</p>';
+                    existingAbsencesList.innerHTML = '<p class="status italic text-sm text-gray-600 dark:text-gray-400">No absences logged for any staff on this day.</p>';
+                } else {
+                    existingAbsencesList.innerHTML = html;
+                }
             }
 
-            function displayMonthlyTotals(year, monthIndex) {
-                const data = getSavedMinutesData();
-                const yearData = data[year] || {};
-                const monthData = yearData[monthIndex] || {};
-                
-                const sortedTeachers = [...allTeachers].sort();
-                
-                if (sortedTeachers.length === 0) {
-                     totalsDisplay.innerHTML = `<p class="status status-visible">No teachers loaded. Cannot display totals.</p>`;
-                     return;
+
+            // Corrected date formatting
+            // Corrected date formatting consistency
+            function isTeacherAbsent(teacher, checkDate, checkTimeInMinutes) {
+                const allData = getSavedAbsenceData();
+                // Ensure dateKey uses consistent YYYY-MM-DD format
+                let dateKey = '';
+                if (checkDate instanceof Date && !isNaN(checkDate)) {
+                    // Format Date object to YYYY-MM-DD string
+                    const year = checkDate.getFullYear();
+                    const month = String(checkDate.getMonth() + 1).padStart(2, '0');
+                    const day = String(checkDate.getDate()).padStart(2, '0');
+                    dateKey = `${year}-${month}-${day}`;
+                } else {
+                    console.warn("isTeacherAbsent received invalid date object:", checkDate);
+                    return false; // Cannot determine absence without a valid date
                 }
-                
-                let hasData = false;
-                for(const teacher of sortedTeachers) {
-                    if (monthData[teacher] > 0) {
-                        hasData = true;
-                        break;
+
+                const dayEntries = allData[teacher]?.[dateKey] || [];
+
+                if (dayEntries.length === 0) return false;
+
+                // Check if the checkTimeInMinutes falls within any saved absence range
+                for (const entry of dayEntries) {
+                    // checkTimeInMinutes is inclusive of start, exclusive of end
+                    if (checkTimeInMinutes >= entry.start && checkTimeInMinutes < entry.end) {
+                        return true; // Teacher is absent
+                    }
+                }
+                return false; // Not absent at this time
+            }
+
+            // --- Other Helper Functions ---
+            // CHANGE 1D: Replaced function to populate both dropdowns
+            function populateStaffDropdown() {
+                console.log("Populating dropdowns...");
+                if (!allTeachers || !(allTeachers instanceof Set) || allTeachers.size === 0) { 
+                    console.warn("Cannot populate dropdowns: allTeachers set is empty or invalid."); 
+                    staffSelect.innerHTML = '<option value="">Error: No staff found</option>'; 
+                    if (absenceStaffSelect) absenceStaffSelect.innerHTML = '<option value="">Error: No staff found</option>';
+                    return; 
+                }
+                try { 
+                    const sortedTeachers = [...allTeachers].filter(teacher => teacher && !EXCLUDE_TEACHERS_SET.has(teacher)).sort(); 
+
+                    // Clear both dropdowns first
+                    staffSelect.innerHTML = '<option value="">-- Select Staff --</option>';
+                    if (absenceStaffSelect) absenceStaffSelect.innerHTML = '<option value="">-- Select Staff --</option>'; // Clear new dropdown
+
+                    sortedTeachers.forEach(teacher => { 
+                        const option = document.createElement('option'); 
+                        option.value = teacher; 
+                        option.textContent = teacher; 
+                        staffSelect.appendChild(option.cloneNode(true)); 
+                        if (absenceStaffSelect) absenceStaffSelect.appendChild(option.cloneNode(true)); // Populates new dropdown
+                    }); 
+                    console.log(`Dropdowns populated with ${sortedTeachers.length} teachers.`); 
+                }
+                catch (error) { console.error("Error during populateStaffDropdown:", error); staffSelect.innerHTML = '<option value="">Error populating</option>'; }
+            }
+            // (Restored from original code)
+            // Updated to use Tailwind classes
+            function showSaveStatus(message, isError = false) {
+                if (!saveStatus) return;
+                saveStatus.textContent = message;
+                saveStatus.className = 'status'; // Reset classes
+                 // Base classes + conditional color classes
+                saveStatus.className = 'status mt-3 italic text-sm'; // Reset to base + margin
+                if (isError) {
+                    saveStatus.classList.add('error');
+                     saveStatus.classList.add('text-red-600', 'dark:text-red-400', 'font-semibold');
+                } else {
+                    saveStatus.classList.add('success');
+                     saveStatus.classList.add('text-green-600', 'dark:text-green-400', 'font-semibold');
+                }
+                saveStatus.style.display = 'block';
+                setTimeout(() => {
+                    if (saveStatus) saveStatus.style.display = 'none';
+                }, 4000);
+            }
+            // (Restored from original code)
+            // Updated to use Tailwind classes
+            function showImportStatus(message, isError = false) { // Used for Minutes import
+                if (!importStatus) return;
+                importStatus.textContent = message;
+                importStatus.className = 'status'; // Reset classes
+                importStatus.className = 'status mt-3 italic text-sm'; // Reset to base + margin
+                if (isError) {
+                    importStatus.classList.add('error');
+                    importStatus.classList.add('text-red-600', 'dark:text-red-400', 'font-semibold');
+                } else {
+                    importStatus.classList.add('success');
+                    importStatus.classList.add('text-green-600', 'dark:text-green-400', 'font-semibold');
+                }
+                importStatus.style.display = 'block';
+                setTimeout(() => {
+                    if (importStatus) importStatus.style.display = 'none';
+                }, 5000);
+            }
+             // New function for Absence import status
+             // Updated to use Tailwind classes (New function for Absence import status)
+             function showAbsenceImportStatus(message, isError = false) { 
+                if (!absenceImportStatus) return;
+                absenceImportStatus.textContent = message;
+                absenceImportStatus.className = 'status'; // Reset classes
+                absenceImportStatus.className = 'status mt-3 italic text-sm'; // Reset to base + margin
+                if (isError) {
+                    absenceImportStatus.classList.add('error');
+                    absenceImportStatus.classList.add('text-red-600', 'dark:text-red-400', 'font-semibold');
+                } else {
+                    absenceImportStatus.classList.add('success');
+                    absenceImportStatus.classList.add('text-green-600', 'dark:text-green-400', 'font-semibold');
+                }
+                absenceImportStatus.style.display = 'block';
+                setTimeout(() => {
+                    if (absenceImportStatus) absenceImportStatus.style.display = 'none';
+                }, 5000);
+            }
+            // (Restored from original code)
+            // Updated displayMonthlyTotals to use Tailwind classes for list items
+            function displayMonthlyTotals(year, monthIndex) {
+                totalsDisplay.innerHTML = ''; // Clear previous
+                const monthKey = `${year}-${String(monthIndex + 1).padStart(2, '0')}`;
+                const allData = getSavedMinutesData();
+                let totals = [];
+
+                for (const teacher in allData) {
+                    if (EXCLUDE_TEACHERS_SET.has(teacher)) continue;
+
+                    let monthlyTotal = 0;
+                    const teacherData = allData[teacher] || {};
+                    for (const dateKey in teacherData) {
+                        if (dateKey.startsWith(monthKey)) {
+                            monthlyTotal += teacherData[dateKey] || 0;
+                        }
+                    }
+                    if (monthlyTotal > 0) {
+                        totals.push({ name: teacher, total: monthlyTotal });
                     }
                 }
 
-                if (!hasData) {
-                    totalsDisplay.innerHTML = `<p class="status status-visible">No data found for ${new Date(year, monthIndex).toLocaleString('default', { month: 'long' })} ${year}.</p>`;
+                // Sort by total, least to most
+                totals.sort((a, b) => a.total - b.total);
+
+                if (totals.length === 0) {
+                    totalsDisplay.innerHTML = `<p class="status">No extra minutes recorded for ${monthKey}.</p>`;
+                    totalsDisplay.innerHTML = `<p class="italic text-sm text-gray-600 dark:text-gray-400">No extra minutes recorded for ${monthKey}.</p>`;
                     return;
                 }
 
-                // Create table
-                let tableHtml = '<table id="totals-table">';
-                tableHtml += '<thead><tr><th>Teacher</th><th>Total Minutes</th><th>Total Hours</th></tr></thead>';
-                tableHtml += '<tbody>';
-
-                let grandTotalMinutes = 0;
-
-                sortedTeachers.forEach(teacher => {
-                    const totalMinutes = monthData[teacher] || 0;
-                    if (totalMinutes > 0) { // Only show teachers with minutes
-                        const totalHours = (totalMinutes / 60).toFixed(2);
-                        tableHtml += `<tr>
-                            <td>${teacher}</td>
-                            <td>${totalMinutes}</td>
-                            <td>${totalHours}</td>
-                        </tr>`;
-                        grandTotalMinutes += totalMinutes;
-                    }
-                });
-
-                // Grand Total Row
-                tableHtml += `<tr>
-                    <td>Grand Total</td>
-                    <td>${grandTotalMinutes}</td>
-                    <td>${(grandTotalMinutes / 60).toFixed(2)}</td>
-                </tr>`;
-
-                tableHtml += '</tbody></table>';
-                totalsDisplay.innerHTML = tableHtml;
-            }
-            
-            function setupMonthButtons() {
-                monthButtonsContainer.innerHTML = '';
-                const year = parseInt(yearDisplay.value, 10);
-                if (isNaN(year)) return;
-
-                const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-                
-                months.forEach((month, index) => {
-                    const button = document.createElement('button');
-                    button.textContent = month;
-                    button.dataset.month = index;
-                    
-                    button.addEventListener('click', () => {
-                        const year = parseInt(yearDisplay.value, 10);
-                        if (isNaN(year)) {
-                            totalsDisplay.innerHTML = `<p class="status status-visible status-error">Please enter a valid year.</p>`;
-                            return;
-                        }
-                        
-                        if (activeMonthButton) {
-                            activeMonthButton.classList.remove('active-month');
-                        }
-                        button.classList.add('active-month');
-                        activeMonthButton = button;
-                        
-                        displayMonthlyTotals(year, index);
-                    });
-                    monthButtonsContainer.appendChild(button);
-                });
-            }
-
-            function refreshAvailableNow() {
-                try {
-                    const now = new Date();
-                    console.log("refreshAvailableNow: Refreshing at", now.toLocaleTimeString()); // Debug
-                    const availability = getAvailabilityAtTime(now);
-                    
-                    if (availability && typeof availability === 'object') {
-                        displayResults(availability.available, availability.onCallTimes, teachersNowList, statusNow, now);
-                        lastUpdatedSpan.textContent = `Last updated: ${now.toLocaleTimeString()}`;
+                const monthName = new Date(year, monthIndex, 1).toLocaleString('default', { month: 'long' });
+                let html = `<h3>Totals for ${monthName} ${year}</h3><ul style="padding: 0;">`;
+                // Use Tailwind for list styling
+                let html = `<h3 class="text-lg font-semibold mb-2">${monthName} ${year} Totals</h3><ul class="list-none p-0 space-y-1">`; 
+                totals.forEach(entry => {
+                    const li = document.createElement('li');
+                    li.textContent = `${entry.name}: ${entry.total} minutes`;
+                    let liClasses = "font-mono text-sm p-1 rounded"; // Base classes
+                    if (entry.total >= 180) {
+                        li.classList.add('minutes-danger');
+                    } else if (entry.total >= 90) { // Using 90 as a general weekly proxy for monthly warning
+                         li.classList.add('minutes-warn');
+                        liClasses += " bg-red-600 text-white font-semibold"; // Danger
+                    } else if (entry.total >= 90) { 
+                         liClasses += " bg-yellow-400 text-black"; // Warn
                     } else {
-                        throw new Error("getAvailabilityAtTime returned invalid data.");
+                         liClasses += " bg-gray-100 dark:bg-gray-600"; // Default
                     }
-                } catch (error) {
-                    console.error("Error in refreshAvailableNow:", error);
-                    statusNow.textContent = `Error refreshing: ${error.message}`;
-                    statusNow.className = 'status status-visible status-error';
-                    lastUpdatedSpan.textContent = 'Last update failed.';
-                }
+                    html += li.outerHTML;
+                    html += `<li class="${liClasses}">${entry.name}: ${entry.total} minutes</li>`;
+                });
+                html += '</ul>';
+                totalsDisplay.innerHTML = html;
             }
-
-            function refreshAbsenceList() {
-                const date = absenceDateInput.valueAsDate;
-                if (date) {
-                    // Adjust for timezone to get the correct YYYY-MM-DD key
-                    const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
-                    const dateKey = dateToYYYYMMDD(localDate);
-                    displayExistingAbsences(dateKey);
-                } else {
-                    existingAbsencesList.innerHTML = `<p class="status status-visible">Select a date to see existing entries.</p>`;
-                }
-            }
-
-            function applyFilter(inputId, listContainerId, itemSelectorType) {
-                try {
-                    const filterInput = document.getElementById(inputId);
-                    const listContainer = document.getElementById(listContainerId);
-                    if (!filterInput || !listContainer) return;
-                    
-                    const filterText = filterInput.value.toLowerCase().trim();
-                    let items;
-
-                    if (itemSelectorType === 'li') {
-                        items = listContainer.getElementsByTagName('li');
-                    } else if (itemSelectorType === 'group') {
-                        items = listContainer.getElementsByClassName('absence-group');
-                    } else {
-                        return;
-                    }
-
-                    let visibleCount = 0;
-                    for (let i = 0; i < items.length; i++) {
-                        const item = items[i];
-                        let itemText;
-                        
-                        if (itemSelectorType === 'group') {
-                            // Use the data attribute for filtering absence groups
-                            itemText = item.dataset.teacherName || '';
-                        } else {
-                            itemText = item.textContent.toLowerCase();
-                        }
-
-                        if (itemText.includes(filterText)) {
-                            item.classList.remove('filtered-hide');
-                            visibleCount++;
-                        } else {
-                            item.classList.add('filtered-hide');
-                        }
-                    }
-                } catch (e) {
-                    console.error("Error applying filter:", e);
-                }
-            }
+            // (Restored from original code)
+            // Updated setupMonthButtons to use Tailwind classes
+             function setupMonthButtons() {
+                 console.log("Attempting to set up month buttons...");
+                 if (!monthButtonsContainer) { console.error("Critical Error: Month buttons container not found."); return; }
+                 try { const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]; monthButtonsContainer.innerHTML = ''; console.log("Month button container cleared."); monthNames.forEach((name, index) => { /* console.log(`Creating button for ${name} (index ${index})`); */ const button = document.createElement('button'); if (!button) { console.error(`Failed to create button for month ${index}`); return; } button.textContent = name; button.classList.add('secondary'); button.dataset.monthIndex = index; button.addEventListener('click', (e) => { try { if (activeMonthButton) { activeMonthButton.classList.remove('active'); activeMonthButton.classList.add('secondary'); } const clickedButton = e.target; clickedButton.classList.remove('secondary'); clickedButton.classList.add('active'); activeMonthButton = clickedButton; const yearVal = parseInt(yearDisplay.value, 10); if (isNaN(yearVal)) { totalsDisplay.innerHTML = '<p class="error">Enter valid year.</p>'; return; } displayMonthlyTotals(yearVal, index); } catch (clickHandlerError) { console.error("Error in month button click:", clickHandlerError); totalsDisplay.innerHTML = '<p class="error">Error displaying totals.</p>'; } }); monthButtonsContainer.appendChild(button); /* console.log(`Appended button for ${name}.`); */ }); console.log("Finished setupMonthButtons loop successfully."); }
+                 catch (error) { console.error("Critical Error during setupMonthButtons loop:", error); monthButtonsContainer.innerHTML = '<p class="error" style="color: red;">Error creating month buttons.</p>'; }
+                 try { 
+                     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]; 
+                     monthButtonsContainer.innerHTML = ''; 
+                     console.log("Month button container cleared."); 
+                     
+                     // Base classes for inactive buttons
+                     const inactiveClasses = ['py-1', 'px-3', 'bg-white', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-200', 'border', 'border-gray-300', 'dark:border-gray-600', 'rounded-md', 'font-semibold', 'shadow-sm', 'hover:bg-gray-50', 'dark:hover:bg-gray-600', 'focus:outline-none', 'focus:ring-2', 'focus:ring-offset-2', 'focus:ring-indigo-500', 'dark:focus:ring-offset-gray-800', 'flex-grow', 'text-sm'];
+                     // Classes to add for the active button
+                     const activeClasses = ['!bg-blue-600', '!text-white', '!border-blue-700', '!font-semibold']; // Using !important prefix
+                     
+                     monthNames.forEach((name, index) => { 
+                         const button = document.createElement('button'); 
+                         if (!button) { console.error(`Failed to create button for month ${index}`); return; } 
+                         button.textContent = name; 
+                         button.classList.add(...inactiveClasses); // Apply base styles
+                         button.dataset.monthIndex = index; 
+                         
+                         button.addEventListener('click', (e) => { 
+                             try { 
+                                 // Deactivate previous button
+                                 if (activeMonthButton) { 
+                                     activeMonthButton.classList.remove(...activeClasses);
+                                     activeMonthButton.classList.add(...inactiveClasses.filter(c => !c.startsWith('bg-') && !c.startsWith('text-') && !c.startsWith('border-'))); // Re-add non-color base classes if needed
+                                 } 
+                                 
+                                 // Activate clicked button
+                                 const clickedButton = e.target; 
+                                 clickedButton.classList.remove(...inactiveClasses.filter(c => c.startsWith('bg-') || c.startsWith('text-') || c.startsWith('border-'))); // Remove conflicting base styles
+                                 clickedButton.classList.add(...activeClasses); 
+                                 activeMonthButton = clickedButton; 
+                                 
+                                 const yearVal = parseInt(yearDisplay.value, 10); 
+                                 if (isNaN(yearVal)) { 
+                                     totalsDisplay.innerHTML = '<p class="text-red-600 dark:text-red-400 font-semibold">Enter valid year.</p>'; 
+                                     return; 
+                                 } 
+                                 displayMonthlyTotals(yearVal, index); 
+                             } catch (clickHandlerError) { 
+                                 console.error("Error in month button click:", clickHandlerError); 
+                                 totalsDisplay.innerHTML = '<p class="text-red-600 dark:text-red-400 font-semibold">Error displaying totals.</p>'; 
+                             } 
+                         }); 
+                         monthButtonsContainer.appendChild(button); 
+                     }); 
+                     console.log("Finished setupMonthButtons loop successfully."); 
+                 }
+                 catch (error) { console.error("Critical Error during setupMonthButtons loop:", error); monthButtonsContainer.innerHTML = '<p class="text-red-600 dark:text-red-400 font-semibold">Error creating month buttons.</p>'; }
+             }
 
 
             // --- Initialization ---
-            async function loadData() {
-                console.log("loadData: Starting to load schedule..."); // Debug
-                statusNow.textContent = 'Loading schedule...';
-                statusNow.className = 'status status-visible'; // Reset styles
-                lessons = [];
-                allTeachers.clear();
-                columnMap = {};
+             async function loadData() {
+                 console.log("Starting application load...");
+                 statusNow.textContent = 'Loading schedule...';
+                 statusNow.classList.remove('error', 'success');
+                 statusNow.classList.remove('!text-red-600', '!dark:text-red-400', '!font-semibold', '!text-green-600', '!dark:text-green-400'); // Remove specific color classes
+                 statusNow.classList.add('italic', 'text-sm', 'text-gray-600', 'dark:text-gray-400'); // Add back default status classes
 
-                try {
-                    // Fetch the CSV with a cache-busting query parameter
-                    const response = await fetch('schedule.csv?_=' + new Date().getTime(), {
-                        cache: 'no-store' // Ask the browser not to cache the file
-                    });
-                    console.log("loadData: Fetch response status:", response.status); // Debug
+                 try {
+                     console.log("Fetching Lessons.txt...");
+                     const response = await fetch('Lessons.txt'); if (!response.ok) throw new Error(`Fetch failed: ${response.statusText} (${response.status})`); console.log("Fetched OK."); const text = await response.text(); const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0); if (lines.length < 2) throw new Error('Lessons.txt is empty or invalid.'); console.log(`Read ${lines.length} lines.`);
+                     const header = lines[0].split('\t'); columnMap = {}; header.forEach((c, i) => { columnMap[c.trim()] = i; }); console.log("Parsed header."); const requiredCols = ['subject', 'teacher', 'day', 'starttime', 'length', 'realweeks']; for (const col of requiredCols) { if (columnMap[col] === undefined) throw new Error(`Missing required column: ${col}`); } console.log("Required columns found.");
+                     const expectedColumns = header.length;
+                     lessons = lines.slice(1).map((line, index) => { const columns = line.split('\t'); if (columns.length !== expectedColumns) { while (columns.length < expectedColumns) columns.push(''); if (columns.length > expectedColumns) columns.length = expectedColumns; } return columns; }).filter(row => row); console.log(`Parsed ${lessons.length} lesson rows.`);
 
-                    if (!response.ok) {
-                        // This catches errors like 404 Not Found
-                        throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
-                    }
+                     allTeachers = new Set();
+                     const teacherColIndex = columnMap['teacher']; if (typeof teacherColIndex !== 'number') { throw new Error("Could not find 'teacher' column index."); }
+                     console.log("Starting teacher population loop...");
+                     lessons.forEach((lesson, index) => { const rowNum = index + 2; try { if (!Array.isArray(lesson) || lesson.length <= teacherColIndex) { return; } const teacherStringRaw = lesson[teacherColIndex]; if (typeof teacherStringRaw === 'string' && teacherStringRaw.trim()) { const teacherString = teacherStringRaw.trim(); const parsedResult = parseTeachers(teacherString); if (Array.isArray(parsedResult)) { parsedResult.forEach(teacher => { if (teacher) allTeachers.add(teacher); }); } } } catch (e) { console.error(`Critical error processing teachers row ${rowNum}:`, lesson, e); } });
+                     console.log(`Finished teacher population loop. Found ${allTeachers.size} unique teachers.`);
 
-                    const csvText = await response.text();
-                    if (!csvText || csvText.trim().length === 0) {
-                        throw new Error("CSV file is empty.");
-                    }
-                    console.log("loadData: CSV text loaded, length:", csvText.length); // Debug
+                     console.log("Setting up month buttons...");
+                     setupMonthButtons();
+                     console.log("DEBUG: Month Buttons HTML after setup:", monthButtonsContainer ? monthButtonsContainer.innerHTML : "Container not found!");
 
-                    const lines = csvText.split(/\r?\n/).filter(line => line.trim() !== '');
+                     if (allTeachers.size === 0) { console.warn("No teachers identified..."); statusNow.textContent = 'Warning: No teachers found...'; statusNow.classList.add('error'); populateStaffDropdown(); }
+                     else { console.log("Populating dropdowns..."); populateStaffDropdown(); statusNow.textContent = `Schedule loaded. Checked for: ${new Date().toLocaleString()}`; }
+                     if (allTeachers.size === 0) { console.warn("No teachers identified..."); statusNow.textContent = 'Warning: No teachers found...'; statusNow.classList.add('!text-yellow-600', '!dark:text-yellow-400', '!font-semibold'); populateStaffDropdown(); } // Use Tailwind for warning
+                     else { console.log("Populating dropdowns..."); populateStaffDropdown(); statusNow.textContent = `Schedule loaded. Checked: ${new Date().toLocaleTimeString()}`; statusNow.classList.add('!text-green-600', '!dark:text-green-400'); } // Use Tailwind for success
 
-                    if (lines.length < 2) { // Need at least a header and one data row
-                        throw new Error("CSV file must have a header and at least one data row.");
-                    }
+                     console.log("Setting default input values...");
+                     const now = new Date();
+                     dateInput.valueAsDate = now; timeFromInput.value = now.toTimeString().substring(0, 5); const later = new Date(now.getTime() + 60 * 60 * 1000); timeToInput.value = later.toTimeString().substring(0, 5); dateEntryInput.valueAsDate = now; yearDisplay.value = now.getFullYear();
 
-                    // Process Header
-                    const headerLine = lines[0];
-                    const header = parseCsvLine(headerLine).map(h => h.trim().toLowerCase());
-                    header.forEach((col, index) => {
-                        columnMap[col] = index;
-                    });
+                     // CHANGE 1E: Set default date for new absence input
+                     if (absenceDateInput) absenceDateInput.valueAsDate = now;
 
-                    // Check for required columns
-                    const requiredCols = ['teacher', 'day', 'starttime', 'length', 'subject', 'realweeks'];
-                    const missingCols = requiredCols.filter(col => typeof columnMap[col] === 'undefined');
-                    if (missingCols.length > 0) {
-                        throw new Error(`CSV is missing required headers: ${missingCols.join(', ')}`);
-                    }
-                    console.log("loadData: Column map created successfully:", columnMap); // Debug
+                     if (lessons.length > 0) {
+                         console.log("Getting availability for now...");
+                         const availabilityNow = getAvailabilityAtTime(now); // Safe call
+                         if (availabilityNow && typeof availabilityNow === 'object' && Array.isArray(availabilityNow.available)) { console.log("Displaying results for now..."); displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now); }
+                         else { console.error("getAvailabilityAtTime returned invalid data:", availabilityNow); statusNow.textContent = 'Error displaying current availability (invalid data). Check console.'; if (!statusNow.classList.contains('error')) statusNow.classList.add('error'); }
+                     } else { statusNow.textContent = statusNow.textContent.includes('No teachers found') ? statusNow.textContent : 'Warning: Lessons invalid. Availability check skipped.'; if (!statusNow.classList.contains('error')) statusNow.classList.add('error'); }
+                         else { console.error("getAvailabilityAtTime returned invalid data:", availabilityNow); statusNow.textContent = 'Error displaying current availability (invalid data). Check console.'; statusNow.classList.add('!text-red-600', '!dark:text-red-400', '!font-semibold'); }
+                     } else { 
+                         statusNow.textContent = statusNow.textContent.includes('No teachers found') ? statusNow.textContent : 'Warning: Lessons invalid. Availability check skipped.'; 
+                         if (!statusNow.classList.contains('!text-yellow-600')) statusNow.classList.add('!text-red-600', '!dark:text-red-400', '!font-semibold'); // Error if not already warning
+                     }
 
-                    // Process Data Rows
-                    for (let i = 1; i < lines.length; i++) {
-                        const values = parseCsvLine(lines[i]);
-                        if (values.length >= header.length) {
-                            const lessonData = {};
-                            header.forEach((col, index) => {
-                                lessonData[col] = values[index] || '';
-                            });
-                            lessons.push(lessonData);
+                     console.log("Setting active month...");
+                     const currentMonthIndex = now.getMonth();
+                     if (monthButtonsContainer) {
+                         const currentMonthButton = monthButtonsContainer.querySelector(`button[data-month-index="${currentMonthIndex}"]`);
+                         if (currentMonthButton) { console.log("Found current month button, clicking..."); currentMonthButton.click(); }
+                         else { console.warn(`Could not find button for current month index ${currentMonthIndex} AFTER setup. Attempting manual display.`); displayMonthlyTotals(now.getFullYear(), currentMonthIndex); }
+                     } else { console.error("Month buttons container not found when trying to set active month."); }
 
-                            // Populate allTeachers set
-                            const teachersInLesson = parseTeachers(lessonData['teacher']);
-                            teachersInLesson.forEach(teacher => {
-                                if (teacher && !EXCLUDE_TEACHERS_SET.has(teacher)) {
-                                    allTeachers.add(teacher);
-                                }
-                            });
-                        }
-                    }
-                    console.log(`loadData: Processed ${lessons.length} lessons. Found ${allTeachers.size} unique teachers.`); // Debug
+                    // Initial display for absence list (call after setting default date)
+                     refreshAbsenceList(); // MODIFIED: Call the correct function
+                     refreshAbsenceList(); 
 
-                    if (allTeachers.size === 0) {
-                        console.warn("No teachers were found in the CSV (or all were excluded).");
-                    }
+                     console.log("Initialization complete.");
 
-                    // --- Success ---
-                    // All data is loaded, now populate the UI
-                    populateStaffDropdown();
-                    setupMonthButtons();
-                    refreshAvailableNow(); // This is what updates the "Loading..." status
-                    refreshAbsenceList(); 
-                    
-                    if (refreshIntervalId) {
-                        clearInterval(refreshIntervalId);
-                    }
-                    refreshIntervalId = setInterval(refreshAvailableNow, REFRESH_INTERVAL_MS);
-                    console.log("loadData: Finished successfully. Refresh interval set."); // Debug
-
-                } catch (error) {
-                    // --- Failure ---
-                    // This will catch any error from the 'try' block (fetch, parsing, etc.)
-                    console.error('Error in loadData:', error); // Critical
-                    statusNow.textContent = `Error: Could not load schedule. ${error.message}`;
-                    statusNow.className = 'status status-visible status-error';
-                    lastUpdatedSpan.textContent = 'Last attempt failed.';
-                    teachersNowList.innerHTML = '';
-                }
-            }
+                 } catch (error) { statusNow.textContent = `Critical Error: ${error.message}. Cannot initialize fully. Check console (F12).`; statusNow.classList.add('error'); console.error("Load Data Error:", error); try { setupMonthButtons(); const now = new Date(); dateEntryInput.valueAsDate = now; yearDisplay.value = now.getFullYear(); populateStaffDropdown(); if (absenceDateInput) absenceDateInput.valueAsDate = now; refreshAbsenceList(); } catch (uiError) { console.error("Critical UI setup error:", uiError); document.body.innerHTML = `<div style="padding: 20px; color: red; font-weight: bold;">Critical Error: ${error.message}. Cannot initialize. Check console (F12).</div>`; } }
+                 } catch (error) { statusNow.textContent = `Critical Error: ${error.message}. Cannot initialize fully. Check console (F12).`; statusNow.classList.add('!text-red-600', '!dark:text-red-400', '!font-semibold'); console.error("Load Data Error:", error); try { setupMonthButtons(); const now = new Date(); dateEntryInput.valueAsDate = now; yearDisplay.value = now.getFullYear(); populateStaffDropdown(); if (absenceDateInput) absenceDateInput.valueAsDate = now; refreshAbsenceList(); } catch (uiError) { console.error("Critical UI setup error:", uiError); document.body.innerHTML = `<div class="p-5 text-red-700 bg-red-100 border border-red-400 rounded">Critical Error: ${error.message}. Cannot initialize. Check console (F12).</div>`; } } // Basic Tailwind error display
+             }
 
 
-            // --- Event Listeners --- 
+            // --- Event Listeners ---
             checkButton.addEventListener('click', () => {
-                console.log("Check Availability button clicked."); // DEBUG
                 try {
                     const date = dateInput.valueAsDate;
                     const timeFrom = timeFromInput.value;
                     const timeTo = timeToInput.value;
 
                     if (!date || !timeFrom || !timeTo) {
-                        console.log("Check button validation failed: Missing date/time."); // DEBUG
                         statusCustom.textContent = 'Please select a date and a time range.';
-                        statusCustom.className = 'status status-visible status-error';
+                        statusCustom.style.display = 'block';
+                        statusCustom.classList.add('error');
+                        statusCustom.className = 'status mt-4 italic text-sm text-red-600 dark:text-red-400 font-semibold'; // Tailwind error
                         teachersCustomList.innerHTML = '';
                         return;
                     }
-                    
-                    // Adjust for timezone issues with valueAsDate giving UTC date
-                    const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
 
                     const startMinutes = timeToMinutes(timeFrom);
                     const endMinutes = timeToMinutes(timeTo);
 
                     if (startMinutes >= endMinutes) {
-                        console.log("Check button validation failed: Start time >= End time."); // DEBUG
                         statusCustom.textContent = 'Invalid time: "From" time must be before "To" time.';
-                        statusCustom.className = 'status status-visible status-error';
+                        statusCustom.style.display = 'block';
+                        statusCustom.classList.add('error');
+                         statusCustom.className = 'status mt-4 italic text-sm text-red-600 dark:text-red-400 font-semibold'; // Tailwind error
                         teachersCustomList.innerHTML = '';
                         return;
                     }
-                    
-                    statusCustom.textContent = `Checking for: ${localDate.toDateString()} from ${timeFrom} to ${timeTo}...`;
-                    statusCustom.className = 'status status-visible'; // Reset to default
-                    console.log(`Calling getAvailabilityForRange with date: ${localDate}, start: ${startMinutes}, end: ${endMinutes}`); // DEBUG
 
-                    const availability = getAvailabilityForRange(localDate, startMinutes, endMinutes);
-                    console.log("getAvailabilityForRange returned:", availability); // DEBUG
+                    statusCustom.textContent = `Checking for: ${date.toDateString()} from ${timeFrom} to ${timeTo}...`;
+                    statusCustom.style.display = 'block';
+                    statusCustom.classList.remove('error');
+                    statusCustom.className = 'status mt-4 italic text-sm text-gray-600 dark:text-gray-400'; // Reset to default Tailwind
 
-                    if (availability && typeof availability === 'object' && availability.hasOwnProperty('available') && availability.hasOwnProperty('onCallTimes')) {
-                        displayResults(availability.available, availability.onCallTimes, teachersCustomList, statusCustom, localDate); 
-                        console.log("displayResults called for custom list."); // DEBUG
-                    } else {
-                        console.error("ERROR: getAvailabilityForRange did not return the expected object. Returned:", availability);
-                        statusCustom.textContent = `Internal error: Failed to get availability data structure. Check console.`;
-                        statusCustom.className = 'status status-visible status-error'; 
-                        teachersCustomList.innerHTML = ''; // Clear list on error
-                    }
-
+                    const availability = getAvailabilityForRange(date, startMinutes, endMinutes);
+                    displayResults(availability.available, availability.onCallTimes, teachersCustomList, statusCustom, date);
                 } catch (e) {
                     console.error("Error in checkButton click:", e);
                     statusCustom.textContent = `An error occurred: ${e.message}`;
-                    statusCustom.className = 'status status-visible status-error';
+                    statusCustom.style.display = 'block';
+                    statusCustom.classList.add('error');
+                    statusCustom.className = 'status mt-4 italic text-sm text-red-600 dark:text-red-400 font-semibold'; // Tailwind error
                 }
             });
-
             saveMinutesButton.addEventListener('click', () => {
-                const teacher = staffSelect.value;
+                const staffName = staffSelect.value;
                 const date = dateEntryInput.value;
                 const minutes = parseInt(minutesInput.value, 10);
 
-                if (!teacher || !date || isNaN(minutes) || minutes <= 0) {
-                    showSaveStatus('Please select a staff member, a valid date, and enter a positive number of minutes.', true);
+                if (!staffName || !date || isNaN(minutes) || minutes <= 0) {
+                    showSaveStatus('Please select a staff member, valid date, and enter positive minutes.', true);
                     return;
                 }
 
-                const dateObj = new Date(date);
-                // Adjust for timezone offset
-                const localDate = new Date(dateObj.getTime() + dateObj.getTimezoneOffset() * 60000);
-                const year = localDate.getFullYear();
-                const month = localDate.getMonth(); // 0-11
-                
-                const data = getSavedMinutesData();
-                
-                if (!data[year]) data[year] = {};
-                if (!data[year][month]) data[year][month] = {};
-                if (!data[year][month][teacher]) data[year][month][teacher] = 0;
-                
-                data[year][month][teacher] += minutes;
-                
-                saveMinutesData(data);
-                
-                showSaveStatus(`Saved ${minutes} minutes for ${teacher} on ${date}.`, false);
-                
-                // Clear inputs
-                staffSelect.value = '';
-                dateEntryInput.value = '';
-                minutesInput.value = '';
-
-                // Refresh totals view if it's the one being modified
-                if (activeMonthButton && parseInt(activeMonthButton.dataset.month, 10) === month && parseInt(yearDisplay.value, 10) === year) {
-                    displayMonthlyTotals(year, month);
-                }
-            });
-
-            exportSummaryButton.addEventListener('click', () => {
-                const year = parseInt(yearDisplay.value, 10);
-                if (isNaN(year)) {
-                    showImportStatus('Please enter a valid year to export.', true); // Re-using import status for feedback
-                    return;
-                }
-
-                const data = getSavedMinutesData();
-                const yearData = data[year] || {};
-                const sortedTeachers = [...allTeachers].sort();
-                const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-                
-                let csvContent = "data:text/csv;charset=utf-8,";
-                // Header
-                csvContent += `Teacher,${months.join(',')},Year Total (Min),Year Total (Hours)\r\n`;
-
-                // Rows
-                sortedTeachers.forEach(teacher => {
-                    let row = [`"${teacher}"`]; // Quote teacher name
-                    let yearTotalMinutes = 0;
-                    for (let i = 0; i < 12; i++) {
-                        const monthData = yearData[i] || {};
-                        const minutes = monthData[teacher] || 0;
-                        row.push(minutes);
-                        yearTotalMinutes += minutes;
+                try {
+                    const allData = getSavedMinutesData();
+                    if (!allData[staffName]) {
+                        allData[staffName] = {};
                     }
-                    row.push(yearTotalMinutes);
-                    row.push((yearTotalMinutes / 60).toFixed(2));
-                    
-                    if (yearTotalMinutes > 0) { // Only export teachers with data
-                        csvContent += row.join(',') + '\r\n';
-                    }
-                });
 
-                const encodedUri = encodeURI(csvContent);
-                const link = document.createElement("a");
-                link.setAttribute("href", encodedUri);
-                link.setAttribute("download", `extra_minutes_summary_${year}.csv`);
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            });
+                    const currentMinutes = allData[staffName][date] || 0;
+                    allData[staffName][date] = currentMinutes + minutes;
 
-            exportBackupButton.addEventListener('click', () => {
-                const data = getSavedMinutesData();
-                if (Object.keys(data).length === 0) {
-                    showImportStatus('No data to export.', true);
-                    return;
-                }
+                    saveMinutesData(allData);
+                    showSaveStatus(`Saved ${minutes} minutes for ${staffName} on ${date}. New total for day: ${allData[staffName][date]}`, false);
+                    minutesInput.value = ''; // Clear input
 
-                let csvContent = "data:text/csv;charset=utf-8,";
-                csvContent += "year,month_index,teacher,minutes\r\n"; // Header
-                
-                // Rows
-                for (const year in data) {
-                    for (const month in data[year]) {
-                        for (const teacher in data[year][month]) {
-                            const minutes = data[year][month][teacher];
-                            csvContent += `${year},${month},"${teacher}",${minutes}\r\n`;
+                    // Refresh totals if currently displayed
+                    if (activeMonthButton) {
+                        const yearVal = parseInt(yearDisplay.value, 10);
+                        const monthIndex = parseInt(activeMonthButton.dataset.monthIndex, 10);
+                        if (!isNaN(yearVal) && !isNaN(monthIndex)) {
+                            displayMonthlyTotals(yearVal, monthIndex);
                         }
                     }
-                }
+                    // Refresh availability lists
+                    const now = new Date();
+                    const availabilityNow = getAvailabilityAtTime(now);
+                    displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now);
+                    if (teachersCustomList.innerHTML !== '') {
+                        checkButton.click(); // Re-run custom check
+                    }
 
-                const encodedUri = encodeURI(csvContent);
-                const link = document.createElement("a");
-                link.setAttribute("href", encodedUri);
-                link.setAttribute("download", `extra_minutes_backup_${dateToYYYYMMDD(new Date())}.csv`);
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                } catch (e) {
+                    console.error("Error saving minutes:", e);
+                    showSaveStatus(`Error saving: ${e.message}`, true);
+                }
+            });
+            exportSummaryButton.addEventListener('click', () => {
+                // This export remains unchanged - only includes minutes data
+                try {
+                    const allData = getSavedMinutesData();
+                    let csvContent = "data:text/csv;charset=utf-8,Date of Export,Staff Name,Month,Month Total,Week,Week Total\r\n";
+                    const exportDate = new Date().toISOString().split('T')[0];
+                    const year = new Date().getFullYear(); // Use current year for week calculations
+                    let entries = [];
+
+                    for (const teacher in allData) {
+                        if (EXCLUDE_TEACHERS_SET.has(teacher)) continue;
+
+                        const teacherData = allData[teacher];
+                        let totalsByMonth = {};
+                        let totalsByWeek = {};
+
+                        for (const dateKey in teacherData) {
+                            const minutes = teacherData[dateKey] || 0;
+                            if (minutes === 0) continue;
+
+                            const monthKey = dateKey.substring(0, 7); // YYYY-MM
+                            totalsByMonth[monthKey] = (totalsByMonth[monthKey] || 0) + minutes;
+
+                            try {
+                                const entryDate = new Date(dateKey + 'T00:00:00Z');
+                                if (isNaN(entryDate.getTime())) continue;
+                                const { weekKey } = getIsoWeekAndYear(entryDate);
+                                totalsByWeek[weekKey] = (totalsByWeek[weekKey] || 0) + minutes;
+                            } catch (e) {
+                                console.error("Error processing date for week calculation:", dateKey, e);
+                            }
+                        }
+
+                        entries.push({ teacher, totalsByMonth, totalsByWeek });
+                    }
+
+                    // Sort alphabetically by teacher name
+                    entries.sort((a, b) => a.teacher.localeCompare(b.teacher));
+
+                    entries.forEach(entry => {
+                        const { teacher, totalsByMonth, totalsByWeek } = entry;
+
+                        // Combine and sort keys
+                        const allMonthKeys = Object.keys(totalsByMonth).sort();
+                        const allWeekKeys = Object.keys(totalsByWeek).sort();
+
+                        let i = 0, j = 0;
+                        while(i < allMonthKeys.length || j < allWeekKeys.length) {
+                            const monthKey = allMonthKeys[i] || '';
+                            const monthTotal = totalsByMonth[monthKey] || '';
+                            const weekKey = allWeekKeys[j] || '';
+                            const weekTotal = totalsByWeek[weekKey] || '';
+
+                            csvContent += `${exportDate},${teacher},${monthKey},${monthTotal},${weekKey},${weekTotal}\r\n`;
+
+                            i++; j++;
+                        }
+                    });
+
+                    const encodedUri = encodeURI(csvContent);
+                    const link = document.createElement("a");
+                    link.setAttribute("href", encodedUri);
+                    link.setAttribute("download", `Extra_Minutes_Summary_${exportDate}.csv`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                } catch (e) {
+                    console.error("Error exporting summary:", e);
+                    showImportStatus(`Error exporting summary: ${e.message}`, true); // Use import status for feedback
+                }
             });
 
+            // Reverted Backup Export (Minutes Only)
+            exportBackupButton.addEventListener('click', () => {
+                try {
+                    const allData = getSavedMinutesData();
+                    let csvContent = "data:text/csv;charset=utf-8,Date,Staff,Minutes\r\n"; // Back to original header
+                    let entries = [];
+
+                    for (const teacher in allData) {
+                        const teacherData = allData[teacher];
+                        for (const dateKey in teacherData) {
+                            const minutes = teacherData[dateKey] || 0;
+                            if (minutes > 0) {
+                                entries.push({ date: dateKey, staff: teacher, minutes: minutes });
+                            }
+                        }
+                    }
+
+                    // Sort by date, then by staff
+                    entries.sort((a, b) => {
+                        if (a.date < b.date) return -1;
+                        if (a.date > b.date) return 1;
+                        return a.staff.localeCompare(b.staff);
+                    });
+
+                    entries.forEach(entry => {
+                        // Use safe parsing for staff name, just in case
+                        const safeStaff = `"${entry.staff.replace(/"/g, '""')}"`;
+                        csvContent += `${entry.date},${safeStaff},${entry.minutes}\r\n`;
+                    });
+
+                    const encodedUri = encodeURI(csvContent);
+                    const link = document.createElement("a");
+                    const exportDate = new Date().toISOString().split('T')[0];
+                    link.setAttribute("href", encodedUri);
+                    link.setAttribute("download", `Extra_Minutes_Backup_${exportDate}.csv`); // Original filename
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    showImportStatus('Minutes Backup CSV exported successfully.', false); 
+                } catch (e) {
+                    console.error("Error exporting minutes backup:", e);
+                    showImportStatus(`Error exporting minutes backup: ${e.message}`, true);
+                }
+            });
+
+            // (MODIFIED Step 3D - still clears both)
             clearDataButton.addEventListener('click', () => {
-                const userConfirmed = confirm("Are you sure you want to delete ALL saved extra minutes data? This cannot be undone.");
-                
-                if (userConfirmed) {
+                console.log("Clear data button clicked");
+                const reallyClear = confirm("Are you sure you want to delete ALL saved extra minutes AND absence data? This cannot be undone.");
+                // Avoid using confirm() as requested in original prompt guidelines
+                // Replace with a simple log or implement a custom modal later
+                console.warn("Clear All Data button clicked - confirmation needed.");
+
+                if (reallyClear) {
                     try {
-                        localStorage.removeItem(MINUTES_STORAGE_KEY);
-                        showImportStatus('All extra minutes data has been cleared.', false);
-                        // Reset views
-                        totalsDisplay.innerHTML = `<p class="status status-visible">Select a month to see totals.</p>`;
+                        localStorage.removeItem('teacherMinutesData');
+                        localStorage.removeItem(ABSENCE_STORAGE_KEY); 
+                // If you want to proceed without confirmation for now:
+                try {
+                    localStorage.removeItem('teacherMinutesData');
+                    localStorage.removeItem(ABSENCE_STORAGE_KEY); 
+
+                        showImportStatus('All extra minutes and absence data have been cleared.', false);
+                        
+                        refreshAbsenceList(); 
+
                         if (activeMonthButton) {
-                            activeMonthButton.classList.remove('active-month');
-                            activeMonthButton = null;
+                            const yearVal = parseInt(yearDisplay.value, 10);
+                            const monthIndex = parseInt(activeMonthButton.dataset.monthIndex, 10);
+                            if (!isNaN(yearVal) && !isNaN(monthIndex)) {
+                                displayMonthlyTotals(yearVal, monthIndex);
+                            } else {
+                                totalsDisplay.innerHTML = '<p>Select a month to see totals.</p>'; // Reset if no valid month selected
+                            }
+                    showImportStatus('All extra minutes and absence data have been cleared.', false);
+                    
+                    refreshAbsenceList(); 
+
+                    if (activeMonthButton) {
+                        const yearVal = parseInt(yearDisplay.value, 10);
+                        const monthIndex = parseInt(activeMonthButton.dataset.monthIndex, 10);
+                        if (!isNaN(yearVal) && !isNaN(monthIndex)) {
+                            displayMonthlyTotals(yearVal, monthIndex);
+                        } else {
+                             totalsDisplay.innerHTML = '<p>Select a month to see totals.</p>'; // Reset if no button active
+                            totalsDisplay.innerHTML = '<p class="italic text-sm text-gray-600 dark:text-gray-400">Select a month to see totals.</p>'; // Reset
+                        }
+                        const now = new Date();
+                        const availabilityNow = getAvailabilityAtTime(now);
+                        displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now);
+                        if (teachersCustomList.innerHTML !== '') {
+                            checkButton.click(); 
                         }
                     } catch (e) {
+                        console.error("Error clearing data:", e);
                         showImportStatus(`Error clearing data: ${e.message}`, true);
+                    } else {
+                         totalsDisplay.innerHTML = '<p class="italic text-sm text-gray-600 dark:text-gray-400">Select a month to see totals.</p>'; // Reset
                     }
                 } else {
-                    showImportStatus('Clear data operation cancelled.', false);
+                     showImportStatus('Clear data operation cancelled.', true);
+                    const now = new Date();
+                    const availabilityNow = getAvailabilityAtTime(now);
+                    displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now);
+                    if (teachersCustomList.innerHTML !== '') {
+                        checkButton.click(); 
+                    }
+                } catch (e) {
+                    console.error("Error clearing data:", e);
+                    showImportStatus(`Error clearing data: ${e.message}`, true);
+                }
+                
+                // If you want confirmation (requires implementing a custom modal):
+                // showCustomConfirm("Are you sure you want to delete ALL saved data?", () => { /* clear data code */ });
+                
+            });
+            yearDisplay.addEventListener('change', () => {
+                if (activeMonthButton) {
+                    const yearVal = parseInt(yearDisplay.value, 10);
+                    const monthIndex = parseInt(activeMonthButton.dataset.monthIndex, 10);
+                    if (!isNaN(yearVal) && !isNaN(monthIndex)) {
+                        displayMonthlyTotals(yearVal, monthIndex);
+                    }
                 }
             });
-
             importCsvButton.addEventListener('click', () => { 
                 csvFileInput.value = null; // Reset file input
                 csvFileInput.click(); 
             });
 
+            // Reverted Import (Minutes Only)
             csvFileInput.addEventListener('change', (event) => {
-                const file = event.target.files[0];
-                if (!file) {
-                    showImportStatus('No file selected.', true);
-                    return;
-                }
+                 const file = event.target.files[0];
+                 if (!file) {
+                     showImportStatus('No file selected.', true);
+                     return;
+                 }
 
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    try {
-                        const text = e.target.result;
-                        const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
-                        
-                        if (lines.length < 2) {
-                            throw new Error("CSV file must have a header and at least one data row.");
-                        }
+                 const reader = new FileReader();
+                 reader.onload = (e) => {
+                     try {
+                         const text = e.target.result;
+                         const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+                         if (lines.length < 2) {
+                             throw new Error("CSV file is empty or has no data.");
+                         }
 
-                        // Use parseCsvLine for the header to handle potential quotes
-                        const header = parseCsvLine(lines[0]).map(h => h.trim().toLowerCase());
-                        const requiredCols = ['year', 'month_index', 'teacher', 'minutes'];
-                        const missingCols = requiredCols.filter(col => !header.includes(col));
-                        if (missingCols.length > 0) {
-                            throw new Error(`Invalid CSV format. Missing columns: ${missingCols.join(', ')}`);
-                        }
-                        
-                        const colMap = {};
-                        header.forEach((col, index) => { colMap[col] = index; });
+                         const header = lines[0].toLowerCase().split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+                         const dateIndex = header.indexOf('date');
+                         const staffIndex = header.indexOf('staff');
+                         const minutesIndex = header.indexOf('minutes'); 
 
-                        const importedData = getSavedMinutesData();
-                        let entriesProcessed = 0;
+                         if (dateIndex === -1 || staffIndex === -1 || minutesIndex === -1) {
+                             throw new Error("Invalid Minutes CSV Header. Must contain 'Date', 'Staff', and 'Minutes' columns.");
+                         }
 
-                        for (let i = 1; i < lines.length; i++) {
-                            // Use parseCsvLine for each data row
-                            const values = parseCsvLine(lines[i]);
-                            if (values.length < requiredCols.length) continue; // Skip empty/malformed lines
-                            
-                            const year = values[colMap['year']];
-                            const month = values[colMap['month_index']];
-                            const teacher = values[colMap['teacher']]; // Already unquoted by parseCsvLine
-                            const minutes = parseInt(values[colMap['minutes']], 10);
+                         let importedCount = 0;
+                         let skippedCount = 0;
+                         const currentMinutesData = getSavedMinutesData(); // Get existing minutes data
 
-                            if (year && month && teacher && !isNaN(minutes) && minutes > 0) {
-                                if (!importedData[year]) importedData[year] = {};
-                                if (!importedData[year][month]) importedData[year][month] = {};
-                                if (!importedData[year][month][teacher]) importedData[year][month][teacher] = 0;
-                                
-                                importedData[year][month][teacher] += minutes; // Add to existing
-                                entriesProcessed++;
-                            }
-                        }
+                         for (let i = 1; i < lines.length; i++) {
+                             const columns = parseCsvLine(lines[i]); // Use safe parser
+                             if (columns.length < 3) { // Expecting at least 3 columns
+                                 console.warn("Skipping short line:", lines[i]);
+                                 skippedCount++;
+                                 continue;
+                             }
 
-                        saveMinutesData(importedData);
-                        showImportStatus(`Successfully imported and merged ${entriesProcessed} entries.`, false);
-                        
-                        // Refresh view
-                        if (activeMonthButton) {
-                            const year = parseInt(yearDisplay.value, 10);
-                            const month = parseInt(activeMonthButton.dataset.month, 10);
-                            displayMonthlyTotals(year, month);
-                        }
+                             const date = columns[dateIndex]?.trim();
+                             const staff = columns[staffIndex]?.trim(); // Already handled quotes in parseCsvLine
+                             const minutesStr = columns[minutesIndex]?.trim();
+                             const minutes = parseInt(minutesStr, 10);
 
-                    } catch (error) {
-                        showImportStatus(`Error importing file: ${error.message}`, true);
-                    }
-                };
-                reader.readAsText(file);
-            });
-            
-            // --- Absence Listeners ---
+                             if (!date || !staff || !minutesStr || isNaN(minutes) || minutes <= 0) {
+                                 console.warn("Skipping invalid minutes line:", lines[i]);
+                                 skippedCount++;
+                                 continue;
+                             }
+
+                             if (!currentMinutesData[staff]) {
+                                 currentMinutesData[staff] = {};
+                             }
+                             // Overwrite existing entry for that day/staff
+                             currentMinutesData[staff][date] = minutes; 
+                             importedCount++;
+                         }
+
+                         saveMinutesData(currentMinutesData); // Save only minutes data
+
+                         showImportStatus(`Minutes Import complete: ${importedCount} minute entries imported/overwritten. ${skippedCount} lines skipped.`, false);
+
+
+                         // Refresh UI elements
+                         if (activeMonthButton) activeMonthButton.click(); 
+                         const now = new Date();
+                         const availabilityNow = getAvailabilityAtTime(now); 
+                         displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now);
+                         if (teachersCustomList.innerHTML !== '') checkButton.click(); 
+                         // No need to refresh absence list here
+
+                     } catch (err) {
+                         console.error("Error processing minutes CSV:", err);
+                         showImportStatus(`Minutes Import Error: ${err.message}`, true);
+                     }
+                 };
+                 reader.readAsText(file);
+             });
+
+
+            // --- Absence Event Listeners ---
+
+            // Save a new absence entry
             saveAbsenceButton.addEventListener('click', () => {
-                const teacher = absenceStaffSelect.value;
-                const date = absenceDateInput.valueAsDate;
+                const staffName = absenceStaffSelect.value;
+                const date = absenceDateInput.value; // YYYY-MM-DD format
                 const timeFrom = absenceTimeFromInput.value;
                 const timeTo = absenceTimeToInput.value;
 
-                if (!teacher || !date || !timeFrom || !timeTo) {
-                    showAbsenceSaveStatus('Please select a staff member, date, and time range.', true);
+                if (!staffName || !date || !timeFrom || !timeTo) {
+                    showAbsenceSaveStatus('Please select staff, date, and a full time range.', true);
                     return;
                 }
-                
-                // Adjust for timezone to get the correct YYYY-MM-DD key
-                const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
-                const dateKey = dateToYYYYMMDD(localDate);
-                
+
                 const startMinutes = timeToMinutes(timeFrom);
                 const endMinutes = timeToMinutes(timeTo);
 
@@ -1483,194 +1345,258 @@
                     showAbsenceSaveStatus('Invalid time: "From" time must be before "To" time.', true);
                     return;
                 }
-                
-                const absenceData = getSavedAbsenceData();
-                if (!absenceData[dateKey]) absenceData[dateKey] = {};
-                if (!absenceData[dateKey][teacher]) absenceData[dateKey][teacher] = [];
-                
-                // Check for duplicates
-                const exists = absenceData[dateKey][teacher].some(entry => entry.start === startMinutes && entry.end === endMinutes);
-                
-                if (exists) {
-                    showAbsenceSaveStatus('This exact absence entry already exists.', true);
-                    return;
+
+                try {
+                    const allData = getSavedAbsenceData();
+                    if (!allData[staffName]) allData[staffName] = {};
+                    if (!allData[staffName][date]) allData[staffName][date] = [];
+
+                    // Add the new entry
+                    allData[staffName][date].push({ start: startMinutes, end: endMinutes });
+
+                    saveAbsenceData(allData);
+                    showAbsenceSaveStatus(`Saved absence for ${staffName} on ${date} (${timeFrom} - ${timeTo}).`, false);
+
+                    // Clear inputs
+                    absenceTimeFromInput.value = '';
+                    absenceTimeToInput.value = '';
+
+                    // Refresh the list (now shows all for the day)
+                    refreshAbsenceList(); 
+
+                    // Refresh availability lists as absence might affect them
+                    const now = new Date();
+                    const availabilityNow = getAvailabilityAtTime(now);
+                    displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now);
+                    if (teachersCustomList.innerHTML !== '') {
+                        checkButton.click(); // Re-run custom check
+                    }
+
+                } catch (e) {
+                    console.error("Error saving absence:", e);
+                    showAbsenceSaveStatus(`Error saving: ${e.message}`, true);
                 }
-
-                absenceData[dateKey][teacher].push({ start: startMinutes, end: endMinutes });
-                // Sort entries by start time
-                absenceData[dateKey][teacher].sort((a, b) => a.start - b.start);
-                
-                saveAbsenceData(absenceData);
-                showAbsenceSaveStatus(`Saved absence for ${teacher} on ${dateKey}.`, false);
-                
-                // Clear inputs
-                absenceStaffSelect.value = '';
-                // Keep date, clear times
-                absenceTimeFromInput.value = '';
-                absenceTimeToInput.value = '';
-
-                // Refresh the list
-                displayExistingAbsences(dateKey);
-                // Refresh the "Available Now" list to show absence status
-                refreshAvailableNow();
             });
 
+            // Refresh the "Existing Absences" list ONLY when date changes
+            function refreshAbsenceList() {
+                const date = absenceDateInput.value; // YYYY-MM-DD format
+                displayExistingAbsences(date); // MODIFIED: Pass only date
+            }
             absenceDateInput.addEventListener('change', refreshAbsenceList);
 
+            // Handle clicking the "Delete" button on an absence entry
             existingAbsencesList.addEventListener('click', (e) => {
-                if (e.target.tagName === 'BUTTON' && e.target.dataset.teacher) {
-                    const { teacher, start, end, date } = e.target.dataset;
-                    
-                    if (confirm(`Delete absence for ${teacher} (${minutesToHHMM(start)} - ${minutesToHHMM(end)}) on ${date}?`)) {
-                        const startMin = parseInt(start, 10);
-                        const endMin = parseInt(end, 10);
-                        
-                        const absenceData = getSavedAbsenceData();
-                        if (absenceData[date] && absenceData[date][teacher]) {
-                            // Filter out the entry to be deleted
-                            absenceData[date][teacher] = absenceData[date][teacher].filter(entry => 
-                                !(entry.start === startMin && entry.end === endMin)
-                            );
-                            
-                            // If no entries left for teacher, remove teacher
-                            if (absenceData[date][teacher].length === 0) {
-                                delete absenceData[date][teacher];
+                if (e.target.tagName === 'BUTTON' && e.target.classList.contains('danger')) {
+                if (e.target.tagName === 'BUTTON' && e.target.classList.contains('bg-red-600')) { // Check Tailwind class
+                    const { staff, date, index } = e.target.dataset;
+
+                    if (!staff || !date || index === undefined) return; // Check index defined
+
+                    try {
+                         const idx = parseInt(index, 10); // Parse index to number
+                         if (isNaN(idx)) {
+                            console.error("Invalid index on delete button:", index);
+                            return;
+                         }
+
+                        const allData = getSavedAbsenceData();
+                        if (allData[staff]?.[date]?.[idx] !== undefined) { // Check if entry exists at index
+                            // Remove the entry from the array by its index
+                            allData[staff][date].splice(idx, 1);
+
+                            // If no entries left for this day, remove the day array
+                            if (allData[staff][date].length === 0) {
+                                delete allData[staff][date];
                             }
-                            // If no teachers left for date, remove date
-                            if (Object.keys(absenceData[date]).length === 0) {
-                                delete absenceData[date];
+                            // If no entries left for this staff, remove the staff object
+                            if (Object.keys(allData[staff] || {}).length === 0) { // Add check for staff existence
+                                delete allData[staff];
                             }
-                            
-                            saveAbsenceData(absenceData);
-                            showAbsenceSaveStatus('Absence deleted.', false);
-                            
-                            // Refresh the list
-                            displayExistingAbsences(date);
-                            // Refresh the "Available Now" list
-                            refreshAvailableNow();
+
+                            saveAbsenceData(allData);
+                            showAbsenceSaveStatus('Absence entry deleted.', false);
+
+                            // Refresh the list (now shows all for the day)
+                            refreshAbsenceList(); 
+
+                            // Refresh availability lists as absence might affect them
+                            const now = new Date();
+                            const availabilityNow = getAvailabilityAtTime(now);
+                            displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now);
+                            if (teachersCustomList.innerHTML !== '') {
+                                checkButton.click(); // Re-run custom check
+                            }
+                        } else {
+                            console.warn("Attempted to delete non-existent absence entry:", {staff, date, index});
                         }
+                    } catch (err) {
+                        console.error("Error deleting absence:", err);
+                        showAbsenceSaveStatus(`Error deleting: ${err.message}`, true);
                     }
                 }
             });
 
+            // New Listener for Exporting Absences
             exportAbsencesButton.addEventListener('click', () => {
-                const data = getSavedAbsenceData();
-                if (Object.keys(data).length === 0) {
-                    showAbsenceImportStatus('No absence data to export.', true);
-                    return;
-                }
+                try {
+                    const absenceData = getSavedAbsenceData();
+                    let csvContent = "data:text/csv;charset=utf-8,Date,Staff,StartTime,EndTime\r\n";
+                    let entries = [];
 
-                let csvContent = "data:text/csv;charset=utf-8,";
-                csvContent += "date,teacher,time_from,time_to\r\n"; // Header
-                
-                // Rows
-                const sortedDates = Object.keys(data).sort(); // Sort by date
-                for (const date of sortedDates) {
-                    const sortedTeachers = Object.keys(data[date]).sort(); // Then sort by teacher
-                    for (const teacher of sortedTeachers) {
-                        for (const entry of data[date][teacher]) {
-                            const timeFrom = minutesToHHMM(entry.start);
-                            const timeTo = minutesToHHMM(entry.end);
-                            csvContent += `${date},"${teacher}",${timeFrom},${timeTo}\r\n`;
+                    // Process Absence Data
+                    for (const teacher in absenceData) {
+                        const teacherDateData = absenceData[teacher];
+                        for (const dateKey in teacherDateData) {
+                            const dayEntries = teacherDateData[dateKey] || [];
+                            dayEntries.forEach(entry => {
+                                entries.push({ 
+                                    date: dateKey, 
+                                    staff: teacher, 
+                                    startTime: minutesToHHMM(entry.start), 
+                                    endTime: minutesToHHMM(entry.end) 
+                                });
+                            });
                         }
                     }
-                }
 
-                const encodedUri = encodeURI(csvContent);
-                const link = document.createElement("a");
-                link.setAttribute("href", encodedUri);
-                link.setAttribute("download", `teacher_absences_backup_${dateToYYYYMMDD(new Date())}.csv`);
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+                    // Sort by date, then by staff, then by start time
+                    entries.sort((a, b) => {
+                        if (a.date < b.date) return -1;
+                        if (a.date > b.date) return 1;
+                        if (a.staff < b.staff) return -1;
+                        if (a.staff > b.staff) return 1;
+                        return timeToMinutes(a.startTime) - timeToMinutes(b.startTime);
+                    });
+
+                    entries.forEach(entry => {
+                        const safeStaff = `"${entry.staff.replace(/"/g, '""')}"`;
+                        csvContent += `${entry.date},${safeStaff},${entry.startTime},${entry.endTime}\r\n`;
+                    });
+
+                    const encodedUri = encodeURI(csvContent);
+                    const link = document.createElement("a");
+                    const exportDate = new Date().toISOString().split('T')[0];
+                    link.setAttribute("href", encodedUri);
+                    link.setAttribute("download", `Teacher_Absences_Backup_${exportDate}.csv`); 
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    showAbsenceImportStatus('Absences CSV exported successfully.', false); 
+                } catch (e) {
+                    console.error("Error exporting absences:", e);
+                    showAbsenceImportStatus(`Error exporting absences: ${e.message}`, true);
+                }
             });
 
+            // New Listener for Absence Import Button
             importAbsencesButton.addEventListener('click', () => { 
                 absenceCsvFileInput.value = null; // Reset file input
                 absenceCsvFileInput.click(); 
             });
 
+             // New Listener for Absence File Input
             absenceCsvFileInput.addEventListener('change', (event) => {
-                const file = event.target.files[0];
-                if (!file) {
-                    showAbsenceImportStatus('No file selected.', true);
-                    return;
-                }
+                 const file = event.target.files[0];
+                 if (!file) {
+                     showAbsenceImportStatus('No file selected.', true);
+                     return;
+                 }
 
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    try {
-                        const text = e.target.result;
-                        const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
-                        
-                        if (lines.length < 2) {
-                            throw new Error("CSV file must have a header and at least one data row.");
-                        }
+                 const reader = new FileReader();
+                 reader.onload = (e) => {
+                     try {
+                         const text = e.target.result;
+                         const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+                         if (lines.length < 2) {
+                             throw new Error("Absence CSV file is empty or has no header/data.");
+                         }
 
-                        const header = parseCsvLine(lines[0]).map(h => h.trim().toLowerCase());
-                        const requiredCols = ['date', 'teacher', 'time_from', 'time_to'];
-                        const missingCols = requiredCols.filter(col => !header.includes(col));
-                        if (missingCols.length > 0) {
-                            throw new Error(`Invalid CSV format. Missing columns: ${missingCols.join(', ')}`);
-                        }
-                        
-                        const colMap = {};
-                        header.forEach((col, index) => { colMap[col] = index; });
+                         const header = lines[0].toLowerCase().split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+                         const dateIndex = header.indexOf('date');
+                         const staffIndex = header.indexOf('staff');
+                         const startTimeIndex = header.indexOf('starttime');
+                         const endTimeIndex = header.indexOf('endtime');
 
-                        const importedData = getSavedAbsenceData();
-                        let entriesProcessed = 0;
+                         if (dateIndex === -1 || staffIndex === -1 || startTimeIndex === -1 || endTimeIndex === -1) {
+                             throw new Error("Invalid Absence CSV Header. Must contain 'Date', 'Staff', 'StartTime', and 'EndTime' columns.");
+                         }
 
-                        for (let i = 1; i < lines.length; i++) {
-                            const values = parseCsvLine(lines[i]);
-                            if (values.length < requiredCols.length) continue; // Skip malformed lines
+                         let importedCount = 0;
+                         let skippedCount = 0;
+                         // Get current data - NOTE: This simple import ADDS entries.
+                         // For a true "restore", you might want to clear existing absence data first
+                         // Or, clear only data for the specific staff/days being imported.
+                         // Current approach: Add all entries from the file, avoiding exact duplicates.
+                         const currentAbsenceData = getSavedAbsenceData(); 
 
-                            const dateKey = values[colMap['date']].trim();
-                            const teacher = values[colMap['teacher']].trim(); // Already unquoted
-                            const timeFrom = values[colMap['time_from']].trim();
-                            const timeTo = values[colMap['time_to']].trim();
-                            
-                            const startMinutes = timeToMinutes(timeFrom);
-                            const endMinutes = timeToMinutes(timeTo);
+                         for (let i = 1; i < lines.length; i++) {
+                             const columns = parseCsvLine(lines[i]); // Use safe parser
+                             if (columns.length < 4) { // Expecting 4 columns
+                                 console.warn("Skipping short absence line:", lines[i]);
+                                 skippedCount++;
+                                 continue;
+                             }
 
-                            if (dateKey && teacher && !isNaN(startMinutes) && !isNaN(endMinutes) && startMinutes < endMinutes) {
-                                if (!importedData[dateKey]) importedData[dateKey] = {};
-                                if (!importedData[dateKey][teacher]) importedData[dateKey][teacher] = [];
+                             const date = columns[dateIndex]?.trim();
+                             const staff = columns[staffIndex]?.trim(); // Already handled quotes
+                             const startTimeStr = columns[startTimeIndex]?.trim();
+                             const endTimeStr = columns[endTimeIndex]?.trim();
 
-                                // Check for duplicates before adding
-                                const exists = importedData[dateKey][teacher].some(entry => entry.start === startMinutes && entry.end === endMinutes);
-                                if (!exists) {
-                                    importedData[dateKey][teacher].push({ start: startMinutes, end: endMinutes });
-                                    // Sort entries by start time
-                                    importedData[dateKey][teacher].sort((a, b) => a.start - b.start);
-                                    entriesProcessed++;
-                                }
-                            }
-                        }
+                             if (!date || !staff || !startTimeStr || !endTimeStr) {
+                                 console.warn("Skipping absence line with missing data:", lines[i]);
+                                 skippedCount++;
+                                 continue;
+                             }
 
-                        saveAbsenceData(importedData);
-                        showAbsenceImportStatus(`Successfully imported and merged ${entriesProcessed} absence entries.`, false);
-                        
-                        // Refresh views
-                        refreshAbsenceList();
-                        refreshAvailableNow();
+                             const startMinutes = timeToMinutes(startTimeStr);
+                             const endMinutes = timeToMinutes(endTimeStr);
 
-                    } catch (error) {
-                        showAbsenceImportStatus(`Error importing file: ${error.message}`, true);
-                    }
-                };
-                reader.readAsText(file);
-            });
+                             if (isNaN(startMinutes) || isNaN(endMinutes) || startMinutes >= endMinutes) { // Added isNaN checks
+                                console.warn("Skipping absence line with invalid time range:", lines[i]);
+                                skippedCount++;
+                                continue;
+                             }
 
-            // --- Filter Event Listeners ---
-            filterNowInput.addEventListener('input', () => applyFilter('filter-now', 'teachers-now', 'li'));
-            filterCustomInput.addEventListener('input', () => applyFilter('filter-custom', 'teachers-custom', 'li'));
-            filterAbsencesInput.addEventListener('input', () => applyFilter('filter-absences', 'existing-absences-list', 'group'));
+                             // Add the entry
+                             if (!currentAbsenceData[staff]) currentAbsenceData[staff] = {};
+                             if (!currentAbsenceData[staff][date]) currentAbsenceData[staff][date] = [];
 
-            // --- Start the application ---
+                             // Optional: Add check for duplicates before pushing
+                             // Check if this exact entry already exists for this staff/date
+                             const exists = currentAbsenceData[staff][date].some(entry => entry.start === startMinutes && entry.end === endMinutes);
+                             if (!exists) {
+                                 currentAbsenceData[staff][date].push({ start: startMinutes, end: endMinutes });
+                                 importedCount++;
+                             } else {
+                                 console.log("Skipping duplicate absence entry:", lines[i]);
+                                 // Optionally count duplicates as skipped if desired
+                             }
+                         }
+
+                         saveAbsenceData(currentAbsenceData); // Save imported absence data
+
+                         showAbsenceImportStatus(`Absences Import complete: ${importedCount} new entries added. ${skippedCount} lines skipped.`, false);
+
+                         // Refresh UI elements
+                         refreshAbsenceList(); 
+                         const now = new Date();
+                         const availabilityNow = getAvailabilityAtTime(now); 
+                         displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now);
+                         if (teachersCustomList.innerHTML !== '') checkButton.click(); 
+
+                     } catch (err) {
+                         console.error("Error processing absence CSV:", err);
+                         showAbsenceImportStatus(`Absence Import Error: ${err.message}`, true);
+                     }
+                 };
+                 reader.readAsText(file);
+             });
+
+
+            // Start the application
             loadData();
-
         });
     </script>
 </body>
 </html>
-
