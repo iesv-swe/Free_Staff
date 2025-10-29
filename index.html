@@ -305,9 +305,9 @@
         <div class="month-buttons" id="month-buttons"></div>
         <div id="totals-display"><p>Select a month to see totals.</p></div>
         <div class="button-group">
-            <button id="export-backup-button" class="btn-green">Export CSV (Entries)</button> <!-- Changed label -->
-            <button id="export-summary-button" class="primary">Summary CSV (Totals)</button> <!-- Changed label -->
-            <button id="import-csv-button" class="secondary">Import CSV (Entries)</button> <!-- Changed label -->
+            <button id="export-backup-button" class="btn-green">Export CSV (Entries)</button>
+            <button id="export-summary-button" class="primary">Summary CSV (Totals)</button>
+            <button id="import-csv-button" class="secondary">Import CSV (Entries)</button>
             <input type="file" id="csv-file-input" accept=".csv">
             <button id="clear-data-button" class="danger">Clear All Saved Data</button>
         </div>
@@ -341,10 +341,13 @@
         const ON_CALL_SUBJECT = "on call substitution";
         const EXCLUDE_TEACHER_LIST = ["BaSh", "AnHo", "DaWr", "AniFac", "RahHan", "ChBe", "FaCa", "SeCa", "AlCh", "LaCo", "VikCos", "RoDi", "KrEr", "RaHa", "JeHe", "DiHe", "GaHe", "HeKa", "JoLe", "TiLe", "WiLi", "ChLi", "HaLu", "KaMa", "ViMe", "MaMe", "HiOj", "LePa", "AsRo", "RaSc", "TaSc", "JeSe", "AnVa", "MarMen", "JonLeh"];
         const EXCLUDE_TEACHERS_SET = new Set(EXCLUDE_TEACHER_LIST);
-        const MINUTES_STORAGE_KEY = 'teacherMinutesData_v2'; // Changed key to avoid conflict with old format during migration
+        const MINUTES_STORAGE_KEY = 'teacherMinutesData_v2'; // Changed key for new format
         const OLD_MINUTES_STORAGE_KEY = 'teacherMinutesData'; // Key for the old format
-        const ABSENCE_STORAGE_KEY = 'teacherAbsenceData'; // Absence format remains the same
+        const ABSENCE_STORAGE_KEY = 'teacherAbsenceData';
         const DAY_MAP = ["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"];
+        const MONTHLY_LIMIT = 180; // Define monthly limit constant
+        const WEEKLY_WARNING = 90; // Define weekly warning constant
+
 
         // --- 2. APPLICATION STATE & DOM ELEMENTS ---
         // These variables hold the application's state and DOM element references.
@@ -527,7 +530,8 @@
             }
             try {
                 const date = new Date(timestamp);
-                return date.toLocaleString('sv-SE'); // Use Swedish locale for YYYY-MM-DD HH:MM:SS format
+                // Use Swedish locale for YYYY-MM-DD HH:MM:SS format - adjust if needed
+                return date.toLocaleString('sv-SE'); 
             } catch (e) {
                 console.error("Error formatting timestamp:", timestamp, e);
                 return ""; // Return empty on formatting error
@@ -613,17 +617,17 @@
             try {
                 if (!Array.isArray(lessons) || lessons.length === 0) { console.log("getAvailabilityAtTime: No lessons data."); return defaultResult; }
                 const workingTeachers = new Set(); const onCallTimesMap = new Map(); const busyTeachers = new Set();
-                const weekInfo = getIsoWeekAndYear(dateTime); if (!weekInfo) { console.error("getIsoWeekAndYear failed in getAvailabilityAtTime"); return defaultResult; } const { week: checkWeekNum, year: checkWeekYear } = weekInfo;
+                const weekInfo = getIsoWeekAndYear(dateTime); if (!weekInfo) { console.error("getIsoWeekAndYear failed in getAvailabilityAtTime"); return defaultResult; } const { week: checkWeekNum } = weekInfo; // Removed year check as week num should be sufficient within a year context usually
                 const checkDay = DAY_MAP[dateTime.getDay()]; const checkTimeInMinutes = (dateTime.getHours() * 60) + dateTime.getMinutes();
                 lessons.forEach(lesson => {
                     try { const lessonDay = lesson[columnMap['day']]?.trim(); const weekString = lesson[columnMap['realweeks']]; const subject = lesson[columnMap['subject']]?.trim().toLowerCase(); const startStr = lesson[columnMap['starttime']]; const lenStr = lesson[columnMap['length']]; const teacherStr = lesson[columnMap['teacher']]; if (!lessonDay || !weekString || !subject || !startStr || !lenStr) return; const lessonWeeks = parseRealWeeks(weekString); if (lessonDay !== checkDay || !lessonWeeks.has(checkWeekNum)) return; const lessonStart = timeToMinutes(startStr); const lessonLength = parseInt(lenStr, 10); if (isNaN(lessonLength) || lessonLength <= 0 || lessonStart === 0 && startStr !== '00:00' && startStr !== '0000') return; /* Check for 0 from invalid time */ const lessonEnd = lessonStart + lessonLength; if (checkTimeInMinutes >= lessonStart && checkTimeInMinutes < lessonEnd) { const teachers = parseTeachers(teacherStr); if (subject === ARBETSTID_SUBJECT) { teachers.forEach(t => workingTeachers.add(t)); } else if (subject === ON_CALL_SUBJECT) { teachers.forEach(t => { workingTeachers.add(t); if (!onCallTimesMap.has(t)) { onCallTimesMap.set(t, { start: lessonStart, end: lessonEnd }); } }); } else { teachers.forEach(t => busyTeachers.add(t)); } } } catch (e) { console.error("Error processing lesson row (getAvailabilityAtTime):", lesson, e); }
                 });
 
                 let availableAndNotBusy = [...workingTeachers].filter(teacher => !busyTeachers.has(teacher));
-                // Use the simple isTeacherAbsent check for specific moment
                 let availableTeacherNames = availableAndNotBusy.filter(teacher => !isTeacherAbsent(teacher, dateTime, checkTimeInMinutes));
 
-                return { available: availableTeacherNames.sort(), onCallTimes: onCallTimesMap };
+                // Return sorted list (sorting now happens in displayResults)
+                return { available: availableTeacherNames, onCallTimes: onCallTimesMap };
             } catch (error) { console.error("Critical Error in getAvailabilityAtTime:", error); statusNow.textContent = `Error calculating availability: ${error.message}`; statusNow.classList.add('error'); return defaultResult; }
         }
 
@@ -639,7 +643,7 @@
             try {
                 if (!Array.isArray(lessons) || lessons.length === 0) { console.log("getAvailabilityForRange: No lessons."); return defaultResult; }
                 let workingTeachers = new Set(); const onCallTimesMap = new Map(); const busyTeachers = new Set();
-                const weekInfo = getIsoWeekAndYear(checkDate); if (!weekInfo) { console.error("getIsoWeekAndYear failed in getAvailabilityForRange"); return defaultResult; } const { week: checkWeekNum, year: checkWeekYear } = weekInfo;
+                const weekInfo = getIsoWeekAndYear(checkDate); if (!weekInfo) { console.error("getIsoWeekAndYear failed in getAvailabilityForRange"); return defaultResult; } const { week: checkWeekNum } = weekInfo; // Removed year check
                 const checkDay = DAY_MAP[checkDate.getDay()];
 
                 lessons.forEach(lesson => {
@@ -653,40 +657,35 @@
                         if (!lessonDay || !weekString || !subject || !startStr || !lenStr) return;
                         const lessonWeeks = parseRealWeeks(weekString);
                         if (lessonDay !== checkDay || !lessonWeeks.has(checkWeekNum)) return;
-                        const lessonStart = timeToMinutes(startStr); // Uses original timeToMinutes
+                        const lessonStart = timeToMinutes(startStr);
                         const lessonLength = parseInt(lenStr, 10);
-                        // Original check for invalid lessonStart returning 0
                         if (isNaN(lessonLength) || lessonLength <= 0 || (lessonStart === 0 && startStr !== '00:00' && startStr !== '0000')) return;
                         const lessonEnd = lessonStart + lessonLength;
                         const teachers = parseTeachers(teacherStr);
-                        // Teacher must be working for the *entire* duration
-                        const containsQuery = (lessonStart <= checkStartMinutes && lessonEnd >= checkEndMinutes); // Original check
-                        // Teacher is busy if they *overlap at all*
-                        const overlapsQuery = (lessonStart < checkEndMinutes && lessonEnd > checkStartMinutes); // Original check
+                        const containsQuery = (lessonStart <= checkStartMinutes && lessonEnd >= checkEndMinutes);
+                        const overlapsQuery = (lessonStart < checkEndMinutes && lessonEnd > checkStartMinutes);
 
                         if (subject === ARBETSTID_SUBJECT) {
-                            if (containsQuery) teachers.forEach(t => workingTeachers.add(t)); // Original logic
+                            if (containsQuery) teachers.forEach(t => workingTeachers.add(t));
                         } else if (subject === ON_CALL_SUBJECT) {
-                            if (containsQuery) { // Original logic
+                            if (containsQuery) {
                                 teachers.forEach(t => {
                                     workingTeachers.add(t);
                                     if (!onCallTimesMap.has(t)) { onCallTimesMap.set(t, { start: lessonStart, end: lessonEnd }); }
                                 });
                             }
-                        } else if (overlapsQuery) { // Original logic
+                        } else if (overlapsQuery) {
                             teachers.forEach(t => busyTeachers.add(t));
                         }
                     } catch (e) { console.error("Error processing lesson row (getAvailabilityForRange):", lesson, e); }
                 });
 
                 let availableAndNotBusy = [...workingTeachers].filter(teacher => !busyTeachers.has(teacher));
-
-                // Filter out anyone who has an absence that *overlaps* this range
                 let availableTeacherNames = availableAndNotBusy.filter(teacher =>
                     !isTeacherAbsentForRange(teacher, checkDate, checkStartMinutes, checkEndMinutes)
                 );
-
-                return { available: availableTeacherNames.sort(), onCallTimes: onCallTimesMap };
+                // Return unsorted list (sorting now happens in displayResults)
+                return { available: availableTeacherNames, onCallTimes: onCallTimesMap };
             } catch (error) {
                 console.error("Critical Error in getAvailabilityForRange:", error);
                 statusCustom.textContent = `Error calculating availability: ${error.message}`;
@@ -701,8 +700,10 @@
         // All functions that modify the DOM to show information to the user.
 
         /**
-         * Renders the list of available teachers in the specified UI elements.
-         * NOW correctly calculates totals from the new data structure.
+         * Renders the list of available teachers with the NEW SORTING logic.
+         * 1. On Call (Under Limit)
+         * 2. Regular (Under Limit, sorted by Weekly Asc)
+         * 3. Over Limit (sorted by Weekly Asc)
          * @param {string[]} availableTeachers - Array of teacher names.
          * @param {Map} onCallTimesMap - Map of on-call teachers and their times.
          * @param {HTMLElement} listElement - The <ul> element to populate.
@@ -710,67 +711,105 @@
          * @param {Date} checkDate - The date of the check (for calculating totals).
          */
         function displayResults(availableTeachers, onCallTimesMap, listElement, statusElement, checkDate) {
-            listElement.innerHTML = '';
+            listElement.innerHTML = ''; // Clear previous results
             const filteredTeachers = availableTeachers.filter(teacher => !EXCLUDE_TEACHERS_SET.has(teacher));
-            const allData = getStorageData(MINUTES_STORAGE_KEY); // Use new key
-            const { week: checkWeekNum, year: checkWeekYear } = getIsoWeekAndYear(checkDate);
-            const checkMonthKey = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}`;
+            
             if (filteredTeachers.length === 0) {
                 statusElement.textContent = 'No available teachers found.';
                 statusElement.classList.remove('error');
-            } else {
-                filteredTeachers.forEach(teacher => {
-                    const li = document.createElement('li');
-                    let weeklyTotal = 0;
-                    let monthlyTotal = 0;
-                    const teacherData = allData[teacher] || {};
-                    // Iterate through dates for the teacher
-                    for (const dateKey in teacherData) {
-                        try {
-                            const dateEntries = teacherData[dateKey]; // Should be an array
-                            // Check if it's the new array format
-                            if (Array.isArray(dateEntries)) {
-                                const entryDate = new Date(dateKey + 'T00:00:00Z'); // Use Z for UTC date
-                                if (isNaN(entryDate.getTime())) continue;
-                                const { week: entryWeek, year: entryYear } = getIsoWeekAndYear(entryDate);
-
-                                // Sum minutes from all entries for this date
-                                const dailyMinutes = dateEntries.reduce((sum, entry) => sum + (entry.minutes || 0), 0);
-
-                                if (entryWeek === checkWeekNum && entryYear === checkWeekYear) {
-                                    weeklyTotal += dailyMinutes;
-                                }
-                                if (dateKey.startsWith(checkMonthKey)) {
-                                    monthlyTotal += dailyMinutes;
-                                }
-                            } else {
-                                // This case should ideally not happen after migration, but handle defensively
-                                console.warn(`Unexpected data format for ${teacher} on ${dateKey}:`, dateEntries);
-                            }
-                        } catch (e) { console.error("Error calculating totals for teacher:", teacher, dateKey, e); }
-                    }
-
-                    // Display logic remains the same
-                    let textContent = `${teacher} (W: ${weeklyTotal} / M: ${monthlyTotal})`;
-                    if (onCallTimesMap.has(teacher)) {
-                        const times = onCallTimesMap.get(teacher);
-                        const startTimeStr = minutesToHHMM(times.start);
-                        const endTimeStr = minutesToHHMM(times.end);
-                        textContent = `${teacher} (On Call: ${startTimeStr} - ${endTimeStr}) (W: ${weeklyTotal} / M: ${monthlyTotal})`;
-                        li.classList.add('on-call');
-                    } else {
-                        if (monthlyTotal >= 180) {
-                            li.classList.add('minutes-danger');
-                        } else if (weeklyTotal >= 90) {
-                            li.classList.add('minutes-warn');
-                        }
-                    }
-                    li.textContent = textContent;
-                    listElement.appendChild(li);
-                });
+                return;
             }
-        }
 
+            const allMinutesData = getStorageData(MINUTES_STORAGE_KEY); // Use new key
+            const { week: checkWeekNum, year: checkWeekYear } = getIsoWeekAndYear(checkDate);
+            const checkMonthKey = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}`;
+
+            // --- Data Processing and Categorization ---
+            const teacherDataForSort = filteredTeachers.map(teacher => {
+                let weeklyTotal = 0;
+                let monthlyTotal = 0;
+                const teacherMinutes = allMinutesData[teacher] || {};
+                
+                for (const dateKey in teacherMinutes) {
+                    try {
+                        const dateEntries = teacherMinutes[dateKey]; // Should be an array
+                        if (Array.isArray(dateEntries)) {
+                            const entryDate = new Date(dateKey + 'T00:00:00Z');
+                            if (isNaN(entryDate.getTime())) continue;
+                            const { week: entryWeek, year: entryYear } = getIsoWeekAndYear(entryDate);
+                            const dailyMinutes = dateEntries.reduce((sum, entry) => sum + (entry.minutes || 0), 0);
+
+                            if (entryWeek === checkWeekNum && entryYear === checkWeekYear) {
+                                weeklyTotal += dailyMinutes;
+                            }
+                            if (dateKey.startsWith(checkMonthKey)) {
+                                monthlyTotal += dailyMinutes;
+                            }
+                        }
+                    } catch (e) { console.error("Error calculating totals for teacher:", teacher, dateKey, e); }
+                }
+
+                const isOnCall = onCallTimesMap.has(teacher);
+                const onCallDetails = isOnCall ? onCallTimesMap.get(teacher) : null;
+                
+                return {
+                    name: teacher,
+                    weeklyTotal: weeklyTotal,
+                    monthlyTotal: monthlyTotal,
+                    isOnCall: isOnCall,
+                    onCallStart: onCallDetails ? onCallDetails.start : null,
+                    onCallEnd: onCallDetails ? onCallDetails.end : null,
+                    isOverLimit: monthlyTotal >= MONTHLY_LIMIT
+                };
+            });
+
+            // --- Sorting ---
+            const onCallUnderLimit = teacherDataForSort.filter(t => t.isOnCall && !t.isOverLimit);
+            // Sort On Call group alphabetically by name (or could use weeklyTotal)
+            onCallUnderLimit.sort((a, b) => a.name.localeCompare(b.name));
+
+            const regularUnderLimit = teacherDataForSort.filter(t => !t.isOnCall && !t.isOverLimit);
+            // Sort Regular group by weekly total ascending
+            regularUnderLimit.sort((a, b) => a.weeklyTotal - b.weeklyTotal);
+
+            const overLimit = teacherDataForSort.filter(t => t.isOverLimit);
+             // Sort Over Limit group by weekly total ascending
+            overLimit.sort((a, b) => a.weeklyTotal - b.weeklyTotal);
+
+            // Combine the sorted groups
+            const sortedTeacherData = [...onCallUnderLimit, ...regularUnderLimit, ...overLimit];
+
+            // --- Rendering ---
+            sortedTeacherData.forEach(teacherInfo => {
+                const li = document.createElement('li');
+                let textContent = `${teacherInfo.name} (W: ${teacherInfo.weeklyTotal} / M: ${teacherInfo.monthlyTotal})`;
+
+                // Apply classes based on sorted data
+                if (teacherInfo.isOnCall) {
+                    const startTimeStr = minutesToHHMM(teacherInfo.onCallStart);
+                    const endTimeStr = minutesToHHMM(teacherInfo.onCallEnd);
+                    textContent = `${teacherInfo.name} (On Call: ${startTimeStr} - ${endTimeStr}) (W: ${teacherInfo.weeklyTotal} / M: ${teacherInfo.monthlyTotal})`;
+                    // Only add 'on-call' class if they are NOT over the limit (as they appear first)
+                    if (!teacherInfo.isOverLimit) {
+                         li.classList.add('on-call');
+                    }
+                }
+
+                // Apply warning/danger classes
+                if (teacherInfo.isOverLimit) {
+                    li.classList.add('minutes-danger'); // Monthly limit takes precedence
+                } else if (teacherInfo.weeklyTotal >= WEEKLY_WARNING) {
+                    li.classList.add('minutes-warn'); // Apply weekly warning only if under monthly limit
+                }
+                
+                li.textContent = textContent;
+                listElement.appendChild(li);
+            });
+            // Update status message (optional, could remove if list speaks for itself)
+            // statusElement.textContent = `Showing ${sortedTeacherData.length} available teachers.`;
+            // statusElement.classList.remove('error');
+
+        }
 
         /**
          * Populates the staff <select> dropdowns from the allTeachers Set.
@@ -838,7 +877,7 @@
             importStatus.className = 'status';
             importStatus.classList.add(isError ? 'error' : 'success');
             importStatus.style.display = 'block';
-            setTimeout(() => { if (importStatus) importStatus.style.display = 'none'; }, 5000);
+            setTimeout(() => { if (importStatus) importStatus.style.display = 'none'; }, 5000); // Longer timeout for import potentially
         }
 
         /**
@@ -897,7 +936,7 @@
 
         /**
          * Displays the total substitution minutes for all staff for a given month/year.
-         * NOW correctly calculates totals from the new data structure.
+         * Calculates totals from the new data structure.
          * @param {number} year The full year (e.g., 2025).
          * @param {number} monthIndex The month index (0-11).
          */
@@ -943,9 +982,9 @@
             totals.forEach(entry => {
                 const li = document.createElement('li');
                 li.textContent = `${entry.name}: ${entry.total} minutes`;
-                if (entry.total >= 180) {
+                if (entry.total >= MONTHLY_LIMIT) { // Use constant
                     li.classList.add('minutes-danger');
-                } else if (entry.total >= 90) { // Keep weekly warning style for monthly totals >= 90
+                } else if (entry.total >= WEEKLY_WARNING) { // Keep weekly warning style >= 90
                      li.classList.add('minutes-warn');
                 }
                 html += li.outerHTML;
@@ -981,12 +1020,12 @@
             // Refresh "Available Right Now"
             const now = new Date();
             const availabilityNow = getAvailabilityAtTime(now);
-            displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now);
+            displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now); // Calls the updated displayResults
             statusNow.textContent = `Schedule updated. Checked: ${now.toLocaleString()}`;
             
             // If the "Custom Check" has results, refresh it too
             if (teachersCustomList.innerHTML !== '') {
-                handleCheckAvailability();
+                handleCheckAvailability(); // Calls the updated displayResults via handleCheckAvailability
             }
         }
 
@@ -1010,8 +1049,8 @@
                     return;
                 }
 
-                const startMinutes = timeToMinutes(timeFrom); // Uses original timeToMinutes
-                const endMinutes = timeToMinutes(timeTo);     // Uses original timeToMinutes
+                const startMinutes = timeToMinutes(timeFrom);
+                const endMinutes = timeToMinutes(timeTo);
 
                 if (startMinutes >= endMinutes && !(startMinutes === 0 && endMinutes === 0)) {
                     statusCustom.textContent = 'Invalid time: "From" time must be before "To" time.';
@@ -1026,6 +1065,7 @@
                 statusCustom.classList.remove('error');
 
                 const availability = getAvailabilityForRange(date, startMinutes, endMinutes);
+                // Call the updated displayResults which handles the new sorting
                 displayResults(availability.available, availability.onCallTimes, teachersCustomList, statusCustom, date);
             } catch (e) {
                 console.error("Error in checkButton click:", e);
@@ -1037,7 +1077,7 @@
 
         /**
          * Handles the "Save Minutes" button click.
-         * NOW SAVES AS AN ENTRY IN AN ARRAY.
+         * SAVES AS AN ENTRY IN AN ARRAY.
          */
         function handleSaveMinutes() {
             const staffName = staffSelect.value;
@@ -1051,27 +1091,20 @@
             try {
                 const allData = getStorageData(MINUTES_STORAGE_KEY); // Use new key
                 if (!allData[staffName]) allData[staffName] = {};
-                // Ensure the entry for the date is an array
                 if (!Array.isArray(allData[staffName][date])) {
-                    allData[staffName][date] = []; // Initialize as array if not already
+                    allData[staffName][date] = []; // Initialize if needed
                 }
 
-                // Add the new entry
-                const newEntry = {
-                    minutes: minutes,
-                    timestamp: Date.now() // Record when it was added
-                };
+                const newEntry = { minutes: minutes, timestamp: Date.now() };
                 allData[staffName][date].push(newEntry);
+                saveMinutesData(allData);
 
-                saveMinutesData(allData); // Save using the correct key
-
-                // Calculate the new total for the day for the status message
                 const newTotalForDay = allData[staffName][date].reduce((sum, entry) => sum + (entry.minutes || 0), 0);
                 showSaveStatus(`Added ${minutes} min entry for ${staffName} on ${date}. New total for day: ${newTotalForDay}`, false);
 
-                minutesInput.value = ''; // Clear input
+                minutesInput.value = '';
                 
-                // Refresh totals and availability
+                // Refresh relevant UI parts
                 if (activeMonthButton) {
                     const yearVal = parseInt(yearDisplay.value, 10);
                     const monthIndex = parseInt(activeMonthButton.dataset.monthIndex, 10);
@@ -1079,14 +1112,13 @@
                         displayMonthlyTotals(yearVal, monthIndex);
                     }
                 }
-                refreshAllAvailabilityViews();
+                refreshAllAvailabilityViews(); // This will re-run checks and call the updated displayResults
 
             } catch (e) {
                 console.error("Error saving minutes:", e);
                 showSaveStatus(`Error saving: ${e.message}`, true);
             }
         }
-
 
         /**
          * Handles the "Export Summary CSV" button click (Monthly/Weekly Totals).
@@ -1095,32 +1127,25 @@
         function handleExportSummary() {
             try {
                 const allData = getStorageData(MINUTES_STORAGE_KEY); // Use new key
-                // USE SEMICOLON as separator
                 let csvContent = "data:text/csv;charset=utf-8,Date of Export;Staff Name;Month;Month Total;Week;Week Total\r\n";
                 const exportDate = new Date().toISOString().split('T')[0];
                 let entries = [];
 
-                // Iterate through teachers
                 for (const teacher in allData) {
                     if (EXCLUDE_TEACHERS_SET.has(teacher)) continue;
                     const teacherData = allData[teacher];
                     let totalsByMonth = {};
                     let totalsByWeek = {};
 
-                    // Iterate through dates for the teacher
                     for (const dateKey in teacherData) {
-                        const dateEntries = teacherData[dateKey]; // Should be an array
-                        if (!Array.isArray(dateEntries)) continue; // Skip if not array
-
-                         // Sum minutes for the day
+                        const dateEntries = teacherData[dateKey];
+                        if (!Array.isArray(dateEntries)) continue;
                         const dailyMinutes = dateEntries.reduce((sum, entry) => sum + (entry.minutes || 0), 0);
-                        if (dailyMinutes === 0) continue; // Skip if no minutes for the day
+                        if (dailyMinutes === 0) continue;
 
-                        // Calculate Month Total
                         const monthKey = dateKey.substring(0, 7);
                         totalsByMonth[monthKey] = (totalsByMonth[monthKey] || 0) + dailyMinutes;
 
-                        // Calculate Week Total
                         try {
                             const entryDate = new Date(dateKey + 'T00:00:00Z');
                             if (isNaN(entryDate.getTime())) continue;
@@ -1128,7 +1153,6 @@
                             totalsByWeek[weekKey] = (totalsByWeek[weekKey] || 0) + dailyMinutes;
                         } catch (e) { console.error("Error processing date for week calculation:", dateKey, e); }
                     }
-                    // Only add if there are any totals for this teacher
                     if (Object.keys(totalsByMonth).length > 0 || Object.keys(totalsByWeek).length > 0) {
                          entries.push({ teacher, totalsByMonth, totalsByWeek });
                     }
@@ -1141,17 +1165,13 @@
                     const allMonthKeys = Object.keys(totalsByMonth).sort();
                     const allWeekKeys = Object.keys(totalsByWeek).sort();
                     let i = 0, j = 0;
-                    // Ensure quotes around teacher name
                     const safeTeacher = `"${teacher.replace(/"/g, '""')}"`;
-                    // Output rows combining month/week data where possible
                     while (i < allMonthKeys.length || j < allWeekKeys.length) {
                         const monthKey = allMonthKeys[i] || '';
                         const monthTotal = totalsByMonth[monthKey] || '';
                         const weekKey = allWeekKeys[j] || '';
                         const weekTotal = totalsByWeek[weekKey] || '';
-                        // USE SEMICOLON as separator
                         csvContent += `${exportDate};${safeTeacher};${monthKey};${monthTotal};${weekKey};${weekTotal}\r\n`;
-                        // Increment pointers - simple approach, might list weeks/months separately if counts differ
                         if (i < allMonthKeys.length) i++;
                         if (j < allWeekKeys.length) j++;
                     }
@@ -1160,7 +1180,7 @@
                 const encodedUri = encodeURI(csvContent);
                 const link = document.createElement("a");
                 link.setAttribute("href", encodedUri);
-                link.setAttribute("download", `Extra_Minutes_Summary_Totals_${exportDate}.csv`); // Updated filename
+                link.setAttribute("download", `Extra_Minutes_Summary_Totals_${exportDate}.csv`);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -1173,22 +1193,18 @@
 
         /**
          * Handles the "Export CSV (Entries)" button click (individual entries backup).
-         * NOW USES SEMICOLONS and exports each entry.
+         * Uses SEMICOLONS and exports each entry.
          */
         function handleExportBackup() {
             try {
                 const allData = getStorageData(MINUTES_STORAGE_KEY); // Use new key
-                 // USE SEMICOLON as separator, add Timestamp column
                 let csvContent = "data:text/csv;charset=utf-8,Date;Staff;Minutes;Timestamp\r\n";
                 let entries = [];
 
-                // Iterate through teachers
                 for (const teacher in allData) {
                     const teacherData = allData[teacher];
-                     // Iterate through dates for the teacher
                     for (const dateKey in teacherData) {
-                        const dateEntries = teacherData[dateKey]; // Should be an array
-                         // Iterate through individual entries for the day
+                        const dateEntries = teacherData[dateKey];
                         if (Array.isArray(dateEntries)) {
                             dateEntries.forEach(entry => {
                                 if (entry && typeof entry.minutes === 'number' && entry.minutes > 0) {
@@ -1196,7 +1212,6 @@
                                         date: dateKey,
                                         staff: teacher,
                                         minutes: entry.minutes,
-                                        // Format the timestamp, handle potentially missing ones
                                         timestamp: entry.timestamp ? formatTimestamp(entry.timestamp) : '' 
                                     });
                                 }
@@ -1205,23 +1220,19 @@
                     }
                 }
 
-                // Sort entries primarily by date, then staff, then timestamp
                 entries.sort((a, b) => {
                     if (a.date < b.date) return -1;
                     if (a.date > b.date) return 1;
                     if (a.staff < b.staff) return -1;
                     if (a.staff > b.staff) return 1;
-                    // Sort by timestamp if available (treat missing timestamp as earliest)
                     const tsA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
                     const tsB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
                     return tsA - tsB;
                 });
 
                 entries.forEach(entry => {
-                    // Ensure quotes around teacher name and timestamp
                     const safeStaff = `"${entry.staff.replace(/"/g, '""')}"`;
                     const safeTimestamp = `"${entry.timestamp.replace(/"/g, '""')}"`;
-                    // USE SEMICOLON as separator
                     csvContent += `${entry.date};${safeStaff};${entry.minutes};${safeTimestamp}\r\n`; 
                 });
 
@@ -1229,7 +1240,7 @@
                 const link = document.createElement("a");
                 const exportDate = new Date().toISOString().split('T')[0];
                 link.setAttribute("href", encodedUri);
-                link.setAttribute("download", `Extra_Minutes_Backup_Entries_${exportDate}.csv`); // Updated filename
+                link.setAttribute("download", `Extra_Minutes_Backup_Entries_${exportDate}.csv`);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -1246,29 +1257,23 @@
          */
         function handleClearData() {
             console.log("Clear data button clicked");
-            // NOTE: Using confirm(). A custom modal is more robust in restricted environments.
             const reallyClear = confirm("Are you sure you want to delete ALL saved extra minutes AND absence data? This cannot be undone.");
             if (reallyClear) {
                 try {
-                    localStorage.removeItem(MINUTES_STORAGE_KEY); // Remove new format
-                    localStorage.removeItem(OLD_MINUTES_STORAGE_KEY); // Remove old format just in case
+                    localStorage.removeItem(MINUTES_STORAGE_KEY);
+                    localStorage.removeItem(OLD_MINUTES_STORAGE_KEY); // Clear old format too
                     localStorage.removeItem(ABSENCE_STORAGE_KEY);
                     showImportStatus('All extra minutes and absence data have been cleared.', false);
                     
-                    // Refresh all UI elements
                     refreshAbsenceList();
                     if (activeMonthButton) {
                         const yearVal = parseInt(yearDisplay.value, 10);
                         const monthIndex = parseInt(activeMonthButton.dataset.monthIndex, 10);
                         if (!isNaN(yearVal) && !isNaN(monthIndex)) {
-                            displayMonthlyTotals(yearVal, monthIndex); // Will show "No extra minutes recorded"
-                        } else {
-                            totalsDisplay.innerHTML = '<p>Select a month to see totals.</p>';
-                        }
-                    } else {
-                        totalsDisplay.innerHTML = '<p>Select a month to see totals.</p>';
-                    }
-                    refreshAllAvailabilityViews(); // Will show totals as 0
+                            displayMonthlyTotals(yearVal, monthIndex);
+                        } else { totalsDisplay.innerHTML = '<p>Select a month to see totals.</p>'; }
+                    } else { totalsDisplay.innerHTML = '<p>Select a month to see totals.</p>'; }
+                    refreshAllAvailabilityViews();
 
                 } catch (e) {
                     console.error("Error clearing data:", e);
@@ -1296,14 +1301,13 @@
          * Handles the "Import CSV (Entries)" button click (triggers file input).
          */
         function handleImportMinutesClick() {
-            csvFileInput.value = null; // Reset file input
+            csvFileInput.value = null;
             csvFileInput.click();
         }
 
         /**
          * Handles the file selection for importing minutes.
-         * NOW DETECTS COMMA OR SEMICOLON. Imports each row as a NEW ENTRY.
-         * Timestamp column is optional on import.
+         * DETECTS COMMA OR SEMICOLON. Imports each row as a NEW ENTRY.
          * @param {Event} event The file input change event.
          */
         function handleMinutesFileSelect(event) {
@@ -1319,15 +1323,11 @@
                     const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
                     if (lines.length < 2) throw new Error("CSV file is empty or has no header/data.");
 
-                    // --- Delimiter Detection ---
                     let delimiter = ',';
                     if (lines[0].includes(';')) {
-                         if (lines[0].split(';').length > lines[0].split(',').length) {
-                             delimiter = ';';
-                         }
+                         if (lines[0].split(';').length > lines[0].split(',').length) { delimiter = ';'; }
                     }
                     console.log("Detected delimiter:", delimiter);
-                    // --------------------------
 
                     const header = lines[0].toLowerCase().split(delimiter).map(h => h.trim().replace(/^"|"$/g, ''));
                     const dateIndex = header.indexOf('date');
@@ -1348,67 +1348,46 @@
                         
                         if (columns.length <= Math.max(dateIndex, staffIndex, minutesIndex)) {
                             console.warn(`Skipping short/malformed line ${i + 1}:`, lines[i]);
-                            skippedCount++;
-                            continue;
+                            skippedCount++; continue;
                         }
 
                         const date = columns[dateIndex]?.trim();
                         const staff = columns[staffIndex]?.trim();
                         const minutesStr = columns[minutesIndex]?.trim();
                         const minutes = parseInt(minutesStr, 10);
-                        // Timestamp is optional, try to parse if present
-                        let timestamp = Date.now(); // Default to now if not provided/invalid
+                        let timestamp = Date.now(); 
                         if (timestampIndex !== -1 && columns[timestampIndex]) {
                              const tsString = columns[timestampIndex]?.trim();
                              try {
                                  const parsedTs = new Date(tsString).getTime();
-                                 if (!isNaN(parsedTs)) {
-                                     timestamp = parsedTs;
-                                 }
-                             } catch (tsError) {
-                                 console.warn(`Could not parse timestamp on line ${i+1}, using current time:`, tsString);
-                             }
+                                 if (!isNaN(parsedTs)) { timestamp = parsedTs; }
+                             } catch (tsError) { console.warn(`Could not parse timestamp on line ${i+1}, using current time:`, tsString); }
                         }
 
-
-                        // Validate essential data
                         if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !staff || !minutesStr || isNaN(minutes) || minutes <= 0) {
                             console.warn(`Skipping invalid data on line ${i + 1}:`, lines[i]);
-                            skippedCount++;
-                            continue;
+                            skippedCount++; continue;
                         }
 
-                        // --- Import Logic: Add as new entry ---
                         if (!currentMinutesData[staff]) currentMinutesData[staff] = {};
-                        if (!Array.isArray(currentMinutesData[staff][date])) {
-                             currentMinutesData[staff][date] = []; // Ensure it's an array
-                        }
+                        if (!Array.isArray(currentMinutesData[staff][date])) { currentMinutesData[staff][date] = []; }
                         
-                        // Add the imported row as a new entry object
-                        currentMinutesData[staff][date].push({
-                            minutes: minutes,
-                            timestamp: timestamp
-                        });
+                        currentMinutesData[staff][date].push({ minutes: minutes, timestamp: timestamp });
                         importedCount++;
-                        // --- End Import Logic ---
                     }
 
-                    saveMinutesData(currentMinutesData); // Save updated data
+                    saveMinutesData(currentMinutesData);
                     showImportStatus(`Minutes Import complete: ${importedCount} minute entries ADDED. ${skippedCount} lines skipped. Note: Importing the same file multiple times will create duplicates.`, false);
                     
-                    // Refresh UI
-                    if (activeMonthButton) activeMonthButton.click(); // Re-render totals
-                    refreshAllAvailabilityViews(); // Refresh availability
+                    if (activeMonthButton) activeMonthButton.click(); 
+                    refreshAllAvailabilityViews();
 
                 } catch (err) {
                     console.error("Error processing minutes CSV:", err);
                     showImportStatus(`Minutes Import Error: ${err.message}`, true);
                 }
             };
-            reader.onerror = (err) => {
-                 console.error("FileReader error:", err);
-                 showImportStatus(`Error reading file: ${err}`, true);
-            };
+            reader.onerror = (err) => { console.error("FileReader error:", err); showImportStatus(`Error reading file: ${err}`, true); };
             reader.readAsText(file);
         }
 
@@ -1424,8 +1403,8 @@
                 showAbsenceSaveStatus('Please select staff, date, and a full time range.', true);
                 return;
             }
-            const startMinutes = timeToMinutes(timeFrom); // Uses original timeToMinutes
-            const endMinutes = timeToMinutes(timeTo);     // Uses original timeToMinutes
+            const startMinutes = timeToMinutes(timeFrom);
+            const endMinutes = timeToMinutes(timeTo);
             if (startMinutes >= endMinutes && !(startMinutes === 0 && endMinutes === 0)) {
                 showAbsenceSaveStatus('Invalid time: "From" time must be before "To" time.', true);
                 return;
@@ -1433,14 +1412,13 @@
             try {
                 const allData = getStorageData(ABSENCE_STORAGE_KEY);
                 if (!allData[staffName]) allData[staffName] = {};
-                if (!allData[staffName][date]) allData[staffName][date] = [];
+                if (!Array.isArray(allData[staffName][date])) { allData[staffName][date] = []; } // Ensure array
                 allData[staffName][date].push({ start: startMinutes, end: endMinutes });
                 saveAbsenceData(allData);
                 showAbsenceSaveStatus(`Saved absence for ${staffName} on ${date} (${timeFrom} - ${timeTo}).`, false);
                 absenceTimeFromInput.value = '';
                 absenceTimeToInput.value = '';
                 
-                // Refresh UI
                 refreshAbsenceList();
                 refreshAllAvailabilityViews();
 
@@ -1456,32 +1434,27 @@
          */
         function handleDeleteAbsence(e) {
             if (e.target.tagName === 'BUTTON' && e.target.classList.contains('danger')) {
-                const { staff, date, index } = e.target.dataset; // Use index as per original
+                const { staff, date, index } = e.target.dataset;
                 if (!staff || !date || index === undefined) {
                     console.error("Missing data attributes for deletion:", e.target.dataset);
                     return;
                 }
                 try {
-                    const idx = parseInt(index, 10); // Parse index
-                    if (isNaN(idx)) {
-                        console.error("Invalid index for deletion:", index);
-                        return;
-                    }
+                    const idx = parseInt(index, 10);
+                    if (isNaN(idx)) { console.error("Invalid index for deletion:", index); return; }
+                    
                     const allData = getStorageData(ABSENCE_STORAGE_KEY);
-                    if (allData[staff]?.[date]?.[idx] !== undefined) { // Check if entry exists at index
-                        allData[staff][date].splice(idx, 1); // Remove by index
+                    if (allData[staff]?.[date]?.[idx] !== undefined) {
+                        allData[staff][date].splice(idx, 1);
                         if (allData[staff][date].length === 0) delete allData[staff][date];
                         if (Object.keys(allData[staff] || {}).length === 0) delete allData[staff];
                         saveAbsenceData(allData);
                         showAbsenceSaveStatus('Absence entry deleted.', false);
                         
-                        // Refresh UI
-                        refreshAbsenceList(); // Refresh list to update indices
+                        refreshAbsenceList(); 
                         refreshAllAvailabilityViews();
 
-                    } else {
-                        console.warn("Attempted to delete non-existent absence entry (by index):", { staff, date, index });
-                    }
+                    } else { console.warn("Attempted to delete non-existent absence entry (by index):", { staff, date, index }); }
                 } catch (err) {
                     console.error("Error deleting absence:", err);
                     showAbsenceSaveStatus(`Error deleting: ${err.message}`, true);
@@ -1490,13 +1463,11 @@
         }
 
         /**
-         * Handles the "Export Absences CSV" button click.
-         * Uses SEMICOLONS.
+         * Handles the "Export Absences CSV" button click. Uses SEMICOLONS.
          */
         function handleExportAbsences() {
             try {
                 const absenceData = getStorageData(ABSENCE_STORAGE_KEY);
-                // USE SEMICOLON as separator
                 let csvContent = "data:text/csv;charset=utf-8,Date;Staff;StartTime;EndTime\r\n"; 
                 let entries = [];
                 for (const teacher in absenceData) {
@@ -1506,28 +1477,21 @@
                         dayEntries.forEach(entry => {
                             if (typeof entry.start === 'number' && typeof entry.end === 'number') {
                                 entries.push({
-                                    date: dateKey,
-                                    staff: teacher,
-                                    startTime: minutesToHHMM(entry.start),
-                                    endTime: minutesToHHMM(entry.end)
+                                    date: dateKey, staff: teacher,
+                                    startTime: minutesToHHMM(entry.start), endTime: minutesToHHMM(entry.end)
                                 });
                             }
                         });
                     }
                 }
-                entries.sort((a, b) => { // Sort logic remains the same
-                    if (a.date < b.date) return -1;
-                    if (a.date > b.date) return 1;
-                    if (a.staff < b.staff) return -1;
-                    if (a.staff > b.staff) return 1;
-                    let startA = timeToMinutes(a.startTime); 
-                    let startB = timeToMinutes(b.startTime); 
-                    return startA - startB; // Corrected calculation
+                entries.sort((a, b) => { 
+                    if (a.date < b.date) return -1; if (a.date > b.date) return 1;
+                    if (a.staff < b.staff) return -1; if (a.staff > b.staff) return 1;
+                    let startA = timeToMinutes(a.startTime); let startB = timeToMinutes(b.startTime); 
+                    return startA - startB; 
                 });
                 entries.forEach(entry => {
-                     // Ensure quotes around teacher name
                     const safeStaff = `"${entry.staff.replace(/"/g, '""')}"`;
-                    // USE SEMICOLON as separator
                     csvContent += `${entry.date};${safeStaff};${entry.startTime};${entry.endTime}\r\n`; 
                 });
                 const encodedUri = encodeURI(csvContent);
@@ -1549,21 +1513,17 @@
          * Handles the "Import Absences CSV" button click (triggers file input).
          */
         function handleImportAbsencesClick() {
-            absenceCsvFileInput.value = null; // Reset file input
+            absenceCsvFileInput.value = null;
             absenceCsvFileInput.click();
         }
 
         /**
-         * Handles the file selection for importing absences.
-         * DETECTS COMMA OR SEMICOLON.
+         * Handles the file selection for importing absences. DETECTS COMMA OR SEMICOLON.
          * @param {Event} event The file input change event.
          */
         function handleAbsenceFileSelect(event) {
             const file = event.target.files[0];
-            if (!file) {
-                showAbsenceImportStatus('No file selected.', true);
-                return;
-            }
+            if (!file) { showAbsenceImportStatus('No file selected.', true); return; }
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
@@ -1571,15 +1531,11 @@
                     const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
                     if (lines.length < 2) throw new Error("Absence CSV file is empty or has no header/data.");
 
-                     // --- Delimiter Detection ---
                     let delimiter = ','; 
                     if (lines[0].includes(';')) { 
-                         if (lines[0].split(';').length > lines[0].split(',').length) {
-                             delimiter = ';';
-                         }
+                         if (lines[0].split(';').length > lines[0].split(',').length) { delimiter = ';'; }
                     }
                     console.log("Detected delimiter:", delimiter);
-                    // --------------------------
 
                     const header = lines[0].toLowerCase().split(delimiter).map(h => h.trim().replace(/^"|"$/g, ''));
                     const dateIndex = header.indexOf('date');
@@ -1591,19 +1547,15 @@
                         throw new Error(`Invalid Absence CSV Header. Must contain 'Date', 'Staff', 'StartTime', and 'EndTime' columns separated by '${delimiter}'.`);
                     }
 
-                    let importedCount = 0;
-                    let skippedCount = 0;
+                    let importedCount = 0; let skippedCount = 0;
                     const currentAbsenceData = getStorageData(ABSENCE_STORAGE_KEY);
 
                     for (let i = 1; i < lines.length; i++) {
                         const columns = parseCsvLine(lines[i], delimiter); 
-
                         if (columns.length <= Math.max(dateIndex, staffIndex, startTimeIndex, endTimeIndex)) { 
                             console.warn(`Skipping short/malformed absence line ${i + 1}:`, lines[i]);
-                            skippedCount++;
-                            continue;
+                            skippedCount++; continue;
                         }
-
                         const date = columns[dateIndex]?.trim();
                         const staff = columns[staffIndex]?.trim();
                         const startTimeStr = columns[startTimeIndex]?.trim();
@@ -1611,38 +1563,28 @@
 
                         if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !staff || !startTimeStr || !endTimeStr) {
                             console.warn(`Skipping absence line ${i + 1} with missing/invalid data:`, lines[i]);
-                            skippedCount++;
-                            continue;
+                            skippedCount++; continue;
                         }
-
                         const startMinutes = timeToMinutes(startTimeStr); 
                         const endMinutes = timeToMinutes(endTimeStr);     
-
                         if (startMinutes >= endMinutes && !(startMinutes === 0 && endMinutes === 0)) {
                             console.warn(`Skipping absence line ${i + 1} with invalid time range:`, lines[i]);
-                            skippedCount++;
-                            continue;
+                            skippedCount++; continue;
                         }
 
                         if (!currentAbsenceData[staff]) currentAbsenceData[staff] = {};
-                        if (!Array.isArray(currentAbsenceData[staff][date])) {
-                             currentAbsenceData[staff][date] = []; 
-                        }
+                        if (!Array.isArray(currentAbsenceData[staff][date])) { currentAbsenceData[staff][date] = []; } 
                         
-                        // Add if not already present
                         const exists = currentAbsenceData[staff][date].some(entry => entry.start === startMinutes && entry.end === endMinutes);
                         if (!exists) {
                             currentAbsenceData[staff][date].push({ start: startMinutes, end: endMinutes });
                             importedCount++;
-                        } else {
-                            console.log(`Skipping duplicate absence entry on line ${i + 1}:`, lines[i]);
-                        }
+                        } else { console.log(`Skipping duplicate absence entry on line ${i + 1}:`, lines[i]); }
                     }
 
-                    saveAbsenceData(currentAbsenceData); // Save updated data
+                    saveAbsenceData(currentAbsenceData);
                     showAbsenceImportStatus(`Absences Import complete: ${importedCount} new entries added. ${skippedCount} lines skipped.`, false);
                     
-                    // Refresh UI
                     refreshAbsenceList(); 
                     refreshAllAvailabilityViews();
 
@@ -1651,10 +1593,7 @@
                     showAbsenceImportStatus(`Absence Import Error: ${err.message}`, true);
                 }
             };
-            reader.onerror = (err) => {
-                 console.error("FileReader error:", err);
-                 showAbsenceImportStatus(`Error reading file: ${err}`, true);
-            };
+            reader.onerror = (err) => { console.error("FileReader error:", err); showAbsenceImportStatus(`Error reading file: ${err}`, true); };
             reader.readAsText(file);
         }
 
@@ -1665,51 +1604,54 @@
 
         /**
          * Migrates old minutes data format (number) to new format (array of objects).
-         * This runs once when the application loads if old data is detected.
+         * Runs once if old data exists and new data doesn't, or if old data exists.
          */
         function migrateOldMinutesData() {
             const oldData = getStorageData(OLD_MINUTES_STORAGE_KEY);
-            if (Object.keys(oldData).length === 0) {
-                 console.log("No old minutes data found to migrate.");
-                 return; // No old data exists
-            }
+            const newDataExists = localStorage.getItem(MINUTES_STORAGE_KEY) !== null; // Check if new data key exists
 
-            console.log("Old minutes data format detected. Starting migration...");
-            const newData = {};
-            let migratedEntries = 0;
+            // Only migrate if old data exists AND new data doesn't yet exist
+            if (Object.keys(oldData).length > 0 && !newDataExists) {
+                console.log("Old minutes data format detected. Starting migration...");
+                const newData = {};
+                let migratedEntries = 0;
 
-            for (const teacher in oldData) {
-                newData[teacher] = {};
-                const teacherData = oldData[teacher];
-                for (const dateKey in teacherData) {
-                    const minutes = teacherData[dateKey];
-                    // Check if it's the old numeric format
-                    if (typeof minutes === 'number' && minutes > 0) {
-                        // Convert to new array format with a single entry
-                        newData[teacher][dateKey] = [{
-                            minutes: minutes,
-                            timestamp: Date.now() // Use current time as timestamp for migrated data
-                        }];
-                        migratedEntries++;
-                    } else if (Array.isArray(minutes)) {
-                         // If somehow it's already an array, just copy it (unlikely but safe)
-                         newData[teacher][dateKey] = minutes;
+                for (const teacher in oldData) {
+                    newData[teacher] = {};
+                    const teacherData = oldData[teacher];
+                    for (const dateKey in teacherData) {
+                        const minutes = teacherData[dateKey];
+                        // Check if it's the old numeric format
+                        if (typeof minutes === 'number' && minutes > 0) {
+                            // Convert to new array format with a single entry
+                            newData[teacher][dateKey] = [{
+                                minutes: minutes,
+                                timestamp: Date.now() // Use current time for migration
+                            }];
+                            migratedEntries++;
+                        } else if (Array.isArray(minutes)) {
+                            // If somehow it's already an array, just copy it
+                             newData[teacher][dateKey] = minutes;
+                             console.warn(`Found unexpected array format during migration for ${teacher} on ${dateKey}`);
+                        }
                     }
                 }
-            }
 
-            // Save the newly formatted data under the new key
-            saveMinutesData(newData);
-            // Optionally remove the old data after successful migration
-            localStorage.removeItem(OLD_MINUTES_STORAGE_KEY); 
-            console.log(`Migration complete. Converted ${migratedEntries} daily totals to the new entry format. Old data removed.`);
-            showImportStatus(`Migrated old minutes data to new format.`, false); // Inform user
+                saveMinutesData(newData); // Save migrated data under the NEW key
+                localStorage.removeItem(OLD_MINUTES_STORAGE_KEY); // Remove old data
+                console.log(`Migration complete. Converted ${migratedEntries} daily totals. Old data removed.`);
+                showImportStatus(`Migrated old minutes data to new format.`, false);
+            } else if (Object.keys(oldData).length > 0 && newDataExists) {
+                 console.log("Old minutes data found, but new data already exists. Removing old data without migration.");
+                 localStorage.removeItem(OLD_MINUTES_STORAGE_KEY); // Clean up old key if new one exists
+            } else {
+                 console.log("No old minutes data found, or migration already completed.");
+            }
         }
 
 
         /**
          * Fetches and parses the Lessons.txt file, then initializes the UI.
-         * Now includes migration step.
          */
         async function loadData() {
             console.log("Starting application load...");
@@ -1719,8 +1661,6 @@
                 migrateOldMinutesData();
             } catch (migrationError) {
                 console.error("CRITICAL ERROR during data migration:", migrationError);
-                // Decide how to handle migration failure - maybe alert user?
-                // For now, continue loading, but calculations might be wrong if migration failed partially.
                 showImportStatus("Error migrating old data. Totals might be incorrect. Check console.", true);
             }
             // --- End Migration Step ---
@@ -1731,58 +1671,93 @@
                 console.log("Fetching Lessons.txt...");
                 const response = await fetch(`Lessons.txt?v=${new Date().getTime()}`);
                 if (!response.ok) throw new Error(`Fetch failed: ${response.statusText} (${response.status})`);
-                console.log("Fetched OK."); const text = await response.text();
+                const text = await response.text();
                 const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
-                if (lines.length < 2) throw new Error('Lessons.txt is empty or invalid.'); console.log(`Read ${lines.length} lines.`);
-                const header = lines[0].split('\t'); columnMap = {}; header.forEach((c, i) => { columnMap[c.trim()] = i; }); console.log("Parsed header."); const requiredCols = ['subject', 'teacher', 'day', 'starttime', 'length', 'realweeks']; for (const col of requiredCols) { if (columnMap[col] === undefined) throw new Error(`Missing required column: ${col}`); } console.log("Required columns found.");
+                if (lines.length < 2) throw new Error('Lessons.txt is empty or invalid.');
+                const header = lines[0].split('\t'); columnMap = {}; header.forEach((c, i) => { columnMap[c.trim()] = i; });
+                const requiredCols = ['subject', 'teacher', 'day', 'starttime', 'length', 'realweeks'];
+                for (const col of requiredCols) { if (columnMap[col] === undefined) throw new Error(`Missing required column: ${col}`); }
+                
                 const expectedColumns = header.length;
-                lessons = lines.slice(1).map((line, index) => { const columns = line.split('\t'); if (columns.length !== expectedColumns) { while (columns.length < expectedColumns) columns.push(''); if (columns.length > expectedColumns) columns.length = expectedColumns; } return columns; }).filter(row => row); console.log(`Parsed ${lessons.length} lesson rows.`);
+                lessons = lines.slice(1).map(line => {
+                     const columns = line.split('\t');
+                     // Pad rows with missing columns, truncate rows with extra columns
+                     while (columns.length < expectedColumns) columns.push('');
+                     if (columns.length > expectedColumns) columns.length = expectedColumns;
+                     return columns;
+                 }).filter(row => row); // Filter out potentially empty rows after processing
+                console.log(`Parsed ${lessons.length} lesson rows.`);
 
                 allTeachers = new Set();
-                const teacherColIndex = columnMap['teacher']; if (typeof teacherColIndex !== 'number') { throw new Error("Could not find 'teacher' column index."); }
-                console.log("Starting teacher population loop...");
-                lessons.forEach((lesson, index) => { const rowNum = index + 2; try { if (!Array.isArray(lesson) || lesson.length <= teacherColIndex) { return; } const teacherStringRaw = lesson[teacherColIndex]; if (typeof teacherStringRaw === 'string' && teacherStringRaw.trim()) { const teacherString = teacherStringRaw.trim(); const parsedResult = parseTeachers(teacherString); if (Array.isArray(parsedResult)) { parsedResult.forEach(teacher => { if (teacher) allTeachers.add(teacher); }); } } } catch (e) { console.error(`Critical error processing teachers row ${rowNum}:`, lesson, e); } });
-                console.log(`Finished teacher population loop. Found ${allTeachers.size} unique teachers.`);
+                const teacherColIndex = columnMap['teacher'];
+                if (typeof teacherColIndex !== 'number') throw new Error("Could not find 'teacher' column index.");
+                
+                lessons.forEach((lesson, index) => {
+                     const rowNum = index + 2;
+                     try {
+                         if (!Array.isArray(lesson) || lesson.length <= teacherColIndex) return;
+                         const teacherStringRaw = lesson[teacherColIndex];
+                         if (typeof teacherStringRaw === 'string' && teacherStringRaw.trim()) {
+                             const parsedResult = parseTeachers(teacherStringRaw.trim());
+                             if (Array.isArray(parsedResult)) {
+                                 parsedResult.forEach(teacher => { if (teacher) allTeachers.add(teacher); });
+                             }
+                         }
+                     } catch (e) { console.error(`Error processing teachers row ${rowNum}:`, lesson, e); }
+                 });
+                console.log(`Found ${allTeachers.size} unique teachers.`);
 
-                console.log("Setting up month buttons...");
                 setupMonthButtons();
+                populateStaffDropdown();
 
-                if (allTeachers.size === 0) { console.warn("No teachers identified..."); statusNow.textContent = 'Warning: No teachers found...'; statusNow.classList.add('error'); populateStaffDropdown(); }
-                else { console.log("Populating dropdowns..."); populateStaffDropdown(); statusNow.textContent = `Schedule loaded. Checked for: ${new Date().toLocaleString()}`; }
-
-                console.log("Setting default input values...");
                 const now = new Date();
-                dateInput.valueAsDate = now; timeFromInput.value = now.toTimeString().substring(0, 5); const later = new Date(now.getTime() + 60 * 60 * 1000); timeToInput.value = later.toTimeString().substring(0, 5); dateEntryInput.valueAsDate = now; yearDisplay.value = now.getFullYear();
-
+                dateInput.valueAsDate = now; timeFromInput.value = now.toTimeString().substring(0, 5);
+                const later = new Date(now.getTime() + 60 * 60 * 1000); timeToInput.value = later.toTimeString().substring(0, 5);
+                dateEntryInput.valueAsDate = now; yearDisplay.value = now.getFullYear();
                 if (absenceDateInput) absenceDateInput.valueAsDate = now;
 
                 if (lessons.length > 0) {
-                    console.log("Getting availability for now...");
                     const availabilityNow = getAvailabilityAtTime(now);
-                    if (availabilityNow && typeof availabilityNow === 'object' && Array.isArray(availabilityNow.available)) { console.log("Displaying results for now..."); displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now); }
-                    else { console.error("getAvailabilityAtTime returned invalid data:", availabilityNow); statusNow.textContent = 'Error displaying current availability (invalid data). Check console.'; if (!statusNow.classList.contains('error')) statusNow.classList.add('error'); }
-                } else { statusNow.textContent = statusNow.textContent.includes('No teachers found') ? statusNow.textContent : 'Warning: Lessons invalid. Availability check skipped.'; if (!statusNow.classList.contains('error')) statusNow.classList.add('error'); }
+                    if (availabilityNow) {
+                         displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now);
+                         statusNow.textContent = `Schedule loaded. Checked: ${now.toLocaleString()}`; // Update status after display
+                    } else {
+                         statusNow.textContent = 'Error calculating current availability. Check console.'; statusNow.classList.add('error');
+                    }
+                } else {
+                    statusNow.textContent = 'Warning: Lessons invalid. Availability check skipped.'; statusNow.classList.add('error');
+                }
 
-                console.log("Setting active month...");
                 const currentMonthIndex = now.getMonth();
                 if (monthButtonsContainer) {
                     const currentMonthButton = monthButtonsContainer.querySelector(`button[data-month-index="${currentMonthIndex}"]`);
-                    if (currentMonthButton) { console.log("Found current month button, clicking..."); currentMonthButton.click(); }
-                    else { console.warn(`Could not find button for current month index ${currentMonthIndex} AFTER setup. Attempting manual display.`); displayMonthlyTotals(now.getFullYear(), currentMonthIndex); }
-                } else { console.error("Month buttons container not found when trying to set active month."); }
+                    if (currentMonthButton) { currentMonthButton.click(); }
+                    else { displayMonthlyTotals(now.getFullYear(), currentMonthIndex); }
+                }
 
                 refreshAbsenceList();
                 console.log("Initialization complete.");
 
-            } catch (error) { statusNow.textContent = `Critical Error: ${error.message}. Cannot initialize fully. Check console (F12).`; statusNow.classList.add('error'); console.error("Load Data Error:", error); try { setupMonthButtons(); const now = new Date(); dateEntryInput.valueAsDate = now; yearDisplay.value = now.getFullYear(); populateStaffDropdown(); if (absenceDateInput) absenceDateInput.valueAsDate = now; refreshAbsenceList(); } catch (uiError) { console.error("Critical UI setup error:", uiError); document.body.innerHTML = `<div style="padding: 20px; color: red; font-weight: bold;">Critical Error: ${error.message}. Cannot initialize. Check console (F12).</div>`; } }
+            } catch (error) {
+                statusNow.textContent = `Critical Error: ${error.message}. Cannot initialize fully. Check console (F12).`;
+                statusNow.classList.add('error');
+                console.error("Load Data Error:", error);
+                // Attempt minimal UI setup even on error
+                try {
+                    setupMonthButtons();
+                    const now = new Date(); dateEntryInput.valueAsDate = now; yearDisplay.value = now.getFullYear();
+                    populateStaffDropdown(); // Might still work if teacher list was partially populated
+                    if (absenceDateInput) absenceDateInput.valueAsDate = now;
+                    refreshAbsenceList();
+                } catch (uiError) { console.error("Critical UI setup error after initial load failure:", uiError); }
+            }
         }
 
 
         // --- 9. APPLICATION START ---
-        // This is the entry point. It waits for the page to be ready,
-        // then assigns DOM elements, wires up event listeners, and starts the app.
+        // Entry point: Wait for DOM, assign elements, attach listeners, load data.
         document.addEventListener('DOMContentLoaded', () => {
-            // --- Assign DOM Elements ---
+            // Assign DOM Elements
             statusNow = document.getElementById('status-now');
             teachersNowList = document.getElementById('teachers-now');
             statusCustom = document.getElementById('status-custom');
@@ -1817,43 +1792,33 @@
             absenceCsvFileInput = document.getElementById('absence-csv-file-input');
             absenceImportStatus = document.getElementById('absence-import-status');
 
-            // --- Basic DOM check ---
+            // Basic DOM check
             if (!statusNow || !monthButtonsContainer || !staffSelect || !absenceStaffSelect) {
                 console.error("Critical DOM element missing! Cannot proceed.");
                 if (statusNow) { statusNow.textContent = "Error: Page structure broken."; statusNow.classList.add('error'); }
                 return;
             }
-            console.log("All critical DOM elements found.");
+            console.log("DOM elements assigned.");
 
-            // --- Wire Up Event Listeners ---
-            // Availability Check
+            // Wire Up Event Listeners
             checkButton.addEventListener('click', handleCheckAvailability);
-
-            // Minutes Tracking
             saveMinutesButton.addEventListener('click', handleSaveMinutes);
             yearDisplay.addEventListener('change', handleYearChange);
-
-            // Minutes CSV
             exportSummaryButton.addEventListener('click', handleExportSummary);
             exportBackupButton.addEventListener('click', handleExportBackup);
             importCsvButton.addEventListener('click', handleImportMinutesClick);
             csvFileInput.addEventListener('change', handleMinutesFileSelect);
-            
-            // Absence Tracking
             saveAbsenceButton.addEventListener('click', handleSaveAbsence);
-            absenceDateInput.addEventListener('change', refreshAbsenceList); // Just call the refresh function
+            absenceDateInput.addEventListener('change', refreshAbsenceList);
             existingAbsencesList.addEventListener('click', handleDeleteAbsence);
-
-            // Absence CSV
             exportAbsencesButton.addEventListener('click', handleExportAbsences);
             importAbsencesButton.addEventListener('click', handleImportAbsencesClick);
             absenceCsvFileInput.addEventListener('change', handleAbsenceFileSelect);
-
-            // Data Management
             clearDataButton.addEventListener('click', handleClearData);
+            console.log("Event listeners attached.");
 
-            // --- Start the Application ---
-            loadData(); // This now includes the migration check
+            // Start the Application
+            loadData(); // Includes migration check
         });
     </script>
 </body>
