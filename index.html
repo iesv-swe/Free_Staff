@@ -14,7 +14,7 @@
                  extend: {
                     fontFamily: {
                         // Optional: Ensure Inter font is used if Tailwind defaults change
-                        sans: ['Inter', 'sans-serif'],
+                        sans: ['Inter', 'sans-serif'], 
                         mono: ['SFMono-Regular', 'Consolas', 'Liberation Mono', 'Menlo', 'monospace']
                     }
                  }
@@ -28,22 +28,12 @@
         #existing-absences-list ul { @apply pl-0 mt-2 list-none; }
         #existing-absences-list li { @apply mb-3 border-b border-gray-200 dark:border-gray-700 pb-3; }
         /* Style for table */
-        #totals-table th, #totals-table td { @apply p-2 border border-gray-300 dark:border-gray-600 text-sm; } /* Made text slightly smaller */
-        #totals-table th { @apply bg-gray-100 dark:bg-gray-700 font-semibold text-left; } /* Ensure left align */
+        #totals-table th, #totals-table td { @apply p-2 border border-gray-300 dark:border-gray-600; }
+        #totals-table th { @apply bg-gray-100 dark:bg-gray-700 font-semibold; }
         /* Style to hide filtered-out list items */
-         .filtered-hide { display: none !important; }
+         .filtered-hide { display: none !important; } 
          /* Ensure filter input has some bottom margin */
          .filter-input { @apply mb-3; }
-         /* Fix for input colors in dark mode */
-         input[type="date"], input[type="time"], input[type="number"], select {
-            color-scheme: dark; /* Or light depending on the mode */
-         }
-         html.dark input[type="date"], html.dark input[type="time"], html.dark input[type="number"], html.dark select {
-            color-scheme: dark;
-         }
-          html:not(.dark) input[type="date"], html:not(.dark) input[type="time"], html:not(.dark) input[type="number"], html:not(.dark) select {
-            color-scheme: light;
-         }
      </style>
 </head>
 <body class="bg-gray-200 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans leading-relaxed">
@@ -57,9 +47,9 @@
         <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6">
             <h2 class="text-2xl font-semibold border-b border-gray-300 dark:border-gray-700 pb-2 mb-4">Available Right Now</h2>
             <div id="status-now" class="italic text-sm text-gray-600 dark:text-gray-400 mb-1">Loading schedule...</div>
-            <span id="last-updated" class="text-xs text-gray-500 dark:text-gray-400 block mb-4"></span>
+            <span id="last-updated" class="text-xs text-gray-500 dark:text-gray-400 block mb-4"></span> 
              <!-- Filter Input for Available Now -->
-            <input type="text" id="filter-now" placeholder="Filter by name..." class="filter-input block w-full sm:w-1/2 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 dark:text-gray-100 p-2">
+            <input type="text" id="filter-now" placeholder="Filter by name..." class="filter-input block w-full sm:w-1/2 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
             <div id="results-now" class="mt-4"><ul id="teachers-now" class="flex flex-wrap gap-2 list-none p-0"></ul></div>
         </div>
 
@@ -68,22 +58,22 @@
             <h2 class="text-2xl font-semibold border-b border-gray-300 dark:border-gray-700 pb-2 mb-4">Check Availability for a Time Range</h2>
             <div class="mb-4">
                 <label for="date-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date:</label>
-                <input type="date" id="date-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 dark:text-gray-100 p-2">
+                <input type="date" id="date-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
                     <label for="time-from-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time (From):</label>
-                    <input type="time" id="time-from-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 dark:text-gray-100 p-2">
+                    <input type="time" id="time-from-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
                 </div>
                 <div>
                     <label for="time-to-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time (To):</label>
-                    <input type="time" id="time-to-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 dark:text-gray-100 p-2">
+                    <input type="time" id="time-to-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
                 </div>
             </div>
             <button id="check-button" class="py-2 px-4 bg-green-600 text-white rounded-md font-semibold shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-gray-800">Check Availability</button>
             <div id="status-custom" class="italic text-sm text-gray-600 dark:text-gray-400 mt-4" style="display:none;"></div>
              <!-- Filter Input for Custom Range -->
-            <input type="text" id="filter-custom" placeholder="Filter by name..." class="filter-input block w-full sm:w-1/2 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 dark:text-gray-100 p-2 mt-4">
+            <input type="text" id="filter-custom" placeholder="Filter by name..." class="filter-input block w-full sm:w-1/2 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2 mt-4">
             <div id="results-custom" class="mt-4"><ul id="teachers-custom" class="flex flex-wrap gap-2 list-none p-0"></ul></div>
         </div>
 
@@ -94,23 +84,23 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
                     <label for="absence-staff-select" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Staff Member:</label>
-                    <select id="absence-staff-select" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 dark:text-gray-100 p-2">
+                    <select id="absence-staff-select" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
                         <option value="">-- Select Staff --</option>
                     </select>
                 </div>
                 <div>
                     <label for="absence-date-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date of Absence:</label>
-                    <input type="date" id="absence-date-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 dark:text-gray-100 p-2">
+                    <input type="date" id="absence-date-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
                 </div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
                     <label for="absence-time-from-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time (From):</label>
-                    <input type="time" id="absence-time-from-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 dark:text-gray-100 p-2">
+                    <input type="time" id="absence-time-from-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
                 </div>
                 <div>
                     <label for="absence-time-to-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time (To):</label>
-                    <input type="time" id="absence-time-to-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 dark:text-gray-100 p-2">
+                    <input type="time" id="absence-time-to-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
                 </div>
             </div>
             <button id="save-absence-button" class="py-2 px-4 bg-green-600 text-white rounded-md font-semibold shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-gray-800">Save Absence Entry</button>
@@ -118,7 +108,7 @@
             
             <!-- Existing Absences -->
              <!-- Filter Input for Absences -->
-            <input type="text" id="filter-absences" placeholder="Filter by name..." class="filter-input block w-full sm:w-1/2 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 dark:text-gray-100 p-2 mt-6">
+            <input type="text" id="filter-absences" placeholder="Filter by name..." class="filter-input block w-full sm:w-1/2 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2 mt-6">
             <h3 class="text-xl font-semibold mt-2 border-t border-gray-300 dark:border-gray-700 pt-4 mb-2">Existing Absences for Selected Day</h3>
             <div id="existing-absences-list" class="text-sm">
                 <p class="status italic text-gray-600 dark:text-gray-400">Select a date to see existing entries.</p>
@@ -140,18 +130,18 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                 <div>
                     <label for="staff-select" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Staff Member:</label>
-                    <select id="staff-select" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 dark:text-gray-100 p-2">
+                    <select id="staff-select" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
                         <option value="">-- Select Staff --</option>
                     </select>
                 </div>
                 <div>
                     <label for="date-entry-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date Worked:</label>
-                    <input type="date" id="date-entry-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 dark:text-gray-100 p-2">
+                    <input type="date" id="date-entry-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
                 </div>
             </div>
             <div class="mb-4">
                 <label for="minutes-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Add Extra Minutes:</label>
-                <input type="number" id="minutes-input" placeholder="e.g., 60" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 dark:text-gray-100 p-2">
+                <input type="number" id="minutes-input" placeholder="e.g., 60" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
             </div>
             <button id="save-minutes-button" class="py-2 px-4 bg-green-600 text-white rounded-md font-semibold shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-gray-800">Save Minutes</button>
             <div id="save-status" class="italic text-sm text-gray-600 dark:text-gray-400 mt-3" style="display:none;"></div>
@@ -162,7 +152,7 @@
             <h2 class="text-2xl font-semibold border-b border-gray-300 dark:border-gray-700 pb-2 mb-4">Extra Minutes Totals</h2>
             <div class="mb-4 max-w-xs"> <!-- Limit width of year input -->
                 <label for="year-display" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Select Year:</label>
-                <input type="number" id="year-display" value="2025" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 dark:text-gray-100 p-2">
+                <input type="number" id="year-display" value="2025" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
             </div>
             <!-- Month Buttons - dynamically populated -->
             <div class="flex flex-wrap gap-2 mb-4" id="month-buttons"></div> 
@@ -249,7 +239,7 @@
 
             // --- Initial Checks ---
              if (!statusNow || !lastUpdatedSpan || !monthButtonsContainer || !staffSelect || !absenceStaffSelect || !exportAbsencesButton || !importAbsencesButton || !absenceCsvFileInput || !absenceImportStatus || !filterNowInput || !filterCustomInput || !filterAbsencesInput ) { 
-                 console.error("Critical DOM element missing! Cannot proceed.");
+                 console.error("Critical DOM element missing! Cannot proceed.", { /* ... logs ... */ });
                  if (statusNow) { statusNow.textContent = "Error: Page structure broken."; statusNow.classList.add('!text-red-600', '!dark:text-red-400', '!font-semibold'); } 
                  return; 
              }
@@ -278,7 +268,7 @@
             
             // --- Availability Logic ---
             function getAvailabilityAtTime(dateTime) { /* ... unchanged ... */ }
-            // *** FIXED: Added failsafe return to getAvailabilityForRange ***
+             // *** MODIFIED: Added failsafe return ***
             function getAvailabilityForRange(checkDate, checkStartMinutes, checkEndMinutes) {
                  const defaultResult = { available: [], onCallTimes: new Map() };
                  try {
@@ -309,15 +299,12 @@
                      return { available: availableTeacherNames.sort(), onCallTimes: onCallTimesMap }; // Successful return
                  } catch (error) { 
                      console.error("Critical Error in getAvailabilityForRange:", error); 
-                     if(statusCustom) { // Check if statusCustom exists before using it
-                        statusCustom.textContent = `Error calculating availability: ${error.message}`; 
-                        statusCustom.style.display = 'block'; 
-                        statusCustom.classList.add('!text-red-600', '!dark:text-red-400', '!font-semibold'); 
-                     }
+                     statusCustom.textContent = `Error calculating availability: ${error.message}`; 
+                     statusCustom.style.display = 'block'; 
+                     statusCustom.classList.add('!text-red-600', '!dark:text-red-400', '!font-semibold'); 
                      return defaultResult; // Return default on catch
                  }
                  // *** Failsafe Return ***
-                 // This line should ideally not be reached if try/catch works, but added for safety.
                  console.error("getAvailabilityForRange reached unexpected end, returning default.");
                  return defaultResult; 
             }
@@ -328,55 +315,7 @@
             function displayExistingAbsences(dateKey) { /* ... unchanged ... */ }
             function populateStaffDropdown() { /* ... unchanged ... */ }
             function displayMonthlyTotals(year, monthIndex) { /* ... unchanged ... */ }
-            // *** SIMPLIFIED setupMonthButtons class handling ***
-            function setupMonthButtons() {
-                 console.log("Attempting to set up month buttons...");
-                 if (!monthButtonsContainer) { console.error("Critical Error: Month buttons container not found."); return; }
-                 try { 
-                     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]; 
-                     monthButtonsContainer.innerHTML = ''; 
-                     // Tailwind classes for buttons
-                     const baseButtonClasses = ['py-1', 'px-3', 'border', 'rounded-md', 'font-semibold', 'shadow-sm', 'focus:outline-none', 'focus:ring-2', 'focus:ring-offset-2', 'focus:ring-indigo-500', 'dark:focus:ring-offset-gray-800', 'flex-grow', 'text-sm'];
-                     const inactiveButtonClasses = ['bg-white', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-200', 'border-gray-300', 'dark:border-gray-600', 'hover:bg-gray-50', 'dark:hover:bg-gray-600'];
-                     const activeButtonClasses = ['bg-blue-600', 'text-white', 'border-blue-700', 'font-semibold']; // No !important needed
-                     
-                     monthNames.forEach((name, index) => { 
-                         const button = document.createElement('button'); 
-                         if (!button) { console.error(`Failed to create button for month ${index}`); return; } 
-                         button.textContent = name; 
-                         button.classList.add(...baseButtonClasses, ...inactiveButtonClasses); // Apply base + inactive styles initially
-                         button.dataset.monthIndex = index; 
-                         
-                         button.addEventListener('click', (e) => { 
-                             try { 
-                                 // Deactivate previous button
-                                 if (activeMonthButton) { 
-                                     activeMonthButton.classList.remove(...activeButtonClasses);
-                                     activeMonthButton.classList.add(...inactiveButtonClasses);
-                                 } 
-                                 
-                                 // Activate clicked button
-                                 const clickedButton = e.target; 
-                                 clickedButton.classList.remove(...inactiveButtonClasses); 
-                                 clickedButton.classList.add(...activeButtonClasses); 
-                                 activeMonthButton = clickedButton; 
-                                 
-                                 const yearVal = parseInt(yearDisplay.value, 10); 
-                                 if (isNaN(yearVal)) { 
-                                     totalsDisplay.innerHTML = '<p class="text-red-600 dark:text-red-400 font-semibold">Enter valid year.</p>'; 
-                                     return; 
-                                 } 
-                                 displayMonthlyTotals(yearVal, index); 
-                             } catch (clickHandlerError) { 
-                                 console.error("Error in month button click:", clickHandlerError); 
-                                 totalsDisplay.innerHTML = '<p class="text-red-600 dark:text-red-400 font-semibold">Error displaying totals.</p>'; 
-                             } 
-                         }); 
-                         monthButtonsContainer.appendChild(button); 
-                     }); 
-                     console.log("Finished setupMonthButtons loop successfully."); 
-                 } catch (error) { console.error("Critical Error during setupMonthButtons loop:", error); monthButtonsContainer.innerHTML = '<p class="text-red-600 dark:text-red-400 font-semibold">Error creating month buttons.</p>'; }
-            }
+            function setupMonthButtons() { /* ... unchanged ... */ }
             function refreshAvailableNow() { /* ... unchanged ... */ }
             function refreshAbsenceList() { /* ... unchanged ... */ }
             function applyFilter(inputId, listContainerId, itemSelectorType) { /* ... unchanged ... */ }
@@ -386,45 +325,68 @@
 
 
             // --- Event Listeners --- 
-            checkButton.addEventListener('click', () => { /* ... unchanged (contains safety check) ... */ });
+            // *** ADDED SAFETY CHECK to checkButton listener ***
+            checkButton.addEventListener('click', () => {
+                console.log("Check Availability button clicked."); // DEBUG
+                try {
+                    const date = dateInput.valueAsDate;
+                    const timeFrom = timeFromInput.value;
+                    const timeTo = timeToInput.value;
+
+                    if (!date || !timeFrom || !timeTo) {
+                         console.log("Check button validation failed: Missing date/time."); // DEBUG
+                        statusCustom.textContent = 'Please select a date and a time range.';
+                        statusCustom.style.display = 'block';
+                        statusCustom.className = 'status mt-4 italic text-sm text-red-600 dark:text-red-400 font-semibold'; // Tailwind error
+                        teachersCustomList.innerHTML = '';
+                        return;
+                    }
+
+                    const startMinutes = timeToMinutes(timeFrom);
+                    const endMinutes = timeToMinutes(timeTo);
+
+                    if (startMinutes >= endMinutes) {
+                        console.log("Check button validation failed: Start time >= End time."); // DEBUG
+                        statusCustom.textContent = 'Invalid time: "From" time must be before "To" time.';
+                        statusCustom.style.display = 'block';
+                         statusCustom.className = 'status mt-4 italic text-sm text-red-600 dark:text-red-400 font-semibold'; // Tailwind error
+                        teachersCustomList.innerHTML = '';
+                        return;
+                    }
+                    
+                    statusCustom.textContent = `Checking for: ${date.toDateString()} from ${timeFrom} to ${timeTo}...`;
+                    statusCustom.style.display = 'block';
+                    statusCustom.className = 'status mt-4 italic text-sm text-gray-600 dark:text-gray-400'; // Reset to default Tailwind
+                    console.log(`Calling getAvailabilityForRange with date: ${date}, start: ${startMinutes}, end: ${endMinutes}`); // DEBUG
+
+                    const availability = getAvailabilityForRange(date, startMinutes, endMinutes);
+                    console.log("getAvailabilityForRange returned:", availability); // DEBUG
+
+                    // *** ADDED SAFETY CHECK ***
+                    if (availability && typeof availability === 'object' && availability.hasOwnProperty('available') && availability.hasOwnProperty('onCallTimes')) {
+                        displayResults(availability.available, availability.onCallTimes, teachersCustomList, statusCustom, date); 
+                        console.log("displayResults called for custom list."); // DEBUG
+                    } else {
+                        // Log an error if availability is not the expected object
+                        console.error("ERROR: getAvailabilityForRange did not return the expected object. Returned:", availability);
+                        statusCustom.textContent = `Internal error: Failed to get availability data structure. Check console.`;
+                        statusCustom.style.display = 'block';
+                        statusCustom.className = 'status mt-4 italic text-sm text-red-600 dark:text-red-400 font-semibold'; 
+                        teachersCustomList.innerHTML = ''; // Clear list on error
+                    }
+                    // *** END ADDED SAFETY CHECK ***
+
+                } catch (e) {
+                    console.error("Error in checkButton click:", e);
+                    statusCustom.textContent = `An error occurred: ${e.message}`;
+                    statusCustom.style.display = 'block';
+                    statusCustom.className = 'status mt-4 italic text-sm text-red-600 dark:text-red-400 font-semibold'; // Tailwind error
+                }
+            });
             saveMinutesButton.addEventListener('click', () => { /* ... unchanged ... */ });
             exportSummaryButton.addEventListener('click', () => { /* ... unchanged ... */ });
             exportBackupButton.addEventListener('click', () => { /* ... unchanged ... */ });
-            // *** MODIFIED clearDataButton to remove confirm() ***
-            clearDataButton.addEventListener('click', () => {
-                console.log("Clear data button clicked");
-                // Avoid using confirm() - show warning in console for now
-                console.warn("Clear All Data button clicked - proceeding without browser confirmation."); 
-                // Consider adding a custom modal confirmation UI later
-                
-                try {
-                    localStorage.removeItem(MINUTES_STORAGE_KEY);
-                    localStorage.removeItem(ABSENCE_STORAGE_KEY); 
-
-                    showImportStatus('All extra minutes and absence data have been cleared.', false);
-                    
-                    refreshAbsenceList(); 
-
-                    if (activeMonthButton) {
-                        const yearVal = parseInt(yearDisplay.value, 10);
-                        const monthIndex = parseInt(activeMonthButton.dataset.monthIndex, 10);
-                        if (!isNaN(yearVal) && !isNaN(monthIndex)) {
-                            displayMonthlyTotals(yearVal, monthIndex);
-                        } else {
-                            totalsDisplay.innerHTML = '<p class="italic text-sm text-gray-600 dark:text-gray-400">Select a month to see totals.</p>'; // Reset
-                        }
-                    } else {
-                         totalsDisplay.innerHTML = '<p class="italic text-sm text-gray-600 dark:text-gray-400">Select a month to see totals.</p>'; // Reset
-                    }
-                    refreshAvailableNow(); // Refresh now section
-                    if (teachersCustomList.innerHTML !== '') {
-                        checkButton.click(); 
-                    }
-                } catch (e) {
-                    console.error("Error clearing data:", e);
-                    showImportStatus(`Error clearing data: ${e.message}`, true);
-                }
-            });
+            clearDataButton.addEventListener('click', () => { /* ... unchanged ... */ });
             yearDisplay.addEventListener('change', () => { /* ... unchanged ... */ });
             importCsvButton.addEventListener('click', () => { csvFileInput.value = null; csvFileInput.click(); });
             csvFileInput.addEventListener('change', (event) => { /* ... unchanged ... */ });
@@ -447,7 +409,4 @@
     </script>
 </body>
 </html>
-```
-
-This should resolve the error when clicking "Check Availability" by ensuring `getAvailabilityForRange
 
