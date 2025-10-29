@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-<html lang="en" class="dark"> <!-- Added dark mode preference -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +8,7 @@
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; background-color: #333333; color: #24292e; max-width: 800px; margin: 20px auto; padding: 20px; }
         .logo { width: 180px; height: auto; margin-bottom: 10px; }
         h1, h2 { border-bottom: 2px solid #eaecef; padding-bottom: 10px; }
+        .container { background-color: #ffffff; border: 1px solid #d1d5da; border-radius: 6px; padding: 24px; margin-bottom: 20px; }
         .container { background-color: #e0e0e0; border: 1px solid #d1d5da; border-radius: 6px; padding: 24px; margin-bottom: 20px; }
         .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .input-group { margin-bottom: 15px; }
@@ -51,31 +51,6 @@
         #existing-absences-list ul { padding-left: 0; margin-top: 5px;}
         #existing-absences-list li { margin-bottom: 10px; list-style-type: none; border-bottom: 1px solid #eee; padding-bottom: 10px;}
     </style>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        // Optional: Configure Tailwind for dark mode based on class
-        tailwind.config = {
-            darkMode: 'class', // or 'media'
-             theme: {
-                 extend: {
-                    fontFamily: {
-                        // Optional: Ensure Inter font is used if Tailwind defaults change
-                        sans: ['Inter', 'sans-serif'], 
-                        mono: ['SFMono-Regular', 'Consolas', 'Liberation Mono', 'Menlo', 'monospace']
-                    }
-                 }
-            }
-        }
-    </script>
-    <!-- Removed the old <style> block -->
-     <style>
-        /* Minimal styles for specific overrides if needed - keeping it clean */
-        /* Style for absence list grouping (using Tailwind classes mostly now) */
-        #existing-absences-list h4 { @apply mb-1 mt-4 border-b border-dashed border-gray-300 dark:border-gray-600 pb-1 text-lg font-semibold; }
-        #existing-absences-list ul { @apply pl-0 mt-2 list-none; }
-        #existing-absences-list li { @apply mb-3 border-b border-gray-200 dark:border-gray-700 pb-3; }
-     </style>
 </head>
 <body>
 
@@ -93,18 +68,6 @@
         <div class="input-grid">
             <div class="input-group"><label for="time-from-input">Time (From):</label><input type="time" id="time-from-input"></div>
             <div class="input-group"><label for="time-to-input">Time (To):</label><input type="time" id="time-to-input"></div>
-<body class="bg-gray-200 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans leading-relaxed">
-
-    <div class="max-w-4xl mx-auto p-4 md:p-6 lg:p-8"> <!-- Main content container -->
-
-        <img src="logo.png" alt="Logo" class="w-40 h-auto mb-4 mx-auto sm:mx-0"> <!-- Centered on small screens -->
-        <h1 class="text-3xl font-bold border-b border-gray-300 dark:border-gray-700 pb-3 mb-6 text-center sm:text-left">Teacher Availability</h1>
-
-        <!-- Available Now Container -->
-        <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6">
-            <h2 class="text-2xl font-semibold border-b border-gray-300 dark:border-gray-700 pb-2 mb-4">Available Right Now</h2>
-            <div id="status-now" class="italic text-sm text-gray-600 dark:text-gray-400 mb-4">Loading schedule...</div>
-            <div id="results-now" class="mt-4"><ul id="teachers-now" class="flex flex-wrap gap-2 list-none p-0"></ul></div>
         </div>
         <button id="check-button">Check Availability</button>
         <div id="status-custom" class="status" style="display:none;"></div>
@@ -119,77 +82,25 @@
             <div class="input-group">
                 <label for="absence-staff-select">Staff Member:</label>
                 <select id="absence-staff-select"><option value="">-- Select Staff --</option></select>
-
-        <!-- Check Availability Container -->
-        <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6">
-            <h2 class="text-2xl font-semibold border-b border-gray-300 dark:border-gray-700 pb-2 mb-4">Check Availability for a Time Range</h2>
-            <div class="mb-4">
-                <label for="date-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date:</label>
-                <input type="date" id="date-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
             </div>
             <div class="input-group">
                 <label for="absence-date-input">Date of Absence:</label>
                 <input type="date" id="absence-date-input">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label for="time-from-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time (From):</label>
-                    <input type="time" id="time-from-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
-                </div>
-                <div>
-                    <label for="time-to-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time (To):</label>
-                    <input type="time" id="time-to-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
-                </div>
             </div>
-            <button id="check-button" class="py-2 px-4 bg-green-600 text-white rounded-md font-semibold shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-gray-800">Check Availability</button>
-            <div id="status-custom" class="italic text-sm text-gray-600 dark:text-gray-400 mt-4" style="display:none;"></div>
-            <div id="results-custom" class="mt-4"><ul id="teachers-custom" class="flex flex-wrap gap-2 list-none p-0"></ul></div>
         </div>
         <div class="input-grid">
             <div class="input-group">
                 <label for="absence-time-from-input">Time (From):</label>
                 <input type="time" id="absence-time-from-input">
-
-        <!-- Log Staff Absence Container -->
-        <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6">
-            <h2 class="text-2xl font-semibold border-b border-gray-300 dark:border-gray-700 pb-2 mb-4">Log Staff Absence (Training, Meetings, etc.)</h2>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Log a time range when a staff member is unavailable. This will remove them from the availability lists for that specific time.</p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label for="absence-staff-select" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Staff Member:</label>
-                    <select id="absence-staff-select" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
-                        <option value="">-- Select Staff --</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="absence-date-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date of Absence:</label>
-                    <input type="date" id="absence-date-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
-                </div>
             </div>
             <div class="input-group">
                 <label for="absence-time-to-input">Time (To):</label>
                 <input type="time" id="absence-time-to-input">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label for="absence-time-from-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time (From):</label>
-                    <input type="time" id="absence-time-from-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
-                </div>
-                <div>
-                    <label for="absence-time-to-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time (To):</label>
-                    <input type="time" id="absence-time-to-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
-                </div>
-            </div>
-            <button id="save-absence-button" class="py-2 px-4 bg-green-600 text-white rounded-md font-semibold shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-gray-800">Save Absence Entry</button>
-            <div id="absence-save-status" class="italic text-sm text-gray-600 dark:text-gray-400 mt-3" style="display:none;"></div>
-            
-            <!-- Existing Absences -->
-            <h3 class="text-xl font-semibold mt-6 border-t border-gray-300 dark:border-gray-700 pt-4 mb-2">Existing Absences for Selected Day</h3>
-            <div id="existing-absences-list" class="text-sm">
-                <p class="status italic text-gray-600 dark:text-gray-400">Select a date to see existing entries.</p>
             </div>
         </div>
         <button id="save-absence-button">Save Absence Entry</button>
         <div id="absence-save-status" class="status" style="display:none; margin-top:10px;"></div>
-        
+
         <h3 style="margin-top: 20px; border-top: 1px solid #eaecef; padding-top: 15px;">Existing Absences for Selected Day</h3>
         <div id="existing-absences-list" style="padding-left: 0;"> <!-- Changed padding-left -->
             <p class="status">Select a date to see existing entries.</p> <!-- Updated text -->
@@ -200,13 +111,6 @@
              <button id="export-absences-button" class="primary">Export Absences CSV</button>
              <button id="import-absences-button" class="secondary">Import Absences CSV</button>
              <input type="file" id="absence-csv-file-input" accept=".csv">
-            <!-- Absence Import/Export Buttons -->
-            <div class="flex gap-4 flex-wrap mt-6">
-                 <button id="export-absences-button" class="py-2 px-4 bg-purple-600 text-white rounded-md font-semibold shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:focus:ring-offset-gray-800">Export Absences CSV</button>
-                 <button id="import-absences-button" class="py-2 px-4 bg-white dark:bg-gray-200 text-gray-700 dark:text-gray-800 border border-gray-300 dark:border-gray-500 rounded-md font-semibold shadow-sm hover:bg-gray-50 dark:hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">Import Absences CSV</button>
-                 <input type="file" id="absence-csv-file-input" accept=".csv" class="hidden">
-            </div>
-             <div id="absence-import-status" class="italic text-sm text-gray-600 dark:text-gray-400 mt-3" style="display:none;"></div>
         </div>
          <div id="absence-import-status" class="status" style="display:none; margin-top:10px;"></div>
 
@@ -219,28 +123,6 @@
         <div class="input-grid">
             <div class="input-group"><label for="staff-select">Staff Member:</label><select id="staff-select"><option value="">-- Select Staff --</option></select></div>
             <div class="input-group"><label for="date-entry-input">Date Worked:</label><input type="date" id="date-entry-input"></div>
-        <!-- Extra Minutes Tracker Container -->
-        <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6">
-            <h2 class="text-2xl font-semibold border-b border-gray-300 dark:border-gray-700 pb-2 mb-4">Extra Minutes Tracker</h2>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Record extra minutes worked by staff. This data is saved in your browser.</p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label for="staff-select" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Staff Member:</label>
-                    <select id="staff-select" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
-                        <option value="">-- Select Staff --</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="date-entry-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date Worked:</label>
-                    <input type="date" id="date-entry-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
-                </div>
-            </div>
-            <div class="mb-4">
-                <label for="minutes-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Add Extra Minutes:</label>
-                <input type="number" id="minutes-input" placeholder="e.g., 60" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
-            </div>
-            <button id="save-minutes-button" class="py-2 px-4 bg-green-600 text-white rounded-md font-semibold shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-gray-800">Save Minutes</button>
-            <div id="save-status" class="italic text-sm text-gray-600 dark:text-gray-400 mt-3" style="display:none;"></div>
         </div>
         <div class="input-group"><label for="minutes-input">Add Extra Minutes:</label><input type="number" id="minutes-input" placeholder="e.g., 60"></div>
         <button id="save-minutes-button">Save Minutes</button>
@@ -260,36 +142,10 @@
             <!-- *** END UPDATED BUTTONS *** -->
             <input type="file" id="csv-file-input" accept=".csv">
             <button id="clear-data-button" class="danger">Clear All Saved Data</button>
-
-        <!-- Extra Minutes Totals Container -->
-        <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6">
-            <h2 class="text-2xl font-semibold border-b border-gray-300 dark:border-gray-700 pb-2 mb-4">Extra Minutes Totals</h2>
-            <div class="mb-4 max-w-xs"> <!-- Limit width of year input -->
-                <label for="year-display" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Select Year:</label>
-                <input type="number" id="year-display" value="2025" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
-            </div>
-            <!-- Month Buttons - dynamically populated -->
-            <div class="flex flex-wrap gap-2 mb-4" id="month-buttons"></div> 
-            
-            <!-- Totals Display Area -->
-            <div id="totals-display" class="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md p-4 min-h-[80px]">
-                <p class="italic text-sm text-gray-600 dark:text-gray-400">Select a month to see totals.</p>
-            </div>
-            
-            <!-- Minutes Import/Export/Clear Buttons -->
-            <div class="flex flex-wrap gap-4 mt-6">
-                <button id="export-backup-button" class="py-2 px-4 bg-purple-600 text-white rounded-md font-semibold shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:focus:ring-offset-gray-800">Export CSV (Min)</button> 
-                <button id="export-summary-button" class="py-2 px-4 bg-blue-600 text-white rounded-md font-semibold shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800">Summary CSV (Min)</button>    
-                <button id="import-csv-button" class="py-2 px-4 bg-white dark:bg-gray-200 text-gray-700 dark:text-gray-800 border border-gray-300 dark:border-gray-500 rounded-md font-semibold shadow-sm hover:bg-gray-50 dark:hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">Import CSV (Min)</button>     
-                <input type="file" id="csv-file-input" accept=".csv" class="hidden">
-                <button id="clear-data-button" class="py-2 px-4 bg-red-600 text-white rounded-md font-semibold shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:focus:ring-offset-gray-800">Clear All Saved Data</button>
-            </div>
-            <div id="import-status" class="italic text-sm text-gray-600 dark:text-gray-400 mt-3" style="display:none;"></div>
         </div>
         <div id="import-status" class="status" style="display:none; margin-top:10px;"></div>
     </div>
 
-    </div> <!-- End Main content container -->
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -349,7 +205,6 @@
 
              // Log if critical elements are missing BEFORE loadData runs
              if (!statusNow || !monthButtonsContainer || !staffSelect || !absenceStaffSelect || !exportAbsencesButton || !importAbsencesButton || !absenceCsvFileInput || !absenceImportStatus) { // Added checks for new elements
-             if (!statusNow || !monthButtonsContainer || !staffSelect || !absenceStaffSelect || !exportAbsencesButton || !importAbsencesButton || !absenceCsvFileInput || !absenceImportStatus) { 
                  console.error("Critical DOM element missing! Cannot proceed.", { 
                      statusNowExists: !!statusNow, 
                      monthButtonsContainerExists: !!monthButtonsContainer, 
@@ -359,12 +214,8 @@
                      importAbsencesButtonExists: !!importAbsencesButton,
                      absenceCsvFileInputExists: !!absenceCsvFileInput,
                      absenceImportStatusExists: !!absenceImportStatus
-                     statusNowExists: !!statusNow, monthButtonsContainerExists: !!monthButtonsContainer, staffSelectExists: !!staffSelect,
-                     absenceStaffSelectExists: !!absenceStaffSelect, exportAbsencesButtonExists: !!exportAbsencesButton, 
-                     importAbsencesButtonExists: !!importAbsencesButton, absenceCsvFileInputExists: !!absenceCsvFileInput, absenceImportStatusExists: !!absenceImportStatus
                  });
                  if (statusNow) { statusNow.textContent = "Error: Page structure broken."; statusNow.classList.add('error'); }
-                 if (statusNow) { statusNow.textContent = "Error: Page structure broken."; statusNow.classList.add('!text-red-600', '!dark:text-red-400', '!font-semibold'); } // Use Tailwind classes for error
                  return; // Stop script execution
              }
              console.log("All critical DOM elements found.");
@@ -449,7 +300,6 @@
 
                      return { available: availableTeacherNames.sort(), onCallTimes: onCallTimesMap };
                  } catch (error) { console.error("Critical Error in getAvailabilityAtTime:", error); statusNow.textContent = `Error calculating availability: ${error.message}`; statusNow.classList.add('error'); return defaultResult; }
-                 } catch (error) { console.error("Critical Error in getAvailabilityAtTime:", error); statusNow.textContent = `Error calculating availability: ${error.message}`; statusNow.classList.add('!text-red-600', '!dark:text-red-400', '!font-semibold'); return defaultResult; }
              }
 
             // --- Logic Function 2: Availability for a time range ---
@@ -470,69 +320,11 @@
 
                      return { available: availableTeacherNames.sort(), onCallTimes: onCallTimesMap };
                  } catch (error) { console.error("Critical Error in getAvailabilityForRange:", error); statusCustom.textContent = `Error calculating availability: ${error.message}`; statusCustom.style.display = 'block'; statusCustom.classList.add('error'); return defaultResult; }
-                 } catch (error) { console.error("Critical Error in getAvailabilityForRange:", error); statusCustom.textContent = `Error calculating availability: ${error.message}`; statusCustom.style.display = 'block'; statusCustom.classList.add('!text-red-600', '!dark:text-red-400', '!font-semibold'); return defaultResult; }
              }
 
             // --- Display Function (Availability) ---
              function displayResults(availableTeachers, onCallTimesMap, listElement, statusElement, checkDate) {
                  listElement.innerHTML = ''; const filteredTeachers = availableTeachers.filter(teacher => !EXCLUDE_TEACHERS_SET.has(teacher)); const allData = getSavedMinutesData(); const { week: checkWeekNum, year: checkWeekYear } = getIsoWeekAndYear(checkDate); const checkMonthKey = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}`; if (filteredTeachers.length === 0) { statusElement.textContent = 'No available teachers found.'; statusElement.classList.remove('error'); } else { filteredTeachers.forEach(teacher => { const li = document.createElement('li'); let weeklyTotal = 0; let monthlyTotal = 0; const teacherData = allData[teacher] || {}; for (const dateKey in teacherData) { try { const entryDate = new Date(dateKey + 'T00:00:00Z'); if (isNaN(entryDate.getTime())) continue; const { week: entryWeek, year: entryYear } = getIsoWeekAndYear(entryDate); const minutes = teacherData[dateKey] || 0; if (entryWeek === checkWeekNum && entryYear === checkWeekYear) { weeklyTotal += minutes; } if (dateKey.startsWith(checkMonthKey)) { monthlyTotal += minutes; } } catch (e) { console.error("Error calculating totals for teacher:", teacher, dateKey, e); } } let textContent = `${teacher} (W: ${weeklyTotal} / M: ${monthlyTotal})`; if (onCallTimesMap.has(teacher)) { const times = onCallTimesMap.get(teacher); const startTimeStr = minutesToHHMM(times.start); const endTimeStr = minutesToHHMM(times.end); textContent = `${teacher} (On Call: ${startTimeStr} - ${endTimeStr}) (W: ${weeklyTotal} / M: ${monthlyTotal})`; li.classList.add('on-call'); } else { if (monthlyTotal >= 180) { li.classList.add('minutes-danger'); } else if (weeklyTotal >= 90) { li.classList.add('minutes-warn'); } } li.textContent = textContent; listElement.appendChild(li); }); }
-                 listElement.innerHTML = ''; 
-                 const filteredTeachers = availableTeachers.filter(teacher => !EXCLUDE_TEACHERS_SET.has(teacher)); 
-                 const allData = getSavedMinutesData(); 
-                 const { week: checkWeekNum, year: checkWeekYear } = getIsoWeekAndYear(checkDate); 
-                 const checkMonthKey = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}`; 
-                 
-                 // Update status text styling
-                 if (filteredTeachers.length === 0) { 
-                     statusElement.textContent = 'No available teachers found.'; 
-                     statusElement.classList.remove('!text-red-600', '!dark:text-red-400', '!font-semibold', '!text-green-600', '!dark:text-green-400'); // Remove specific color classes
-                     statusElement.classList.add('italic', 'text-sm', 'text-gray-600', 'dark:text-gray-400'); // Add back default status classes
-                 } else {
-                     // Clear status if teachers are found (unless it was explicitly set to an error before calling this)
-                      if (!statusElement.classList.contains('!text-red-600')) { // Don't clear if it's an error message
-                        statusElement.textContent = ''; 
-                        statusElement.style.display = 'none'; // Hide if no message needed
-                      }
-                 }
-                 
-                 filteredTeachers.forEach(teacher => { 
-                     const li = document.createElement('li'); 
-                     // Base Tailwind classes for list items
-                     li.className = 'bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-full px-3 py-1 text-sm font-mono';
-                     
-                     let weeklyTotal = 0; 
-                     let monthlyTotal = 0; 
-                     const teacherData = allData[teacher] || {}; 
-                     for (const dateKey in teacherData) { 
-                         try { 
-                             const entryDate = new Date(dateKey + 'T00:00:00Z'); 
-                             if (isNaN(entryDate.getTime())) continue; 
-                             const { week: entryWeek, year: entryYear } = getIsoWeekAndYear(entryDate); 
-                             const minutes = teacherData[dateKey] || 0; 
-                             if (entryWeek === checkWeekNum && entryYear === checkWeekYear) { weeklyTotal += minutes; } 
-                             if (dateKey.startsWith(checkMonthKey)) { monthlyTotal += minutes; } 
-                         } catch (e) { console.error("Error calculating totals for teacher:", teacher, dateKey, e); } 
-                     } 
-                     
-                     let textContent = `${teacher} (W: ${weeklyTotal} / M: ${monthlyTotal})`; 
-                     
-                     // Apply Tailwind classes dynamically
-                     if (onCallTimesMap.has(teacher)) { 
-                         const times = onCallTimesMap.get(teacher); 
-                         const startTimeStr = minutesToHHMM(times.start); 
-                         const endTimeStr = minutesToHHMM(times.end); 
-                         textContent = `${teacher} (On Call: ${startTimeStr} - ${endTimeStr}) (W: ${weeklyTotal} / M: ${monthlyTotal})`; 
-                         li.classList.add('!bg-green-600', '!text-white', '!border-green-700', 'font-semibold'); // Using !important prefix just in case base styles interfere initially
-                     } else { 
-                         if (monthlyTotal >= 180) { 
-                             li.classList.add('!bg-red-600', '!text-white', '!border-red-700', 'font-semibold'); 
-                         } else if (weeklyTotal >= 90) { 
-                             li.classList.add('!bg-yellow-400', '!text-black', '!border-yellow-500'); 
-                         } 
-                     } 
-                     li.textContent = textContent; 
-                     listElement.appendChild(li); 
-                 }); 
              }
 
             // --- Extra Minutes Helper Functions ---
@@ -579,19 +371,14 @@
                 }
             }
 
-            // Updated to use Tailwind classes
             function showAbsenceSaveStatus(message, isError = false) {
                 if (!absenceSaveStatus) return;
                 absenceSaveStatus.textContent = message;
                 absenceSaveStatus.className = 'status'; // Reset classes
-                // Base classes + conditional color classes
-                absenceSaveStatus.className = 'status mt-3 italic text-sm'; // Reset to base + margin
                 if (isError) {
                     absenceSaveStatus.classList.add('error');
-                    absenceSaveStatus.classList.add('text-red-600', 'dark:text-red-400', 'font-semibold');
                 } else {
                     absenceSaveStatus.classList.add('success');
-                    absenceSaveStatus.classList.add('text-green-600', 'dark:text-green-400', 'font-semibold');
                 }
                 absenceSaveStatus.style.display = 'block';
                 setTimeout(() => {
@@ -605,7 +392,6 @@
                 if (!existingAbsencesList) return;
                 if (!dateKey) {
                     existingAbsencesList.innerHTML = '<p class="status">Select a date to see existing entries.</p>';
-                    existingAbsencesList.innerHTML = '<p class="status italic text-sm text-gray-600 dark:text-gray-400">Select a date to see existing entries.</p>';
                     return;
                 }
 
@@ -624,24 +410,15 @@
                     if (dayEntries.length > 0) {
                         foundAbsences = true;
                         html += `<h4>${staffName}</h4><ul>`; // Add heading for this staff member
-                        html += `<h4>${staffName}</h4><ul>`; // Style applied via CSS block
 
                         // Sort entries for this staff member by start time
                         dayEntries.sort((a, b) => a.start - b.start);
 
                         dayEntries.forEach((entry, index) => {
-                            // Using Tailwind for delete button styling
                             html += `
                                 <li style="margin-bottom: 10px; list-style-type: none; border-bottom: 1px solid #eee; padding-bottom: 10px;">
                                     <strong>${minutesToHHMM(entry.start)} - ${minutesToHHMM(entry.end)}</strong>
                                     <button class="danger" data-staff="${staffName}" data-date="${dateKey}" data-index="${index}" style="padding: 3px 8px; font-size: 12px; margin-left: 10px; margin-top: 0;">Delete</button>
-                                <li> 
-                                    <strong class="font-semibold">${minutesToHHMM(entry.start)} - ${minutesToHHMM(entry.end)}</strong>
-                                    <button 
-                                        class="ml-3 py-0.5 px-2 text-xs font-medium rounded shadow-sm bg-red-600 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:focus:ring-offset-gray-800" 
-                                        data-staff="${staffName}" data-date="${dateKey}" data-index="${index}">
-                                        Delete
-                                    </button>
                                 </li>
                             `;
                         });
@@ -651,7 +428,6 @@
 
                 if (!foundAbsences) {
                     existingAbsencesList.innerHTML = '<p class="status">No absences logged for any staff on this day.</p>';
-                    existingAbsencesList.innerHTML = '<p class="status italic text-sm text-gray-600 dark:text-gray-400">No absences logged for any staff on this day.</p>';
                 } else {
                     existingAbsencesList.innerHTML = html;
                 }
@@ -659,7 +435,6 @@
 
 
             // Corrected date formatting
-            // Corrected date formatting consistency
             function isTeacherAbsent(teacher, checkDate, checkTimeInMinutes) {
                 const allData = getSavedAbsenceData();
                 // Ensure dateKey uses consistent YYYY-MM-DD format
@@ -718,19 +493,14 @@
                 catch (error) { console.error("Error during populateStaffDropdown:", error); staffSelect.innerHTML = '<option value="">Error populating</option>'; }
             }
             // (Restored from original code)
-            // Updated to use Tailwind classes
             function showSaveStatus(message, isError = false) {
                 if (!saveStatus) return;
                 saveStatus.textContent = message;
                 saveStatus.className = 'status'; // Reset classes
-                 // Base classes + conditional color classes
-                saveStatus.className = 'status mt-3 italic text-sm'; // Reset to base + margin
                 if (isError) {
                     saveStatus.classList.add('error');
-                     saveStatus.classList.add('text-red-600', 'dark:text-red-400', 'font-semibold');
                 } else {
                     saveStatus.classList.add('success');
-                     saveStatus.classList.add('text-green-600', 'dark:text-green-400', 'font-semibold');
                 }
                 saveStatus.style.display = 'block';
                 setTimeout(() => {
@@ -738,18 +508,14 @@
                 }, 4000);
             }
             // (Restored from original code)
-            // Updated to use Tailwind classes
             function showImportStatus(message, isError = false) { // Used for Minutes import
                 if (!importStatus) return;
                 importStatus.textContent = message;
                 importStatus.className = 'status'; // Reset classes
-                importStatus.className = 'status mt-3 italic text-sm'; // Reset to base + margin
                 if (isError) {
                     importStatus.classList.add('error');
-                    importStatus.classList.add('text-red-600', 'dark:text-red-400', 'font-semibold');
                 } else {
                     importStatus.classList.add('success');
-                    importStatus.classList.add('text-green-600', 'dark:text-green-400', 'font-semibold');
                 }
                 importStatus.style.display = 'block';
                 setTimeout(() => {
@@ -757,18 +523,14 @@
                 }, 5000);
             }
              // New function for Absence import status
-             // Updated to use Tailwind classes (New function for Absence import status)
              function showAbsenceImportStatus(message, isError = false) { 
                 if (!absenceImportStatus) return;
                 absenceImportStatus.textContent = message;
                 absenceImportStatus.className = 'status'; // Reset classes
-                absenceImportStatus.className = 'status mt-3 italic text-sm'; // Reset to base + margin
                 if (isError) {
                     absenceImportStatus.classList.add('error');
-                    absenceImportStatus.classList.add('text-red-600', 'dark:text-red-400', 'font-semibold');
                 } else {
                     absenceImportStatus.classList.add('success');
-                    absenceImportStatus.classList.add('text-green-600', 'dark:text-green-400', 'font-semibold');
                 }
                 absenceImportStatus.style.display = 'block';
                 setTimeout(() => {
@@ -776,7 +538,6 @@
                 }, 5000);
             }
             // (Restored from original code)
-            // Updated displayMonthlyTotals to use Tailwind classes for list items
             function displayMonthlyTotals(year, monthIndex) {
                 totalsDisplay.innerHTML = ''; // Clear previous
                 const monthKey = `${year}-${String(monthIndex + 1).padStart(2, '0')}`;
@@ -803,88 +564,30 @@
 
                 if (totals.length === 0) {
                     totalsDisplay.innerHTML = `<p class="status">No extra minutes recorded for ${monthKey}.</p>`;
-                    totalsDisplay.innerHTML = `<p class="italic text-sm text-gray-600 dark:text-gray-400">No extra minutes recorded for ${monthKey}.</p>`;
                     return;
                 }
 
                 const monthName = new Date(year, monthIndex, 1).toLocaleString('default', { month: 'long' });
                 let html = `<h3>Totals for ${monthName} ${year}</h3><ul style="padding: 0;">`;
-                // Use Tailwind for list styling
-                let html = `<h3 class="text-lg font-semibold mb-2">${monthName} ${year} Totals</h3><ul class="list-none p-0 space-y-1">`; 
                 totals.forEach(entry => {
                     const li = document.createElement('li');
                     li.textContent = `${entry.name}: ${entry.total} minutes`;
-                    let liClasses = "font-mono text-sm p-1 rounded"; // Base classes
                     if (entry.total >= 180) {
                         li.classList.add('minutes-danger');
                     } else if (entry.total >= 90) { // Using 90 as a general weekly proxy for monthly warning
                          li.classList.add('minutes-warn');
-                        liClasses += " bg-red-600 text-white font-semibold"; // Danger
-                    } else if (entry.total >= 90) { 
-                         liClasses += " bg-yellow-400 text-black"; // Warn
-                    } else {
-                         liClasses += " bg-gray-100 dark:bg-gray-600"; // Default
                     }
                     html += li.outerHTML;
-                    html += `<li class="${liClasses}">${entry.name}: ${entry.total} minutes</li>`;
                 });
                 html += '</ul>';
                 totalsDisplay.innerHTML = html;
             }
             // (Restored from original code)
-            // Updated setupMonthButtons to use Tailwind classes
              function setupMonthButtons() {
                  console.log("Attempting to set up month buttons...");
                  if (!monthButtonsContainer) { console.error("Critical Error: Month buttons container not found."); return; }
                  try { const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]; monthButtonsContainer.innerHTML = ''; console.log("Month button container cleared."); monthNames.forEach((name, index) => { /* console.log(`Creating button for ${name} (index ${index})`); */ const button = document.createElement('button'); if (!button) { console.error(`Failed to create button for month ${index}`); return; } button.textContent = name; button.classList.add('secondary'); button.dataset.monthIndex = index; button.addEventListener('click', (e) => { try { if (activeMonthButton) { activeMonthButton.classList.remove('active'); activeMonthButton.classList.add('secondary'); } const clickedButton = e.target; clickedButton.classList.remove('secondary'); clickedButton.classList.add('active'); activeMonthButton = clickedButton; const yearVal = parseInt(yearDisplay.value, 10); if (isNaN(yearVal)) { totalsDisplay.innerHTML = '<p class="error">Enter valid year.</p>'; return; } displayMonthlyTotals(yearVal, index); } catch (clickHandlerError) { console.error("Error in month button click:", clickHandlerError); totalsDisplay.innerHTML = '<p class="error">Error displaying totals.</p>'; } }); monthButtonsContainer.appendChild(button); /* console.log(`Appended button for ${name}.`); */ }); console.log("Finished setupMonthButtons loop successfully."); }
                  catch (error) { console.error("Critical Error during setupMonthButtons loop:", error); monthButtonsContainer.innerHTML = '<p class="error" style="color: red;">Error creating month buttons.</p>'; }
-                 try { 
-                     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]; 
-                     monthButtonsContainer.innerHTML = ''; 
-                     console.log("Month button container cleared."); 
-                     
-                     // Base classes for inactive buttons
-                     const inactiveClasses = ['py-1', 'px-3', 'bg-white', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-200', 'border', 'border-gray-300', 'dark:border-gray-600', 'rounded-md', 'font-semibold', 'shadow-sm', 'hover:bg-gray-50', 'dark:hover:bg-gray-600', 'focus:outline-none', 'focus:ring-2', 'focus:ring-offset-2', 'focus:ring-indigo-500', 'dark:focus:ring-offset-gray-800', 'flex-grow', 'text-sm'];
-                     // Classes to add for the active button
-                     const activeClasses = ['!bg-blue-600', '!text-white', '!border-blue-700', '!font-semibold']; // Using !important prefix
-                     
-                     monthNames.forEach((name, index) => { 
-                         const button = document.createElement('button'); 
-                         if (!button) { console.error(`Failed to create button for month ${index}`); return; } 
-                         button.textContent = name; 
-                         button.classList.add(...inactiveClasses); // Apply base styles
-                         button.dataset.monthIndex = index; 
-                         
-                         button.addEventListener('click', (e) => { 
-                             try { 
-                                 // Deactivate previous button
-                                 if (activeMonthButton) { 
-                                     activeMonthButton.classList.remove(...activeClasses);
-                                     activeMonthButton.classList.add(...inactiveClasses.filter(c => !c.startsWith('bg-') && !c.startsWith('text-') && !c.startsWith('border-'))); // Re-add non-color base classes if needed
-                                 } 
-                                 
-                                 // Activate clicked button
-                                 const clickedButton = e.target; 
-                                 clickedButton.classList.remove(...inactiveClasses.filter(c => c.startsWith('bg-') || c.startsWith('text-') || c.startsWith('border-'))); // Remove conflicting base styles
-                                 clickedButton.classList.add(...activeClasses); 
-                                 activeMonthButton = clickedButton; 
-                                 
-                                 const yearVal = parseInt(yearDisplay.value, 10); 
-                                 if (isNaN(yearVal)) { 
-                                     totalsDisplay.innerHTML = '<p class="text-red-600 dark:text-red-400 font-semibold">Enter valid year.</p>'; 
-                                     return; 
-                                 } 
-                                 displayMonthlyTotals(yearVal, index); 
-                             } catch (clickHandlerError) { 
-                                 console.error("Error in month button click:", clickHandlerError); 
-                                 totalsDisplay.innerHTML = '<p class="text-red-600 dark:text-red-400 font-semibold">Error displaying totals.</p>'; 
-                             } 
-                         }); 
-                         monthButtonsContainer.appendChild(button); 
-                     }); 
-                     console.log("Finished setupMonthButtons loop successfully."); 
-                 }
-                 catch (error) { console.error("Critical Error during setupMonthButtons loop:", error); monthButtonsContainer.innerHTML = '<p class="text-red-600 dark:text-red-400 font-semibold">Error creating month buttons.</p>'; }
              }
 
 
@@ -893,8 +596,6 @@
                  console.log("Starting application load...");
                  statusNow.textContent = 'Loading schedule...';
                  statusNow.classList.remove('error', 'success');
-                 statusNow.classList.remove('!text-red-600', '!dark:text-red-400', '!font-semibold', '!text-green-600', '!dark:text-green-400'); // Remove specific color classes
-                 statusNow.classList.add('italic', 'text-sm', 'text-gray-600', 'dark:text-gray-400'); // Add back default status classes
 
                  try {
                      console.log("Fetching Lessons.txt...");
@@ -915,8 +616,6 @@
 
                      if (allTeachers.size === 0) { console.warn("No teachers identified..."); statusNow.textContent = 'Warning: No teachers found...'; statusNow.classList.add('error'); populateStaffDropdown(); }
                      else { console.log("Populating dropdowns..."); populateStaffDropdown(); statusNow.textContent = `Schedule loaded. Checked for: ${new Date().toLocaleString()}`; }
-                     if (allTeachers.size === 0) { console.warn("No teachers identified..."); statusNow.textContent = 'Warning: No teachers found...'; statusNow.classList.add('!text-yellow-600', '!dark:text-yellow-400', '!font-semibold'); populateStaffDropdown(); } // Use Tailwind for warning
-                     else { console.log("Populating dropdowns..."); populateStaffDropdown(); statusNow.textContent = `Schedule loaded. Checked: ${new Date().toLocaleTimeString()}`; statusNow.classList.add('!text-green-600', '!dark:text-green-400'); } // Use Tailwind for success
 
                      console.log("Setting default input values...");
                      const now = new Date();
@@ -931,11 +630,6 @@
                          if (availabilityNow && typeof availabilityNow === 'object' && Array.isArray(availabilityNow.available)) { console.log("Displaying results for now..."); displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now); }
                          else { console.error("getAvailabilityAtTime returned invalid data:", availabilityNow); statusNow.textContent = 'Error displaying current availability (invalid data). Check console.'; if (!statusNow.classList.contains('error')) statusNow.classList.add('error'); }
                      } else { statusNow.textContent = statusNow.textContent.includes('No teachers found') ? statusNow.textContent : 'Warning: Lessons invalid. Availability check skipped.'; if (!statusNow.classList.contains('error')) statusNow.classList.add('error'); }
-                         else { console.error("getAvailabilityAtTime returned invalid data:", availabilityNow); statusNow.textContent = 'Error displaying current availability (invalid data). Check console.'; statusNow.classList.add('!text-red-600', '!dark:text-red-400', '!font-semibold'); }
-                     } else { 
-                         statusNow.textContent = statusNow.textContent.includes('No teachers found') ? statusNow.textContent : 'Warning: Lessons invalid. Availability check skipped.'; 
-                         if (!statusNow.classList.contains('!text-yellow-600')) statusNow.classList.add('!text-red-600', '!dark:text-red-400', '!font-semibold'); // Error if not already warning
-                     }
 
                      console.log("Setting active month...");
                      const currentMonthIndex = now.getMonth();
@@ -947,12 +641,10 @@
 
                     // Initial display for absence list (call after setting default date)
                      refreshAbsenceList(); // MODIFIED: Call the correct function
-                     refreshAbsenceList(); 
 
                      console.log("Initialization complete.");
 
                  } catch (error) { statusNow.textContent = `Critical Error: ${error.message}. Cannot initialize fully. Check console (F12).`; statusNow.classList.add('error'); console.error("Load Data Error:", error); try { setupMonthButtons(); const now = new Date(); dateEntryInput.valueAsDate = now; yearDisplay.value = now.getFullYear(); populateStaffDropdown(); if (absenceDateInput) absenceDateInput.valueAsDate = now; refreshAbsenceList(); } catch (uiError) { console.error("Critical UI setup error:", uiError); document.body.innerHTML = `<div style="padding: 20px; color: red; font-weight: bold;">Critical Error: ${error.message}. Cannot initialize. Check console (F12).</div>`; } }
-                 } catch (error) { statusNow.textContent = `Critical Error: ${error.message}. Cannot initialize fully. Check console (F12).`; statusNow.classList.add('!text-red-600', '!dark:text-red-400', '!font-semibold'); console.error("Load Data Error:", error); try { setupMonthButtons(); const now = new Date(); dateEntryInput.valueAsDate = now; yearDisplay.value = now.getFullYear(); populateStaffDropdown(); if (absenceDateInput) absenceDateInput.valueAsDate = now; refreshAbsenceList(); } catch (uiError) { console.error("Critical UI setup error:", uiError); document.body.innerHTML = `<div class="p-5 text-red-700 bg-red-100 border border-red-400 rounded">Critical Error: ${error.message}. Cannot initialize. Check console (F12).</div>`; } } // Basic Tailwind error display
              }
 
 
@@ -967,7 +659,6 @@
                         statusCustom.textContent = 'Please select a date and a time range.';
                         statusCustom.style.display = 'block';
                         statusCustom.classList.add('error');
-                        statusCustom.className = 'status mt-4 italic text-sm text-red-600 dark:text-red-400 font-semibold'; // Tailwind error
                         teachersCustomList.innerHTML = '';
                         return;
                     }
@@ -979,7 +670,6 @@
                         statusCustom.textContent = 'Invalid time: "From" time must be before "To" time.';
                         statusCustom.style.display = 'block';
                         statusCustom.classList.add('error');
-                         statusCustom.className = 'status mt-4 italic text-sm text-red-600 dark:text-red-400 font-semibold'; // Tailwind error
                         teachersCustomList.innerHTML = '';
                         return;
                     }
@@ -987,7 +677,6 @@
                     statusCustom.textContent = `Checking for: ${date.toDateString()} from ${timeFrom} to ${timeTo}...`;
                     statusCustom.style.display = 'block';
                     statusCustom.classList.remove('error');
-                    statusCustom.className = 'status mt-4 italic text-sm text-gray-600 dark:text-gray-400'; // Reset to default Tailwind
 
                     const availability = getAvailabilityForRange(date, startMinutes, endMinutes);
                     displayResults(availability.available, availability.onCallTimes, teachersCustomList, statusCustom, date);
@@ -996,7 +685,6 @@
                     statusCustom.textContent = `An error occurred: ${e.message}`;
                     statusCustom.style.display = 'block';
                     statusCustom.classList.add('error');
-                    statusCustom.className = 'status mt-4 italic text-sm text-red-600 dark:text-red-400 font-semibold'; // Tailwind error
                 }
             });
             saveMinutesButton.addEventListener('click', () => {
@@ -1164,21 +852,14 @@
             clearDataButton.addEventListener('click', () => {
                 console.log("Clear data button clicked");
                 const reallyClear = confirm("Are you sure you want to delete ALL saved extra minutes AND absence data? This cannot be undone.");
-                // Avoid using confirm() as requested in original prompt guidelines
-                // Replace with a simple log or implement a custom modal later
-                console.warn("Clear All Data button clicked - confirmation needed.");
 
                 if (reallyClear) {
                     try {
                         localStorage.removeItem('teacherMinutesData');
                         localStorage.removeItem(ABSENCE_STORAGE_KEY); 
-                // If you want to proceed without confirmation for now:
-                try {
-                    localStorage.removeItem('teacherMinutesData');
-                    localStorage.removeItem(ABSENCE_STORAGE_KEY); 
 
                         showImportStatus('All extra minutes and absence data have been cleared.', false);
-                        
+
                         refreshAbsenceList(); 
 
                         if (activeMonthButton) {
@@ -1189,18 +870,8 @@
                             } else {
                                 totalsDisplay.innerHTML = '<p>Select a month to see totals.</p>'; // Reset if no valid month selected
                             }
-                    showImportStatus('All extra minutes and absence data have been cleared.', false);
-                    
-                    refreshAbsenceList(); 
-
-                    if (activeMonthButton) {
-                        const yearVal = parseInt(yearDisplay.value, 10);
-                        const monthIndex = parseInt(activeMonthButton.dataset.monthIndex, 10);
-                        if (!isNaN(yearVal) && !isNaN(monthIndex)) {
-                            displayMonthlyTotals(yearVal, monthIndex);
                         } else {
                              totalsDisplay.innerHTML = '<p>Select a month to see totals.</p>'; // Reset if no button active
-                            totalsDisplay.innerHTML = '<p class="italic text-sm text-gray-600 dark:text-gray-400">Select a month to see totals.</p>'; // Reset
                         }
                         const now = new Date();
                         const availabilityNow = getAvailabilityAtTime(now);
@@ -1211,25 +882,10 @@
                     } catch (e) {
                         console.error("Error clearing data:", e);
                         showImportStatus(`Error clearing data: ${e.message}`, true);
-                    } else {
-                         totalsDisplay.innerHTML = '<p class="italic text-sm text-gray-600 dark:text-gray-400">Select a month to see totals.</p>'; // Reset
                     }
                 } else {
                      showImportStatus('Clear data operation cancelled.', true);
-                    const now = new Date();
-                    const availabilityNow = getAvailabilityAtTime(now);
-                    displayResults(availabilityNow.available, availabilityNow.onCallTimes, teachersNowList, statusNow, now);
-                    if (teachersCustomList.innerHTML !== '') {
-                        checkButton.click(); 
-                    }
-                } catch (e) {
-                    console.error("Error clearing data:", e);
-                    showImportStatus(`Error clearing data: ${e.message}`, true);
                 }
-                
-                // If you want confirmation (requires implementing a custom modal):
-                // showCustomConfirm("Are you sure you want to delete ALL saved data?", () => { /* clear data code */ });
-                
             });
             yearDisplay.addEventListener('change', () => {
                 if (activeMonthButton) {
@@ -1388,7 +1044,6 @@
             // Handle clicking the "Delete" button on an absence entry
             existingAbsencesList.addEventListener('click', (e) => {
                 if (e.target.tagName === 'BUTTON' && e.target.classList.contains('danger')) {
-                if (e.target.tagName === 'BUTTON' && e.target.classList.contains('bg-red-600')) { // Check Tailwind class
                     const { staff, date, index } = e.target.dataset;
 
                     if (!staff || !date || index === undefined) return; // Check index defined
