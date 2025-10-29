@@ -1,176 +1,386 @@
 <!DOCTYPE html>
-<html lang="en" class="dark"> <!-- Added dark mode preference -->
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teacher Availability</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        // Optional: Configure Tailwind for dark mode based on class
-        tailwind.config = {
-            darkMode: 'class', // or 'media'
-             theme: {
-                 extend: {
-                     fontFamily: {
-                         // Optional: Ensure Inter font is used if Tailwind defaults change
-                         sans: ['Inter', 'sans-serif'], 
-                         mono: ['SFMono-Regular', 'Consolas', 'Liberation Mono', 'Menlo', 'monospace']
-                     }
-                 }
+    <style>
+        body {
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #1a1a1a;
+            margin: 0;
+            padding: 20px;
+        }
+        .main-container {
+            max-width: 800px;
+            margin: auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 24px;
+        }
+        .container-block {
+            background-color: #fdfdfd;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 2em;
+            font-weight: bold;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+            margin-top: 0;
+            text-align: left;
+        }
+        h2 {
+            font-size: 1.5em;
+            font-weight: 600;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+            margin-top: 0;
+        }
+        h3 {
+            font-size: 1.25em;
+            font-weight: 600;
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+        /* Form Elements */
+        input[type="text"],
+        input[type="date"],
+        input[type="time"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box; /* Important */
+            font-size: 1em;
+            background-color: #fff;
+        }
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            opacity: 0.85;
+        }
+        /* Form Layout */
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr; /* Default to 1 column */
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        /* Media query for larger screens */
+        @media (min-width: 640px) {
+            .form-grid-2 {
+                grid-template-columns: 1fr 1fr; /* 2 columns on sm screens and up */
             }
         }
-    </script>
-     <style>
-         /* Minimal styles for specific overrides if needed - keeping it clean */
-         /* Style for absence list grouping */
-         #existing-absences-list h4 { @apply mb-1 mt-4 border-b border-dashed border-gray-300 dark:border-gray-600 pb-1 text-lg font-semibold; }
-         #existing-absences-list ul { @apply pl-0 mt-2 list-none; }
-         #existing-absences-list li { @apply mb-3 border-b border-gray-200 dark:border-gray-700 pb-3; }
-         /* Style for table */
-         #totals-table th, #totals-table td { @apply p-2 border border-gray-300 dark:border-gray-600; }
-         #totals-table th { @apply bg-gray-100 dark:bg-gray-700 font-semibold; }
-         /* Style to hide filtered-out list items */
-          .filtered-hide { display: none !important; } 
-          /* Ensure filter input has some bottom margin */
-          .filter-input { @apply mb-3; }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        /* Specific Buttons */
+        .btn-green { background-color: #28a745; color: white; }
+        .btn-red { background-color: #dc3545; color: white; }
+        .btn-purple { background-color: #6f42c1; color: white; }
+        .btn-blue { background-color: #007bff; color: white; }
+        .btn-gray { background-color: #6c757d; color: white; }
+        .btn-light { background-color: #f8f9fa; color: #212529; border: 1px solid #ddd; }
+        .btn-delete-mini {
+            padding: 3px 8px;
+            font-size: 0.8em;
+            background-color: #dc3545;
+            color: white;
+            border-radius: 4px;
+        }
+        /* Status Messages */
+        .status {
+            font-style: italic;
+            font-size: 0.9em;
+            color: #555;
+            margin-top: 10px;
+            display: none; /* Hidden by default */
+        }
+        .status-visible { display: block; }
+        .status-error { color: #dc3545; font-weight: 600; }
+        .status-success { color: #28a745; font-weight: 600; }
+        
+        /* Teacher Lists */
+        .teacher-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            list-style: none;
+            padding: 0;
+            margin-top: 10px;
+        }
+        .teacher-list li {
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 0.9em;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .teacher-available { background-color: #28a745; color: white; }
+        .teacher-on-call { background-color: #ffc107; color: #212529; }
+        .teacher-absent {
+            background-color: #6c757d;
+            color: #eee;
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+        /* Absence List */
+        #existing-absences-list h4 {
+            margin-bottom: 5px;
+            margin-top: 15px;
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 5px;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+        #existing-absences-list ul {
+            padding-left: 0;
+            margin-top: 5px;
+            list-style: none;
+        }
+        #existing-absences-list li {
+            margin-bottom: 8px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        /* Totals Table */
+        #totals-display {
+            background-color: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 10px;
+            min-height: 80px;
+            overflow-x: auto;
+        }
+        #totals-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #ccc;
+        }
+        #totals-table th, #totals-table td {
+            padding: 8px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+        #totals-table th {
+            background-color: #f1f1f1;
+            font-weight: 600;
+        }
+        #totals-table tr:last-child {
+            font-weight: bold;
+            background-color: #f8f8f8;
+        }
+        /* Month Buttons */
+        #month-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+        #month-buttons button {
+            background-color: #e9ecef;
+            color: #333;
+            font-size: 0.85em;
+            padding: 5px 10px;
+        }
+        #month-buttons button.active-month {
+            background-color: #007bff;
+            color: white;
+        }
+        /* Filter */
+        .filter-input {
+            margin-bottom: 15px;
+            width: 100%;
+            max-width: 300px; /* Limit filter width */
+        }
+        .filtered-hide {
+            display: none !important;
+        }
+        /* Button Groups */
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .hidden { display: none; }
+        .logo {
+            width: 160px;
+            height: auto;
+            margin-bottom: 15px;
+            display: block; /* Make it a block element */
+            margin-left: 0; /* Align left by default */
+        }
+        @media (max-width: 640px) {
+            .logo {
+                margin-left: auto; /* Center on small screens */
+                margin-right: auto;
+            }
+            h1 {
+                text-align: center;
+            }
+        }
      </style>
 </head>
-<body class="bg-gray-200 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans leading-relaxed">
+<body>
 
-    <div class="max-w-4xl mx-auto p-4 md:p-6 lg:p-8"> <!-- Main content container -->
+    <div class="main-container">
 
-        <img src="logo.png" alt="Logo" class="w-40 h-auto mb-4 mx-auto sm:mx-0" onerror="this.style.display='none'"> <!-- Centered on small screens, hide if broken -->
-        <h1 class="text-3xl font-bold border-b border-gray-300 dark:border-gray-700 pb-3 mb-6 text-center sm:text-left">Teacher Availability</h1>
+        <img src="logo.png" alt="Logo" class="logo" onerror="this.style.display='none'">
+        <h1>Teacher Availability</h1>
 
         <!-- Available Now Container -->
-        <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6">
-            <h2 class="text-2xl font-semibold border-b border-gray-300 dark:border-gray-700 pb-2 mb-4">Available Right Now</h2>
-            <div id="status-now" class="italic text-sm text-gray-600 dark:text-gray-400 mb-1">Loading schedule...</div>
-            <span id="last-updated" class="text-xs text-gray-500 dark:text-gray-400 block mb-4"></span> 
-             <!-- Filter Input for Available Now -->
-            <input type="text" id="filter-now" placeholder="Filter by name..." class="filter-input block w-full sm:w-1/2 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
-            <div id="results-now" class="mt-4"><ul id="teachers-now" class="flex flex-wrap gap-2 list-none p-0"></ul></div>
+        <div class="container-block">
+            <h2>Available Right Now</h2>
+            <div id="status-now" class="status status-visible">Loading schedule...</div>
+            <span id="last-updated" style="font-size: 0.8em; color: #555; display: block; margin-bottom: 10px;"></span>
+            <!-- Filter Input for Available Now -->
+            <input type="text" id="filter-now" placeholder="Filter by name..." class="filter-input">
+            <div id="results-now"><ul id="teachers-now" class="teacher-list"></ul></div>
         </div>
 
         <!-- Check Availability Container -->
-        <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6">
-            <h2 class="text-2xl font-semibold border-b border-gray-300 dark:border-gray-700 pb-2 mb-4">Check Availability for a Time Range</h2>
-            <div class="mb-4">
-                <label for="date-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date:</label>
-                <input type="date" id="date-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
+        <div class="container-block">
+            <h2>Check Availability for a Time Range</h2>
+            <div class="form-group">
+                <label for="date-input">Date:</label>
+                <input type="date" id="date-input">
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            <div class="form-grid-2">
                 <div>
-                    <label for="time-from-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time (From):</label>
-                    <input type="time" id="time-from-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
+                    <label for="time-from-input">Time (From):</label>
+                    <input type="time" id="time-from-input">
                 </div>
                 <div>
-                    <label for="time-to-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time (To):</label>
-                    <input type="time" id="time-to-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
+                    <label for="time-to-input">Time (To):</label>
+                    <input type="time" id="time-to-input">
                 </div>
             </div>
-            <button id="check-button" class="py-2 px-4 bg-green-600 text-white rounded-md font-semibold shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-gray-800">Check Availability</button>
-            <div id="status-custom" class="italic text-sm text-gray-600 dark:text-gray-400 mt-4" style="display:none;"></div>
-              <!-- Filter Input for Custom Range -->
-            <input type="text" id="filter-custom" placeholder="Filter by name..." class="filter-input block w-full sm:w-1/2 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2 mt-4">
-            <div id="results-custom" class="mt-4"><ul id="teachers-custom" class="flex flex-wrap gap-2 list-none p-0"></ul></div>
+            <button id="check-button" class="btn-green">Check Availability</button>
+            <div id="status-custom" class="status"></div>
+            <!-- Filter Input for Custom Range -->
+            <input type="text" id="filter-custom" placeholder="Filter by name..." class="filter-input" style="margin-top: 15px;">
+            <div id="results-custom"><ul id="teachers-custom" class="teacher-list"></ul></div>
         </div>
 
         <!-- Log Staff Absence Container -->
-        <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6">
-            <h2 class="text-2xl font-semibold border-b border-gray-300 dark:border-gray-700 pb-2 mb-4">Log Staff Absence (Training, Meetings, etc.)</h2>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Log a time range when a staff member is unavailable. This will remove them from the availability lists for that specific time.</p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <div class="container-block">
+            <h2>Log Staff Absence (Training, Meetings, etc.)</h2>
+            <p style="font-size: 0.9em; color: #555; margin-bottom: 15px;">Log a time range when a staff member is unavailable. This will remove them from the availability lists for that specific time.</p>
+            <div class="form-grid-2">
                 <div>
-                    <label for="absence-staff-select" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Staff Member:</label>
-                    <select id="absence-staff-select" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
+                    <label for="absence-staff-select">Staff Member:</label>
+                    <select id="absence-staff-select">
                         <option value="">-- Select Staff --</option>
                     </select>
                 </div>
                 <div>
-                    <label for="absence-date-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date of Absence:</label>
-                    <input type="date" id="absence-date-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
+                    <label for="absence-date-input">Date of Absence:</label>
+                    <input type="date" id="absence-date-input">
                 </div>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            <div class="form-grid-2">
                 <div>
-                    <label for="absence-time-from-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time (From):</label>
-                    <input type="time" id="absence-time-from-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
+                    <label for="absence-time-from-input">Time (From):</label>
+                    <input type="time" id="absence-time-from-input">
                 </div>
                 <div>
-                    <label for="absence-time-to-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time (To):</label>
-                    <input type="time" id="absence-time-to-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
+                    <label for="absence-time-to-input">Time (To):</label>
+                    <input type="time" id="absence-time-to-input">
                 </div>
             </div>
-            <button id="save-absence-button" class="py-2 px-4 bg-green-600 text-white rounded-md font-semibold shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-gray-800">Save Absence Entry</button>
-            <div id="absence-save-status" class="italic text-sm text-gray-600 dark:text-gray-400 mt-3" style="display:none;"></div>
+            <button id="save-absence-button" class="btn-green">Save Absence Entry</button>
+            <div id="absence-save-status" class="status"></div>
             
             <!-- Existing Absences -->
-              <!-- Filter Input for Absences -->
-            <input type="text" id="filter-absences" placeholder="Filter by name..." class="filter-input block w-full sm:w-1/2 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2 mt-6">
-            <h3 class="text-xl font-semibold mt-2 border-t border-gray-300 dark:border-gray-700 pt-4 mb-2">Existing Absences for Selected Day</h3>
-            <div id="existing-absences-list" class="text-sm">
-                <p class="status italic text-gray-600 dark:text-gray-400">Select a date to see existing entries.</p>
+            <input type="text" id="filter-absences" placeholder="Filter by name..." class="filter-input" style="margin-top: 20px;">
+            <h3>Existing Absences for Selected Day</h3>
+            <div id="existing-absences-list" style="font-size: 0.9em;">
+                <p class="status status-visible">Select a date to see existing entries.</p>
             </div>
 
             <!-- Absence Import/Export Buttons -->
-            <div class="flex gap-4 flex-wrap mt-6">
-                 <button id="export-absences-button" class="py-2 px-4 bg-purple-600 text-white rounded-md font-semibold shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:focus:ring-offset-gray-800">Export Absences CSV</button>
-                 <button id="import-absences-button" class="py-2 px-4 bg-white dark:bg-gray-200 text-gray-700 dark:text-gray-800 border border-gray-300 dark:border-gray-500 rounded-md font-semibold shadow-sm hover:bg-gray-50 dark:hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">Import Absences CSV</button>
-                 <input type="file" id="absence-csv-file-input" accept=".csv" class="hidden">
+            <div class="button-group">
+                 <button id="export-absences-button" class="btn-purple">Export Absences CSV</button>
+                 <button id="import-absences-button" class="btn-light">Import Absences CSV</button>
+                 <input type="file" id="absence-csv-file-input" class="hidden">
             </div>
-              <div id="absence-import-status" class="italic text-sm text-gray-600 dark:text-gray-400 mt-3" style="display:none;"></div>
+              <div id="absence-import-status" class="status"></div>
         </div>
 
         <!-- Extra Minutes Tracker Container -->
-        <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6">
-            <h2 class="text-2xl font-semibold border-b border-gray-300 dark:border-gray-700 pb-2 mb-4">Extra Minutes Tracker</h2>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Record extra minutes worked by staff. This data is saved in your browser.</p>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <div class="container-block">
+            <h2>Extra Minutes Tracker</h2>
+            <p style="font-size: 0.9em; color: #555; margin-bottom: 15px;">Record extra minutes worked by staff. This data is saved in your browser.</p>
+            <div class="form-grid-2">
                 <div>
-                    <label for="staff-select" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Staff Member:</label>
-                    <select id="staff-select" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
+                    <label for="staff-select">Staff Member:</label>
+                    <select id="staff-select">
                         <option value="">-- Select Staff --</option>
                     </select>
                 </div>
                 <div>
-                    <label for="date-entry-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date Worked:</label>
-                    <input type="date" id="date-entry-input" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
+                    <label for="date-entry-input">Date Worked:</label>
+                    <input type="date" id="date-entry-input">
                 </div>
             </div>
-            <div class="mb-4">
-                <label for="minutes-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Add Extra Minutes:</label>
-                <input type="number" id="minutes-input" placeholder="e.g., 60" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
+            <div class="form-group">
+                <label for="minutes-input">Add Extra Minutes:</label>
+                <input type="number" id="minutes-input" placeholder="e.g., 60">
             </div>
-            <button id="save-minutes-button" class="py-2 px-4 bg-green-600 text-white rounded-md font-semibold shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 dark:focus:ring-offset-gray-800">Save Minutes</button>
-            <div id="save-status" class="italic text-sm text-gray-600 dark:text-gray-400 mt-3" style="display:none;"></div>
+            <button id="save-minutes-button" class="btn-green">Save Minutes</button>
+            <div id="save-status" class="status"></div>
         </div>
 
         <!-- Extra Minutes Totals Container -->
-        <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6">
-            <h2 class="text-2xl font-semibold border-b border-gray-300 dark:border-gray-700 pb-2 mb-4">Extra Minutes Totals</h2>
-            <div class="mb-4 max-w-xs"> <!-- Limit width of year input -->
-                <label for="year-display" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Select Year:</label>
-                <input type="number" id="year-display" value="2025" class="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-white dark:bg-gray-700 p-2">
+        <div class="container-block">
+            <h2>Extra Minutes Totals</h2>
+            <div class="form-group" style="max-width: 200px;">
+                <label for="year-display">Select Year:</label>
+                <input type="number" id="year-display" value="2025">
             </div>
             <!-- Month Buttons - dynamically populated -->
-            <div class="flex flex-wrap gap-2 mb-4" id="month-buttons"></div> 
+            <div id="month-buttons"></div> 
             
             <!-- Totals Display Area - Will be replaced by table -->
-            <div id="totals-display" class="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md p-4 min-h-[80px] overflow-x-auto"> 
-                <p class="italic text-sm text-gray-600 dark:text-gray-400">Select a month to see totals.</p>
+            <div id="totals-display"> 
+                <p class="status status-visible">Select a month to see totals.</p>
             </div>
             
             <!-- Minutes Import/Export/Clear Buttons -->
-            <div class="flex flex-wrap gap-4 mt-6">
-                <button id="export-backup-button" class="py-2 px-4 bg-purple-600 text-white rounded-md font-semibold shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 dark:focus:ring-offset-gray-800">Export CSV (Min)</button> 
-                <button id="export-summary-button" class="py-2 px-4 bg-blue-600 text-white rounded-md font-semibold shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800">Summary CSV (Min)</button>    
-                <button id="import-csv-button" class="py-2 px-4 bg-white dark:bg-gray-200 text-gray-700 dark:text-gray-800 border border-gray-300 dark:border-gray-500 rounded-md font-semibold shadow-sm hover:bg-gray-50 dark:hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800">Import CSV (Min)</button>     
-                <input type="file" id="csv-file-input" accept=".csv" class="hidden">
-                <button id="clear-data-button" class="py-2 px-4 bg-red-600 text-white rounded-md font-semibold shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:focus:ring-offset-gray-800">Clear All Saved Data</button>
+            <div class="button-group">
+                <button id="export-backup-button" class="btn-purple">Export CSV (Min)</button> 
+                <button id="export-summary-button" class="btn-blue">Summary CSV (Min)</button>    
+                <button id="import-csv-button" class="btn-light">Import CSV (Min)</button>     
+                <input type="file" id="csv-file-input" class="hidden">
+                <button id="clear-data-button" class="btn-red">Clear All Saved Data</button>
             </div>
-            <div id="import-status" class="italic text-sm text-gray-600 dark:text-gray-400 mt-3" style="display:none;"></div>
+            <div id="import-status" class="status"></div>
         </div>
 
     </div> <!-- End Main content container -->
@@ -240,7 +450,10 @@
             // --- Initial Checks ---
              if (!statusNow || !lastUpdatedSpan || !monthButtonsContainer || !staffSelect || !absenceStaffSelect || !exportAbsencesButton || !importAbsencesButton || !absenceCsvFileInput || !absenceImportStatus || !filterNowInput || !filterCustomInput || !filterAbsencesInput ) { 
                  console.error("Critical DOM element missing! Cannot proceed.", { statusNow, lastUpdatedSpan, monthButtonsContainer, staffSelect, absenceStaffSelect, exportAbsencesButton, importAbsencesButton, absenceCsvFileInput, absenceImportStatus, filterNowInput, filterCustomInput, filterAbsencesInput });
-                 if (statusNow) { statusNow.textContent = "Error: Page structure broken."; statusNow.classList.add('!text-red-600', '!dark:text-red-400', '!font-semibold'); } 
+                 if (statusNow) { 
+                     statusNow.textContent = "Error: Page structure broken."; 
+                     statusNow.className = 'status status-visible status-error';
+                } 
                  return; 
              }
              console.log("All critical DOM elements found.");
@@ -367,38 +580,46 @@
             // --- Status Update Functions ---
             function showSaveStatus(message, isError = false) {
                 saveStatus.textContent = message;
-                saveStatus.className = isError 
-                    ? 'italic text-sm text-red-600 dark:text-red-400 font-semibold mt-3' 
-                    : 'italic text-sm text-green-600 dark:text-green-400 font-semibold mt-3';
-                saveStatus.style.display = 'block';
-                setTimeout(() => { saveStatus.style.display = 'none'; }, 3000);
+                saveStatus.className = 'status status-visible'; // Base classes
+                if (isError) { 
+                    saveStatus.classList.add('status-error'); 
+                } else { 
+                    saveStatus.classList.add('status-success'); 
+                }
+                setTimeout(() => { saveStatus.className = 'status'; }, 3000); // Hide after 3s
             }
 
             function showImportStatus(message, isError = false) {
                 importStatus.textContent = message;
-                importStatus.className = isError 
-                    ? 'italic text-sm text-red-600 dark:text-red-400 font-semibold mt-3' 
-                    : 'italic text-sm text-green-600 dark:text-green-400 font-semibold mt-3';
-                importStatus.style.display = 'block';
-                setTimeout(() => { importStatus.style.display = 'none'; }, 5000);
+                importStatus.className = 'status status-visible';
+                if (isError) { 
+                    importStatus.classList.add('status-error'); 
+                } else { 
+                    importStatus.classList.add('status-success'); 
+                }
+                setTimeout(() => { importStatus.className = 'status'; }, 5000);
             }
             
             function showAbsenceSaveStatus(message, isError = false) {
                 absenceSaveStatus.textContent = message;
-                absenceSaveStatus.className = isError 
-                    ? 'italic text-sm text-red-600 dark:text-red-400 font-semibold mt-3' 
-                    : 'italic text-sm text-green-600 dark:text-green-400 font-semibold mt-3';
-                absenceSaveStatus.style.display = 'block';
-                setTimeout(() => { absenceSaveStatus.style.display = 'none'; }, 3000);
+                absenceSaveStatus.className = 'status status-visible';
+                if (isError) { 
+                    absenceSaveStatus.classList.add('status-error'); 
+                } else { 
+                    absenceSaveStatus.classList.add('status-success'); 
+                }
+                setTimeout(() => { absenceSaveStatus.className = 'status'; }, 3000);
             }
 
             function showAbsenceImportStatus(message, isError = false) {
                 absenceImportStatus.textContent = message;
-                absenceImportStatus.className = isError 
-                    ? 'italic text-sm text-red-600 dark:text-red-400 font-semibold mt-3' 
-                    : 'italic text-sm text-green-600 dark:text-green-400 font-semibold mt-3';
-                absenceImportStatus.style.display = 'block';
-                setTimeout(() => { absenceImportStatus.style.display = 'none'; }, 5000);
+                absenceImportStatus.className = 'status status-visible';
+                if (isError) { 
+                    absenceImportStatus.classList.add('status-error'); 
+                } else { 
+                    absenceImportStatus.classList.add('status-success'); 
+                }
+                setTimeout(() => { absenceImportStatus.className = 'status'; }, 5000);
             }
             
             // --- Availability Logic ---
@@ -547,8 +768,7 @@
                 } catch (error) { 
                     console.error("Critical Error in getAvailabilityForRange:", error); 
                     statusCustom.textContent = `Error calculating availability: ${error.message}`; 
-                    statusCustom.style.display = 'block'; 
-                    statusCustom.classList.add('!text-red-600', '!dark:text-red-400', '!font-semibold'); 
+                    statusCustom.className = 'status status-visible status-error';
                     return defaultResult; // Return default on catch
                 }
             }
@@ -578,8 +798,7 @@
 
                 if (availableTeachers.length === 0) {
                     statusElement.textContent = 'No teachers found available for the selected criteria.';
-                    statusElement.className = 'italic text-sm text-gray-600 dark:text-gray-400 mb-1'; // Reset to default
-                    if (statusElement === statusCustom) statusElement.style.display = 'block';
+                    statusElement.className = 'status status-visible'; // Reset to default
                     return;
                 }
 
@@ -601,9 +820,6 @@
                     const li = document.createElement('li');
                     li.textContent = teacher;
                     
-                    let baseClasses = 'py-2 px-3 rounded-md font-medium text-sm shadow-sm';
-                    let hoverClasses = 'hover:opacity-80';
-                    
                     // Check for absence
                     let isAbsent = false;
                     if (dayAbsences[teacher]) {
@@ -612,10 +828,6 @@
                         if (listElement === teachersNowList) {
                              checkTime = new Date().getHours() * 60 + new Date().getMinutes();
                         } else {
-                            // For custom range, check at the start of their "on call" time if it exists,
-                            // otherwise we rely on the check that happened in getAvailabilityForRange.
-                            // This part is tricky. We'll simplify: the check in getAvailability is what matters.
-                            // Here, we just *style* based on absence. We'll check the start of *on-call* time.
                              checkTime = onCallInfo ? onCallInfo.start : timeToMinutes(timeFromInput.value);
                              if (isNaN(checkTime) && checkDate) { // Fallback for "now"
                                 checkTime = checkDate.getHours() * 60 + checkDate.getMinutes();
@@ -631,17 +843,17 @@
                         const onCallStart = minutesToHHMM(onCallInfo.start);
                         const onCallEnd = minutesToHHMM(onCallInfo.end);
                         li.textContent += ` (On Call ${onCallStart}-${onCallEnd})`;
-                        li.className = `${baseClasses} ${hoverClasses} bg-yellow-400 dark:bg-yellow-600 text-yellow-900 dark:text-yellow-100`;
+                        li.className = 'teacher-on-call';
                     } else {
                         // Style for Available
-                        li.className = `${baseClasses} ${hoverClasses} bg-green-500 dark:bg-green-600 text-white dark:text-gray-100`;
+                        li.className = 'teacher-available';
                     }
                     
                     // Override styling if absent
                     if (isAbsent && listElement === teachersNowList) { 
                         // Only strike-through if it's the "now" list
                         li.textContent += ' (Absent)';
-                        li.className = `${baseClasses} bg-gray-400 dark:bg-gray-600 text-gray-800 dark:text-gray-300 line-through opacity-70`;
+                        li.className = 'teacher-absent';
                     }
                     
                     return li;
@@ -659,8 +871,7 @@
                 }
                 
                 statusElement.textContent = `Found ${availableTeachers.length} available teachers ${timeStr}.`;
-                statusElement.className = 'italic text-sm text-gray-600 dark:text-gray-400 mb-1'; // Reset to default
-                if (statusElement === statusCustom) statusElement.style.display = 'block';
+                statusElement.className = 'status status-visible'; // Reset to default
             }
 
             function displayExistingAbsences(dateKey) {
@@ -669,7 +880,7 @@
                 existingAbsencesList.innerHTML = ''; // Clear previous
 
                 if (!dayAbsences || Object.keys(dayAbsences).length === 0) {
-                    existingAbsencesList.innerHTML = `<p class="status italic text-gray-600 dark:text-gray-400">No absences logged for ${dateKey}.</p>`;
+                    existingAbsencesList.innerHTML = `<p class="status status-visible">No absences logged for ${dateKey}.</p>`;
                     return;
                 }
 
@@ -691,7 +902,6 @@
                         const ul = document.createElement('ul');
                         entries.forEach(entry => {
                             const li = document.createElement('li');
-                            li.className = "flex justify-between items-center";
                             
                             const textSpan = document.createElement('span');
                             textSpan.textContent = `${minutesToHHMM(entry.start)} - ${minutesToHHMM(entry.end)}`;
@@ -699,7 +909,7 @@
 
                             const deleteButton = document.createElement('button');
                             deleteButton.textContent = 'Delete';
-                            deleteButton.className = 'py-1 px-2 bg-red-600 text-white rounded-md text-xs font-semibold shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:focus:ring-offset-gray-800';
+                            deleteButton.className = 'btn-delete-mini';
                             deleteButton.dataset.teacher = teacher;
                             deleteButton.dataset.start = entry.start;
                             deleteButton.dataset.end = entry.end;
@@ -740,7 +950,7 @@
                 const sortedTeachers = [...allTeachers].sort();
                 
                 if (sortedTeachers.length === 0) {
-                     totalsDisplay.innerHTML = `<p class="italic text-sm text-gray-600 dark:text-gray-400">No teachers loaded. Cannot display totals.</p>`;
+                     totalsDisplay.innerHTML = `<p class="status status-visible">No teachers loaded. Cannot display totals.</p>`;
                      return;
                 }
                 
@@ -753,14 +963,14 @@
                 }
 
                 if (!hasData) {
-                    totalsDisplay.innerHTML = `<p class="italic text-sm text-gray-600 dark:text-gray-400">No data found for ${new Date(year, monthIndex).toLocaleString('default', { month: 'long' })} ${year}.</p>`;
+                    totalsDisplay.innerHTML = `<p class="status status-visible">No data found for ${new Date(year, monthIndex).toLocaleString('default', { month: 'long' })} ${year}.</p>`;
                     return;
                 }
 
                 // Create table
-                let tableHtml = '<table id="totals-table" class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 border border-gray-300 dark:border-gray-600">';
+                let tableHtml = '<table id="totals-table">';
                 tableHtml += '<thead><tr><th>Teacher</th><th>Total Minutes</th><th>Total Hours</th></tr></thead>';
-                tableHtml += '<tbody class="divide-y divide-gray-200 dark:divide-gray-700">';
+                tableHtml += '<tbody>';
 
                 let grandTotalMinutes = 0;
 
@@ -769,19 +979,19 @@
                     if (totalMinutes > 0) { // Only show teachers with minutes
                         const totalHours = (totalMinutes / 60).toFixed(2);
                         tableHtml += `<tr>
-                            <td class="py-2 px-3">${teacher}</td>
-                            <td class="py-2 px-3">${totalMinutes}</td>
-                            <td class="py-2 px-3">${totalHours}</td>
+                            <td>${teacher}</td>
+                            <td>${totalMinutes}</td>
+                            <td>${totalHours}</td>
                         </tr>`;
                         grandTotalMinutes += totalMinutes;
                     }
                 });
 
                 // Grand Total Row
-                tableHtml += `<tr class="bg-gray-100 dark:bg-gray-800 font-bold">
-                    <td class="py-2 px-3">Grand Total</td>
-                    <td class="py-2 px-3">${grandTotalMinutes}</td>
-                    <td class="py-2 px-3">${(grandTotalMinutes / 60).toFixed(2)}</td>
+                tableHtml += `<tr>
+                    <td>Grand Total</td>
+                    <td>${grandTotalMinutes}</td>
+                    <td>${(grandTotalMinutes / 60).toFixed(2)}</td>
                 </tr>`;
 
                 tableHtml += '</tbody></table>';
@@ -799,21 +1009,18 @@
                     const button = document.createElement('button');
                     button.textContent = month;
                     button.dataset.month = index;
-                    button.className = "py-1 px-3 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md font-medium text-sm hover:bg-gray-400 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800";
                     
                     button.addEventListener('click', () => {
                         const year = parseInt(yearDisplay.value, 10);
                         if (isNaN(year)) {
-                            totalsDisplay.innerHTML = `<p class="italic text-sm text-red-600 dark:text-red-400 font-semibold">Please enter a valid year.</p>`;
+                            totalsDisplay.innerHTML = `<p class="status status-visible status-error">Please enter a valid year.</p>`;
                             return;
                         }
                         
                         if (activeMonthButton) {
-                            activeMonthButton.classList.remove('!bg-blue-600', '!text-white', 'dark:!bg-blue-700');
-                            activeMonthButton.classList.add('bg-gray-300', 'dark:bg-gray-600', 'text-gray-800', 'dark:text-gray-200');
+                            activeMonthButton.classList.remove('active-month');
                         }
-                        button.classList.add('!bg-blue-600', '!text-white', 'dark:!bg-blue-700');
-                        button.classList.remove('bg-gray-300', 'dark:bg-gray-600', 'text-gray-800', 'dark:text-gray-200');
+                        button.classList.add('active-month');
                         activeMonthButton = button;
                         
                         displayMonthlyTotals(year, index);
@@ -837,7 +1044,7 @@
                 } catch (error) {
                     console.error("Error in refreshAvailableNow:", error);
                     statusNow.textContent = `Error refreshing: ${error.message}`;
-                    statusNow.className = 'status italic text-sm text-red-600 dark:text-red-400 font-semibold'; // Error style
+                    statusNow.className = 'status status-visible status-error';
                     lastUpdatedSpan.textContent = 'Last update failed.';
                 }
             }
@@ -850,7 +1057,7 @@
                     const dateKey = dateToYYYYMMDD(localDate);
                     displayExistingAbsences(dateKey);
                 } else {
-                    existingAbsencesList.innerHTML = `<p class="status italic text-gray-600 dark:text-gray-400">Select a date to see existing entries.</p>`;
+                    existingAbsencesList.innerHTML = `<p class="status status-visible">Select a date to see existing entries.</p>`;
                 }
             }
 
@@ -900,7 +1107,7 @@
             async function loadData() {
                 console.log("loadData: Starting to load schedule..."); // Debug
                 statusNow.textContent = 'Loading schedule...';
-                statusNow.className = 'italic text-sm text-gray-600 dark:text-gray-400 mb-1'; // Reset styles
+                statusNow.className = 'status status-visible'; // Reset styles
                 lessons = [];
                 allTeachers.clear();
                 columnMap = {};
@@ -987,7 +1194,7 @@
                     // This will catch any error from the 'try' block (fetch, parsing, etc.)
                     console.error('Error in loadData:', error); // Critical
                     statusNow.textContent = `Error: Could not load schedule. ${error.message}`;
-                    statusNow.className = 'status italic text-sm text-red-600 dark:text-red-400 font-semibold'; // Error style
+                    statusNow.className = 'status status-visible status-error';
                     lastUpdatedSpan.textContent = 'Last attempt failed.';
                     teachersNowList.innerHTML = '';
                 }
@@ -1005,8 +1212,7 @@
                     if (!date || !timeFrom || !timeTo) {
                         console.log("Check button validation failed: Missing date/time."); // DEBUG
                         statusCustom.textContent = 'Please select a date and a time range.';
-                        statusCustom.style.display = 'block';
-                        statusCustom.className = 'status mt-4 italic text-sm text-red-600 dark:text-red-400 font-semibold'; // Tailwind error
+                        statusCustom.className = 'status status-visible status-error';
                         teachersCustomList.innerHTML = '';
                         return;
                     }
@@ -1020,15 +1226,13 @@
                     if (startMinutes >= endMinutes) {
                         console.log("Check button validation failed: Start time >= End time."); // DEBUG
                         statusCustom.textContent = 'Invalid time: "From" time must be before "To" time.';
-                        statusCustom.style.display = 'block';
-                        statusCustom.className = 'status mt-4 italic text-sm text-red-600 dark:text-red-400 font-semibold'; // Tailwind error
+                        statusCustom.className = 'status status-visible status-error';
                         teachersCustomList.innerHTML = '';
                         return;
                     }
                     
                     statusCustom.textContent = `Checking for: ${localDate.toDateString()} from ${timeFrom} to ${timeTo}...`;
-                    statusCustom.style.display = 'block';
-                    statusCustom.className = 'status mt-4 italic text-sm text-gray-600 dark:text-gray-400'; // Reset to default Tailwind
+                    statusCustom.className = 'status status-visible'; // Reset to default
                     console.log(`Calling getAvailabilityForRange with date: ${localDate}, start: ${startMinutes}, end: ${endMinutes}`); // DEBUG
 
                     const availability = getAvailabilityForRange(localDate, startMinutes, endMinutes);
@@ -1040,16 +1244,14 @@
                     } else {
                         console.error("ERROR: getAvailabilityForRange did not return the expected object. Returned:", availability);
                         statusCustom.textContent = `Internal error: Failed to get availability data structure. Check console.`;
-                        statusCustom.style.display = 'block';
-                        statusCustom.className = 'status mt-4 italic text-sm text-red-600 dark:text-red-400 font-semibold'; 
+                        statusCustom.className = 'status status-visible status-error'; 
                         teachersCustomList.innerHTML = ''; // Clear list on error
                     }
 
                 } catch (e) {
                     console.error("Error in checkButton click:", e);
                     statusCustom.textContent = `An error occurred: ${e.message}`;
-                    statusCustom.style.display = 'block';
-                    statusCustom.className = 'status mt-4 italic text-sm text-red-600 dark:text-red-400 font-semibold'; // Tailwind error
+                    statusCustom.className = 'status status-visible status-error';
                 }
             });
 
@@ -1165,11 +1367,6 @@
             });
 
             clearDataButton.addEventListener('click', () => {
-                // Using a custom modal/confirm instead of window.confirm
-                // NOTE: This is a placeholder. For a real app, you'd build a modal.
-                // Since `confirm` is discouraged, we'll just log a warning.
-                // For a real-world scenario, you would build a custom UI modal.
-                // As a fallback, we use confirm() but it's not ideal.
                 const userConfirmed = confirm("Are you sure you want to delete ALL saved extra minutes data? This cannot be undone.");
                 
                 if (userConfirmed) {
@@ -1177,10 +1374,9 @@
                         localStorage.removeItem(MINUTES_STORAGE_KEY);
                         showImportStatus('All extra minutes data has been cleared.', false);
                         // Reset views
-                        totalsDisplay.innerHTML = `<p class="italic text-sm text-gray-600 dark:text-gray-400">Select a month to see totals.</p>`;
+                        totalsDisplay.innerHTML = `<p class="status status-visible">Select a month to see totals.</p>`;
                         if (activeMonthButton) {
-                            activeMonthButton.classList.remove('!bg-blue-600', '!text-white', 'dark:!bg-blue-700');
-                            activeMonthButton.classList.add('bg-gray-300', 'dark:bg-gray-600', 'text-gray-800', 'dark:text-gray-200');
+                            activeMonthButton.classList.remove('active-month');
                             activeMonthButton = null;
                         }
                     } catch (e) {
@@ -1477,3 +1673,4 @@
     </script>
 </body>
 </html>
+
