@@ -298,20 +298,25 @@
             }
 
             // --- Extra Minutes Helper Functions ---
-            function getSavedMinutesData() { /* ... same ... */ }
-            function saveMinutesData(data) { /* ... same ... */ }
+            function getSavedMinutesData() { try { const data = localStorage.getItem('extraMinutes'); const parsed = data ? JSON.parse(data) : {}; return typeof parsed === 'object' && parsed !== null ? parsed : {}; } catch (e) { console.error("Failed to parse minutes data:", e); return {}; } }
+            function saveMinutesData(data) { try { localStorage.setItem('extraMinutes', JSON.stringify(data)); } catch (e) { console.error("Failed to save minutes data:", e); } }
 
             // --- Absence Helper Functions ---
-            function getSavedAbsences() { /* ... same ... */ }
-            function saveAbsences(data) { /* ... same ... */ }
-            function showAbsenceStatus(message, isError = false) { /* ... same ... */ }
-            function showAbsenceDeleteStatus(message, isError = false) { /* ... same ... */ }
-            function displayAbsencesForDate(dateKey) { /* ... same ... */ }
-            function addDeleteButtonListeners() { /* ... same ... */ }
-            function handleDeleteAbsence(event) { /* ... same ... */ }
+            function getSavedAbsences() { try { const data = localStorage.getItem('teacherAbsences'); const parsed = data ? JSON.parse(data) : {}; return typeof parsed === 'object' && parsed !== null ? parsed : {}; } catch (e) { console.error("Failed to parse absences data:", e); return {}; } }
+            function saveAbsences(data) { try { localStorage.setItem('teacherAbsences', JSON.stringify(data)); } catch (e) { console.error("Failed to save absences data:", e); } }
+            function showAbsenceStatus(message, isError = false) { absenceStatus.textContent = message; absenceStatus.className = isError ? 'status error' : 'status success'; absenceStatus.style.display = 'block'; setTimeout(() => { absenceStatus.style.display = 'none'; }, 3000); }
+            function showAbsenceDeleteStatus(message, isError = false) { absenceDeleteStatus.textContent = message; absenceDeleteStatus.className = isError ? 'status error' : 'status success'; absenceDeleteStatus.style.display = 'block'; setTimeout(() => { absenceDeleteStatus.style.display = 'none'; }, 3000); }
+            function displayAbsencesForDate(dateKey) { if (!dateKey) { viewAbsencesDisplay.innerHTML = '<p>Select a date to view recorded absences.</p>'; return; } try { const allAbsences = getSavedAbsences(); const absencesForDay = allAbsences[dateKey] || {}; let html = `<h3>Absences for ${dateKey}</h3>`; let count = 0; const sortedStaff = Object.keys(absencesForDay).sort(); if (sortedStaff.length === 0) { html += "<p>No absences recorded for this date.</p>"; } else { html += "<ul>"; sortedStaff.forEach(staff => { const staffAbsences = absencesForDay[staff] || []; staffAbsences.forEach((absence, index) => { const startStr = minutesToHHMM(absence.start); const endStr = minutesToHHMM(absence.end); const reasonText = absence.reason ? ` - ${absence.reason}` : ''; html += `<li><span>${staff}: ${startStr} - ${endStr}${reasonText}</span><button class="delete-absence-btn" data-date="${dateKey}" data-staff="${staff}" data-index="${index}">Delete</button></li>`; count++; }); }); html += "</ul>"; } viewAbsencesDisplay.innerHTML = html; addDeleteButtonListeners(); } catch (error) { console.error("Error displaying absences for date:", dateKey, error); viewAbsencesDisplay.innerHTML = `<p class="error" style="color:red;">Error displaying absences.</p>`; } }
+            function addDeleteButtonListeners() { try { const deleteButtons = viewAbsencesDisplay.querySelectorAll('.delete-absence-btn'); deleteButtons.forEach(button => { button.removeEventListener('click', handleDeleteAbsence); button.addEventListener('click', handleDeleteAbsence); }); } catch(error) { console.error("Error adding delete listeners:", error); } }
+            function handleDeleteAbsence(event) { try { const button = event.target; const dateKey = button.dataset.date; const staff = button.dataset.staff; const index = parseInt(button.dataset.index, 10); if (!dateKey || !staff || isNaN(index)) { showAbsenceDeleteStatus("Error identifying absence.", true); return; } const spanText = button.closest('li').querySelector('span').textContent; const timeMatch = spanText.match(/(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})/); const timeText = timeMatch ? `${timeMatch[1]}-${timeMatch[2]}` : "entry"; if (confirm(`Delete absence for ${staff} on ${dateKey} (${timeText})?`)) { const allAbsences = getSavedAbsences(); if (allAbsences[dateKey]?.[staff]?.[index]) { allAbsences[dateKey][staff].splice(index, 1); if (allAbsences[dateKey][staff].length === 0) delete allAbsences[dateKey][staff]; if (Object.keys(allAbsences[dateKey]).length === 0) delete allAbsences[dateKey]; saveAbsences(allAbsences); showAbsenceDeleteStatus("Absence deleted.", false); displayAbsencesForDate(dateKey); } else { showAbsenceDeleteStatus("Could not find absence record.", true); } } } catch (error) { console.error("Error handling absence deletion:", error); showAbsenceDeleteStatus("Error deleting absence.", true); } }
 
             // --- Other Helper Functions ---
-            function populateStaffDropdown() { /* ... same (populates both) ... */ }
+            function populateStaffDropdown() {
+                 console.log("Populating dropdowns...");
+                 if (!allTeachers || !(allTeachers instanceof Set) || allTeachers.size === 0) { console.warn("Cannot populate dropdowns: allTeachers set empty/invalid."); staffSelect.innerHTML = '<option value="">Error: No staff found</option>'; absenceStaffSelect.innerHTML = '<option value="">Error: No staff found</option>'; return; }
+                 try { const sortedTeachers = [...allTeachers].filter(teacher => teacher && !EXCLUDE_TEACHERS_SET.has(teacher)).sort(); staffSelect.innerHTML = '<option value="">-- Select Staff --</option>'; absenceStaffSelect.innerHTML = '<option value="">-- Select Staff --</option>'; sortedTeachers.forEach(teacher => { const option = document.createElement('option'); option.value = teacher; option.textContent = teacher; staffSelect.appendChild(option.cloneNode(true)); absenceStaffSelect.appendChild(option.cloneNode(true)); }); console.log(`Dropdowns populated with ${sortedTeachers.length} teachers.`); }
+                 catch (error) { console.error("Error during populateStaffDropdown:", error); staffSelect.innerHTML = '<option value="">Error populating</option>'; absenceStaffSelect.innerHTML = '<option value="">Error populating</option>'; }
+            }
             function showSaveStatus(message, isError = false) { /* ... same ... */ }
             function showImportStatus(message, isError = false) { /* ... same ... */ }
             function displayMonthlyTotals(year, monthIndex) { /* ... same ... */ }
@@ -342,6 +347,7 @@
                      console.log("Initialization complete.");
                  } catch (error) { statusNow.textContent = `Critical Error: ${error.message}. Cannot initialize fully. Check console (F12).`; statusNow.classList.add('error'); console.error("Load Data Error:", error); try { setupMonthButtons(); const now = new Date(); dateEntryInput.valueAsDate = now; yearDisplay.value = now.getFullYear(); populateStaffDropdown(); displayAbsencesForDate(now.toISOString().split('T')[0]); } catch (uiError) { console.error("Critical UI setup error:", uiError); document.body.innerHTML = `<div style="padding: 20px; color: red; font-weight: bold;">Critical Error: ${error.message}. Cannot initialize. Check console (F12).</div>`; } }
             }
+
 
             // --- Event Listeners ---
             checkButton.addEventListener('click', () => { /* ... same ... */ });
@@ -375,8 +381,11 @@
                          }
                          
                          // --- Use delimiter and clean quotes for header ---
-                         const header = lines[0].split(delimiter).map(h => h.trim().replace(/"/g, ''));
+                         // Use regex to remove quotes from header fields
+                         const header = lines[0].split(delimiter).map(h => h.trim().replace(/^"|"$/g, ''));
                          console.log("Parsed header:", header);
+
+                         // Check header fields (case-insensitive)
                          if (header.length < 3 || header[0].toLowerCase() !== 'date' || header[1].toLowerCase() !== 'staff' || header[2].toLowerCase() !== 'minutes') {
                              throw new Error(`Invalid CSV header. Expected 'Date,Staff,Minutes'. Got '${lines[0]}'`);
                          }
@@ -385,12 +394,13 @@
                          const currentData = getSavedMinutesData();
 
                          for (let i = 1; i < lines.length; i++) {
-                             const columns = lines[i].split(delimiter);
+                             // Split by delimiter, handling potential quotes
+                             const columns = lines[i].split(delimiter).map(col => col.trim().replace(/^"|"$/g, '')); // Trim and remove quotes
+                             
                              if (columns.length >= 3) {
-                                 // --- Clean quotes and trim data ---
-                                 const dateKey = columns[0].trim().replace(/"/g, '');
-                                 const staff = columns[1].trim().replace(/"/g, '');
-                                 const minutes = parseInt(columns[2].trim().replace(/"/g, ''), 10);
+                                 const dateKey = columns[0];
+                                 const staff = columns[1];
+                                 const minutes = parseInt(columns[2], 10);
 
                                  if (dateKey.match(/^\d{4}-\d{2}-\d{2}$/) && staff && !isNaN(minutes) && minutes >= 0) {
                                      if (!currentData[staff]) {
@@ -399,7 +409,7 @@
                                      currentData[staff][dateKey] = minutes; // Overwrite existing
                                      importedCount++;
                                  } else {
-                                     console.warn(`Skipping invalid row ${i + 1}: ${lines[i]}`);
+                                     console.warn(`Skipping invalid row ${i + 1}: ${lines[i]} (Parsed: ${dateKey}, ${staff}, ${minutes})`);
                                  }
                              } else {
                                  console.warn(`Skipping row ${i + 1} due to incorrect column count: ${lines[i]}`);
