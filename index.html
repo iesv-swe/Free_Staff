@@ -53,7 +53,7 @@
     </style>
 </head>
 <body>
-    <button id="theme-toggle" title="Toggle Dark/Light Mode">Moon</button>
+    <button id="theme-toggle">Moon</button>
     <div id="reminder-banner">
         <p>Don't forget to save your data!</p>
         <button id="reminder-save-minutes" class="btn-green">Save Minutes</button>
@@ -385,15 +385,14 @@
                 reminderBanner.style.display='none';
             }
 
-            // === FULLY WORKING EXPORTS ===
             exportBackupButton.onclick=()=>{const d=getSavedMinutesData();let c="Date,Staff,Minutes\n";for(const s in d)for(const date in d[s])c+=`${date},${s},${d[s][date]}\n`;const b=new Blob([c],{type:'text/csv'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=`ExtraMinutes_${getTimestamp()}.csv`;a.click();URL.revokeObjectURL(u);showImportStatus("Minutes backup downloaded!",false);}
             exportAbsencesButton.onclick=()=>{const d=getSavedAbsences();let c="Date,Staff,Start,End,Reason\n";for(const date in d)for(const s in d[date])d[date][s].forEach(a=>c+=`${date},${s},${minutesToHHMM(a.start)},${minutesToHHMM(a.end)},${(a.reason||'').replace(/"/g,'""')}\n`);const b=new Blob([c],{type:'text/csv'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=`Absences_${getTimestamp()}.csv`;a.click();URL.revokeObjectURL(u);showImportStatus("Absences backup downloaded!",false);}
             exportSummaryButton.onclick=()=>{const y=parseInt(yearDisplay.value,10);if(isNaN(y)){showImportStatus("Invalid year",true);return;}const d=getSavedMinutesData();let c="Staff,Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec,Total\n";const monthly=Array(12).fill(0);const totals={};for(const s in d){const row=Array(12).fill(0);let sum=0;for(const date in d[s]){const m=parseInt(date.substring(5,7),10)-1;if(date.substring(0,4)==y&&m>=0&&m<12){row[m]+=d[s][date];monthly[m]+=d[s][date];sum+=d[s][date];}}if(sum>0){totals[s]=row;totals[s].total=sum;}}Object.keys(totals).sort().forEach(s=>{const r=totals[s];c+=`${s},${r.slice(0,12).join(',')},${r.total}\n`;});c+=`\nTOTALS,${monthly.join(',')},${monthly.reduce((a,b)=>a+b,0)}\n`;const b=new Blob([c],{type:'text/csv'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=`Summary_${y}_${getTimestamp()}.csv`;a.click();URL.revokeObjectURL(u);showImportStatus("Summary exported!",false);}
             csvFileInput.onchange=()=>{const f=csvFileInput.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{try{const t=e.target.result;const l=t.trim().split(/\r?\n/).slice(1);const d=getSavedMinutesData();let a=0;for(const line of l){const [date,staff,minsStr]=line.split(',');if(!date||!staff||!minsStr)continue;const mins=parseInt(minsStr,10);if(isNaN(mins)||mins<=0)continue;if(!d[staff])d[staff]={};d[staff][date]=(d[staff][date]||0)+mins;a++;}saveMinutesData(d);showImportStatus(`Imported ${a} entries!`,false);if(activeMonthButton)activeMonthButton.click();const n=new Date();const av=getAvailabilityAtTime(n);displayResults(av.available,av.onCallTimes,av.dutyTeachers,teachersNowList,statusNow,n);}catch(err){showImportStatus("Import failed: "+err.message,true);}csvFileInput.value='';};r.readAsText(f);};
             importCsvButton.onclick=()=>csvFileInput.click();
-            clearDataButton.onclick=()=>{if(confirm("Delete ALL saved minutes AND absences? Cannot undo!")){localStorage.removeItem('extraMinutes');localStorage.removeItem('teacherAbsences');showImportStatus("All data cleared!",true);if(activeMonthButton)activeMonthButton.click();displayAbsencesForDate(new Date().toISOString().split('T')[0]);}};
+            clearDataButton.onclick=()=>{if(confirm("Delete ALL saved minutes AND absences? Cannot undo!")){localStorage.removeItem('extraMinutes');localStorage.removeItem('teacherAbsences');showImportStatus("All data cleared!",true);if(activeMonthButton)activeMonthButton.click();displayAbsencesForDate(new Date().toISOString().split('T')[0]);const n=new Date();const av=getAvailabilityAtTime(n);displayResults(av.available,av.onCallTimes,av.dutyTeachers,teachersNowList,statusNow,n);}};
 
-            saveAbsenceButton.onclick=()=>{const date=absenceDateInput.value;const start=timeToMinutes(absenceStartInput.value);const end=timeToMinutes(absenceEndInput.value);const reason=absenceReasonInput.value.trim();if(!date||isNaN(start)||isNaN(end)||end<=start){showAbsenceStatus("Invalid times",true);return;}const all=getSavedAbsences();if(!all[date])all[date]={};if(!all[date]["ALL"])all[date]["ALL"]=[];all[date]["ALL"].push({start,end,reason});saveAbsences(all);showAbsenceStatus(`Absence saved for ${date}`,false);absenceReasonInput.value='';displayAbsencesForDate(date);};
+            saveAbsenceButton.onclick=()=>{const date=absenceDateInput.value;const start=timeToMinutes(absenceStartInput.value);const end=timeToMinutes(absenceEndInput.value);const reason=absenceReasonInput.value.trim();if(!date||isNaN(start)||isNaN(end)||end<=start){showAbsenceStatus("Invalid times",true);return;}const all=getSavedAbsences();if(!all[date])all[date]={};if(!all[date]["ALL"])all[date]["ALL"]=[];all[date]["ALL"].push({start,end,reason});saveAbsences(all);showAbsenceStatus(`Absence saved for ${date}`,false);absenceReasonInput.value='';displayAbsencesForDate(date);if(new Date().toISOString().split('T')[0]===date){const av=getAvailabilityAtTime(new Date());displayResults(av.available,av.onCallTimes,av.dutyTeachers,teachersNowList,statusNow,new Date());}};
             viewAbsenceDateInput.onchange=()=>displayAbsencesForDate(viewAbsenceDateInput.value);
             reminderSaveMinutes.onclick=()=>{exportBackupButton.click();dismissReminder();};
             reminderSaveAbsences.onclick=()=>{exportAbsencesButton.click();dismissReminder();};
@@ -419,7 +418,7 @@
                     dateEntryInput.valueAsDate=now;absenceDateInput.valueAsDate=now;viewAbsenceDateInput.valueAsDate=now;yearDisplay.value=now.getFullYear();
                     const avail=getAvailabilityAtTime(now);
                     displayResults(avail.available,avail.onCallTimes,avail.dutyTeachers,teachersNowList,statusNow,now);
-                    const curBtn=month.monthButtonsContainer.querySelector(`button[data-month-index="${now.getMonth()}"]`);
+                    const curBtn=monthButtonsContainer.querySelector(`button[data-month-index="${now.getMonth()}"]`);
                     if(curBtn)curBtn.click();
                     displayAbsencesForDate(now.toISOString().split('T')[0]);
                     checkBackupReminder();
@@ -432,8 +431,23 @@
                 }
             }
 
-            checkButton.onclick=()=>{/* your original check code */};
-            saveMinutesButton.onclick=()=>{/* your original save minutes code */};
+            checkButton.onclick=()=>{const d=dateInput.value,f=timeFromInput.value,t=timeToInput.value;if(!d||!f||!t){statusCustom.textContent="Fill all fields";statusCustom.classList.add('error');statusCustom.style.display='block';return;}
+                const [y,m,day]=d.split('-').map(Number);const date=new Date(y,m-1,day);
+                const sMin=timeToMinutes(f),eMin=timeToMinutes(t);
+                if(eMin<=sMin){statusCustom.textContent="End > Start";statusCustom.classList.add('error');statusCustom.style.display='block';return;}
+                const res=getAvailabilityForRange(date,sMin,eMin);
+                statusCustom.textContent=`Free ${f}–${t} on ${date.toLocaleDateString()}`;
+                statusCustom.className='status success';statusCustom.style.display='block';
+                displayResults(res.available,res.onCallTimes,res.dutyTeachers,teachersCustomList,statusCustom,date);};
+
+            saveMinutesButton.onclick=()=>{const staff=staffSelect.value,date=dateEntryInput.value,mins=parseInt(minutesInput.value,10);
+                if(!staff||!date||isNaN(mins)||mins<=0){showSaveStatus("Invalid input",true);return;}
+                const data=getSavedMinutesData();if(!data[staff])data[staff]={};
+                data[staff][date]=(data[staff][date]||0)+mins;saveMinutesData(data);
+                showSaveStatus(`+${mins} min for ${staff} on ${date}`);
+                minutesInput.value='';if(activeMonthButton)activeMonthButton.click();
+                const now=new Date();const av=getAvailabilityAtTime(now);
+                displayResults(av.available,av.onCallTimes,av.dutyTeachers,teachersNowList,statusNow,now);};
 
             loadData();
         });
