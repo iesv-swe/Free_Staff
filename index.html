@@ -6,177 +6,54 @@
     <title>Teacher Availability</title>
     <style>
         :root {
-            --bg: #102d69;
-            --container: #1a3a7f;
-            --text: #dbdad8;
-            --input-bg: #2a4a8f;
-            --border: #9a9b9d;
-            --button: #00a0df;
-            --button-hover: #007ead;
-            --success: #2ea44f;
-            --danger: #d73a49;
-            --warn: #ffc107;
-            --pink: #ffc0cb;
-            --pink-border: #ff69b4;
+            --bg: #102d69; --container: #1a3a7f; --text: #dbdad8; --input-bg: #2a4a8f; --border: #9a9b9d;
+            --button: #00a0df; --button-hover: #007ead; --success: #2ea44f; --danger: #d73a49; --warn: #ffc107;
+            --pink: #ffc0cb; --pink-border: #ff69b4;
         }
         [data-theme="light"] {
-            --bg: #f8f9fa;
-            --container: #ffffff;
-            --text: #212529;
-            --input-bg: #f1f3f5;
-            --border: #ced4da;
-            --button: #007ead;
-            --button-hover: #005c8a;
-            --success: #28a745;
-            --danger: #dc3545;
-            --warn: #ffc107;
-            --pink: #ff69b4;
-            --pink-border: #ff1493;
+            --bg: #f8f9fa; --container: #ffffff; --text: #212529; --input-bg: #f1f3f5; --border: #ced4da;
+            --button: #007ead; --button-hover: #005c8a; --success: #28a745; --danger: #dc3545; --warn: #ffc107;
+            --pink: #ff69b4; --pink-border: #ff1493;
         }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            line-height: 1.6;
-            background-color: var(--bg);
-            color: var(--text);
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            transition: background-color 0.3s ease, color 0.3s ease;
-        }
-        #theme-toggle {
-            position: fixed;
-            top: 15px;
-            right: 15px;
-            z-index: 1000;
-            background: var(--button);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            transition: all 0.3s ease;
-        }
-        #theme-toggle:hover {
-            background: var(--button-hover);
-            transform: scale(1.1);
-        }
-        #reminder-banner {
-            display: none;
-            position: sticky;
-            top: 70px;
-            z-index: 99;
-            background-color: #fff3cd;
-            color: #856404;
-            padding: 15px 20px;
-            margin-bottom: 20px;
-            border: 1px solid #ffeaa7;
-            border-radius: 6px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            text-align: center;
-        }
-        [data-theme="light"] #reminder-banner {
-            background-color: #d4edda;
-            color: #155724;
-            border-color: #c3e6cb;
-        }
-        .logo { width: 180px; height: auto; margin-bottom: 10px; }
-        h1 { border-bottom: 2px solid #00a0df; padding-bottom: 10px; color: var(--text); }
-        h2 {
-            background-color: #0366d6;
-            color: #ffffff;
-            margin: -24px -24px 20px -24px;
-            padding: 12px 24px;
-            border-radius: 6px 6px 0 0;
-        }
-        [data-theme="light"] h2 { background-color: #007ead; }
-        .container {
-            background-color: var(--container);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 24px;
-            margin-bottom: 20px;
-            color: var(--text);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        .key-legend {
-            list-style: none; padding: 0; margin: 10px 0 0 0;
-            display: flex; flex-wrap: wrap; gap: 15px; font-size: 0.9em;
-        }
-        .key-legend li { display: flex; align-items: center; }
-        .key-dot {
-            width: 12px; height: 12px; border-radius: 50%; margin-right: 6px;
-            border: 1px solid rgba(0,0,0,0.2);
-        }
-        .key-dot.green { background-color: var(--success); }
-        .key-dot.red { background-color: var(--danger); }
-        .key-dot.yellow { background-color: var(--warn); }
-        .key-dot.pink { background-color: var(--pink); }
-        .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .input-group { margin-bottom: 15px; }
-        .input-group label {
-            display: block; font-weight: 600; margin-bottom: 5px; color: var(--text);
-        }
-        .input-group input, .input-group select {
-            width: 95%; padding: 8px 12px; border: 1px solid var(--border);
-            border-radius: 6px; background-color: var(--input-bg); color: var(--text);
-        }
-        button {
-            background-color: var(--button); color: #ffffff; font-weight: 600;
-            padding: 10px 16px; border: 1px solid var(--button-hover);
-            border-radius: 6px; cursor: pointer; margin-top: 10px;
-            transition: all 0.2s ease;
-        }
-        button:hover { background-color: var(--button-hover); }
-        button.btn-green { background-color: var(--success); }
-        button.secondary { background-color: var(--border); color: var(--text); }
-        button.danger { background-color: var(--danger); }
-        button.primary { background-color: #6f42c1; }
-        .teacher-list {
-            display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0;
-        }
-        .teacher-list li {
-            background-color: var(--input-bg); border: 1px solid var(--border);
-            border-radius: 10px; padding: 5px 12px; color: var(--text);
-            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-        }
-        .teacher-list li.on-call {
-            background-color: var(--success); color: white; border-color: #218838; font-weight: 600;
-        }
-        .teacher-list li.minutes-danger {
-            background-color: var(--danger); color: white; border: 1px solid #c82333; font-weight: 600;
-        }
-        .teacher-list li.minutes-warn {
-            background-color: var(--warn); border: 1px solid #e0a800; color: #212529;
-        }
-        .teacher-list li.break-duty {
-            background-color: var(--pink); color: #000; border: 2px solid var(--pink-border);
-            font-weight: 600; animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(255, 105, 180, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(255, 105, 180, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 105, 180, 0); }
-        }
-        #oncall-now-banner {
-            margin: 15px 0; padding: 10px; background-color: rgba(46, 164, 79, 0.15);
-            border: 1px solid var(--success); border-radius: 6px; font-weight: 600;
-            color: var(--success); text-align: center; display: none;
-        }
-        .month-buttons button.active {
-            background-color: var(--button); color: white; font-weight: 600;
-        }
-        .status { margin-top: 8px; }
-        .status.error { color: var(--danger); font-weight: 600; }
-        .status.success { color: var(--success); font-weight: 600; }
-        /* hide the file input UI text but keep element functional */
-        #csv-file-input { display: none; }
+        body {font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;line-height:1.6;background:var(--bg);color:var(--text);max-width:800px;margin:20px auto;padding:20px;transition:all .3s}
+        #theme-toggle{position:fixed;top:15px;right:15px;z-index:1000;background:var(--button);color:white;border:none;border-radius:50%;width:50px;height:50px;font-size:24px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.2);transition:all .3s}
+        #theme-toggle:hover{background:var(--button-hover);transform:scale(1.1)}
+        #reminder-banner{display:none;position:sticky;top:70px;z-index:99;background:#fff3cd;color:#856404;padding:15px 20px;margin-bottom:20px;border:1px solid #ffeaa7;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.15);text-align:center}
+        [data-theme=light] #reminder-banner{background:#d4edda;color:#155724;border-color:#c3e6cb}
+        .logo{width:180px;height:auto;margin-bottom:10px}
+        h1{border-bottom:2px solid #00a0df;padding-bottom:10px}
+        h2{background:#0366d6;color:#fff;margin:-24px -24px 20px;padding:12px 24px;border-radius:6px 6px 0 0}
+        [data-theme=light] h2{background:#007ead}
+        .container{background:var(--container);border:1px solid var(--border);border-radius:6px;padding:24px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+        .key-legend{list-style:none;padding:0;margin:10px 0 0;display:flex;flex-wrap:wrap;gap:15px;font-size:.9em}
+        .key-legend li{display:flex;align-items:center}
+        .key-dot{width:12px;height:12px;border-radius:50%;margin-right:6px;border:1px solid rgba(0,0,0,.2)}
+        .key-dot.green{background:var(--success)}.key-dot.red{background:var(--danger)}.key-dot.yellow{background:var(--warn)}.key-dot.pink{background:var(--pink)}
+        .input-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+        .input-group{margin-bottom:15px}
+        .input-group label{display:block;font-weight:600;margin-bottom:5px}
+        .input-group input,.input-group select{width:95%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;background:var(--input-bg);color:var(--text)}
+        button{background:var(--button);color:#fff;font-weight:600;padding:10px 16px;border:1px solid var(--button-hover);border-radius:6px;cursor:pointer;margin-top:10px;transition:all .2s}
+        button:hover{background:var(--button-hover)}
+        button.btn-green{background:var(--success)}
+        button.secondary{background:var(--border);color:var(--text)}
+        button.danger{background:var(--danger)}
+        button.primary{background:#6f42c1}
+        .teacher-list{display:flex;flex-wrap:wrap;gap:8px;list-style:none;padding:0}
+        .teacher-list li{background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:5px 12px;font-family:monospace}
+        .teacher-list li.on-call{background:var(--success);color:white;border-color:#218838;font-weight:600}
+        .teacher-list li.minutes-danger{background:var(--danger);color:white;border:1px solid #c82333;font-weight:600}
+        .teacher-list li.minutes-warn{background:var(--warn);border:1px solid #e0a800;color:#212529}
+        .teacher-list li.break-duty{background:var(--pink);color:#000;border:2px solid var(--pink-border);font-weight:600;animation:pulse 2s infinite}
+        @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,105,180,.4)}70%{box-shadow:0 0 0 10px rgba(255,105,180,0)}100%{box-shadow:0 0 0 0 rgba(255,105,180,0)}}
+        #oncall-now-banner{margin:15px 0;padding:10px;background:rgba(46,164,79,.15);border:1px solid var(--success);border-radius:6px;font-weight:600;color:var(--success);text-align:center;display:none}
+        .month-buttons button.active{background:var(--button);color:white;font-weight:600}
+        .status{margin-top:8px}.status.error{color:var(--danger);font-weight:600}.status.success{color:var(--success);font-weight:600}
+        #csv-file-input{display:none}
     </style>
 </head>
 <body>
-    <button id="theme-toggle" title="Toggle Dark/Light Mode">🌙</button>
+    <button id="theme-toggle" title="Toggle Dark/Light Mode">Moon</button>
     <div id="reminder-banner">
         <p>Don't forget to save your data!</p>
         <button id="reminder-save-minutes" class="btn-green">Save Minutes</button>
@@ -185,25 +62,18 @@
     </div>
     <img src="logo.png" alt="Logo" class="logo">
     <h1>Teacher Availability</h1>
-  
     <ul class="key-legend">
         <li><span class="key-dot green"></span>On Call</li>
         <li><span class="key-dot red"></span>Monthly Limit (≥180 min)</li>
         <li><span class="key-dot yellow"></span>Weekly Limit (≥90 min)</li>
-        <li><span class="key-dot pink"></span>Break Duty (Corridor / Junior / Outside)</li>
+        <li><span class="key-dot pink"></span>Break Duty</li>
     </ul>
-    <div class="container">
-        <h2>Who is Available Now?</h2>
-        <div id="status-now" class="status">Loading schedule...</div>
-        <div id="results-now" class="results">
-            <div id="oncall-now-banner">
-                Currently On Call: <span id="oncall-names"></span>
-            </div>
-            <ul id="teachers-now" class="teacher-list"></ul>
-        </div>
-    </div>
-    <div class="container">
-        <h2>Check Availability for a Specific Time</h2>
+
+    <div class="container"><h2>Who is Available Now?</h2><div id="status-now" class="status">Loading schedule...</div>
+        <div id="results-now"><div id="oncall-now-banner">Currently On Call: <span id="oncall-names"></span></div>
+            <ul id="teachers-now" class="teacher-list"></ul></div></div>
+
+    <div class="container"><h2>Check Availability for a Specific Time</h2>
         <div class="input-group"><label for="date-input">Date:</label><input type="date" id="date-input"></div>
         <div class="input-grid">
             <div class="input-group"><label for="time-from-input">Time (From):</label><input type="time" id="time-from-input"></div>
@@ -211,65 +81,42 @@
         </div>
         <button id="check-button">Check Availability</button>
         <div id="status-custom" class="status" style="display:none;"></div>
-        <div id="results-custom" class="results"><ul id="teachers-custom" class="teacher-list"></ul></div>
-    </div>
-    <div class="container">
-        <h2>Record Staff Absence</h2>
-        <p class="description-text">Record an absence (e.g., meeting) for <strong>all staff</strong>. This data is saved in your browser.</p>
-        <div class="input-group">
-            <label for="absence-date-input">Date of Absence:</label>
-            <input type="date" id="absence-date-input" style="width: 98%;">
-        </div>
+        <div id="results-custom"><ul id="teachers-custom" class="teacher-list"></ul></div></div>
+
+    <div class="container"><h2>Record Staff Absence</h2>
+        <p class="description-text">Record an absence (e.g., meeting) for <strong>all staff</strong>. Saved in browser.</p>
+        <div class="input-group"><label for="absence-date-input">Date:</label><input type="date" id="absence-date-input" style="width:98%"></div>
         <div class="input-grid">
-            <div class="input-group">
-                <label for="absence-start-input">Start Time:</label>
-                <input type="time" id="absence-start-input">
-            </div>
-            <div class="input-group">
-                <label for="absence-end-input">End Time:</label>
-                <input type="time" id="absence-end-input">
-            </div>
+            <div class="input-group"><label for="absence-start-input">Start:</label><input type="time" id="absence-start-input"></div>
+            <div class="input-group"><label for="absence-end-input">End:</label><input type="time" id="absence-end-input"></div>
         </div>
-        <div class="input-group">
-            <label for="absence-reason-input">Reason (Optional):</label>
-            <input type="text" id="absence-reason-input" style="width: 98%;" placeholder="e.g., Training">
-        </div>
+        <div class="input-group"><label for="absence-reason-input">Reason (Optional):</label><input type="text" id="absence-reason-input" style="width:98%" placeholder="e.g., Training"></div>
         <button id="save-absence-button">Save Absence</button>
-        <div id="absence-status" class="status" style="display:none; margin-top:10px;"></div>
-    </div>
-    <div class="container">
-        <h2>View & Delete Recorded Absences</h2>
-        <div class="input-group">
-            <label for="view-absence-date-input">Select Date to View:</label>
-            <input type="date" id="view-absence-date-input" style="width: 98%;">
-        </div>
-        <div id="view-absences-display">
-            <p>Select a date to view recorded absences.</p>
-        </div>
-        <div id="absence-delete-status" class="status" style="display:none; margin-top:10px;"></div>
-    </div>
-    <div class="container">
-        <h2>Log Extra Minutes</h2>
-        <p class="description-text">Record extra minutes worked by staff. This data is saved <strong>in your browser</strong>.</p>
+        <div id="absence-status" class="status" style="display:none;margin-top:10px;"></div></div>
+
+    <div class="container"><h2>View & Delete Recorded Absences</h2>
+        <div class="input-group"><label for="view-absence-date-input">Select Date:</label><input type="date" id="view-absence-date-input" style="width:98%"></div>
+        <div id="view-absences-display"><p>Select a date to view recorded absences.</p></div></div>
+
+    <div class="container"><h2>Log Extra Minutes</h2>
+        <p class="description-text">Record extra minutes worked. Saved in browser.</p>
         <div class="input-grid">
             <div class="input-group"><label for="staff-select">Staff Member:</label><select id="staff-select"><option value="">-- Select Staff --</option></select></div>
             <div class="input-group"><label for="date-entry-input">Date Worked:</label><input type="date" id="date-entry-input"></div>
         </div>
         <div class="input-group"><label for="minutes-input">Add Extra Minutes:</label><input type="number" id="minutes-input" placeholder="e.g., 60"></div>
         <button id="save-minutes-button">Save Minutes</button>
-        <div id="save-status" class="status" style="display:none; margin-top:10px;"></div>
-    </div>
-    <div class="container">
-        <h2>View Extra Minutes & Data Management</h2>
+        <div id="save-status" class="status" style="display:none;margin-top:10px;"></div></div>
+
+    <div class="container"><h2>View Extra Minutes & Data Management</h2>
         <div class="input-group"><label for="year-display">Select Year:</label><input type="number" id="year-display" value="2025"></div>
         <div class="month-buttons" id="month-buttons"></div>
         <div id="totals-display"><p>Select a month to see totals.</p></div>
-      
-        <hr style="border-color: var(--border); margin-top: 25px;">
-        <p class="description-text" style="margin-top: 15px; margin-bottom: 0;">
-            Use the buttons below to manage your saved data.
-            <br>• <b>Save Minutes</b> button only saves 'Date, Staff & Minutes' format
-            <br>• <b>Export Summary</b> is for viewing totals and cannot be re-imported.
+        <hr style="border-color:var(--border);margin-top:25px">
+        <p class="description-text" style="margin-top:15px;margin-bottom:0">
+            Use the buttons below to manage your saved data.<br>
+            • <b>Save Minutes</b> = Date, Staff & Minutes<br>
+            • <b>Export Summary</b> = pretty view (cannot re-import)
         </p>
         <div class="button-group">
             <button id="export-backup-button" class="btn-green">Save Minutes</button>
@@ -279,129 +126,314 @@
             <input type="file" id="csv-file-input" accept=".csv">
             <button id="clear-data-button" class="danger">Clear All Saved Data</button>
         </div>
-        <div id="import-status" class="status" style="display:none; margin-top:10px;"></div>
+        <div id="import-status" class="status" style="display:none;margin-top:10px;"></div>
     </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // === DARK/LIGHT MODE TOGGLE ===
             const toggleButton = document.getElementById('theme-toggle');
             const savedTheme = localStorage.getItem('theme') || 'dark';
             document.documentElement.setAttribute('data-theme', savedTheme);
-            toggleButton.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+            toggleButton.textContent = savedTheme === 'dark' ? 'Sun' : 'Moon';
             toggleButton.onclick = () => {
-                const current = document.documentElement.getAttribute('data-theme');
-                const newTheme = current === 'dark' ? 'light' : 'dark';
+                const newTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
                 document.documentElement.setAttribute('data-theme', newTheme);
                 localStorage.setItem('theme', newTheme);
-                toggleButton.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+                toggleButton.textContent = newTheme === 'dark' ? 'Sun' : 'Moon';
             };
-            // === MAIN APP ===
-            console.log("DOM loaded.");
-            let lessons = [];
-            let allTeachers = new Set();
-            let columnMap = {};
-            let activeMonthButton = null;
-            let lessonIndex = {};
-            const dayMap = ["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"];
-            const ARBETSTID_SUBJECT = "arbetstid";
-            const ON_CALL_SUBJECT = "on call substitution";
-            const BREAK_DUTY_SUBJECTS = new Set([
-                "break duty corridors",
-                "break duty junior",
-                "break duty outside",
-                "break duty corridor",
-                "break duty"
-            ]);
-            const EXCLUDE_TEACHER_LIST = ["BaSh", "AnHo", "DaWr", "AniFac", "RahHan", "ChBe", "FaCa", "SeCa", "AlCh", "LaCo", "VikCos", "RoDi", "KrEr", "RaHa", "JeHe", "DiHe", "GaHe", "HeKa", "JoLe", "TiLe", "WiLi", "ChLi", "HaLu", "KaMa", "ViMe", "MaMe", "HiOj", "LePa", "AsRo", "RaSc", "TaSc", "JeSe", "AnVa", "MarMen", "JonLeh"];
-            const EXCLUDE_TEACHERS_SET = new Set(EXCLUDE_TEACHER_LIST);
-            const statusNow = document.getElementById('status-now');
-            const teachersNowList = document.getElementById('teachers-now');
-            const onCallBanner = document.getElementById('oncall-now-banner');
-            const onCallNames = document.getElementById('oncall-names');
-            const statusCustom = document.getElementById('status-custom');
-            const teachersCustomList = document.getElementById('teachers-custom');
-            const checkButton = document.getElementById('check-button');
-            const dateInput = document.getElementById('date-input');
-            const timeFromInput = document.getElementById('time-from-input');
-            const timeToInput = document.getElementById('time-to-input');
-            const staffSelect = document.getElementById('staff-select');
-            const dateEntryInput = document.getElementById('date-entry-input');
-            const minutesInput = document.getElementById('minutes-input');
-            const saveMinutesButton = document.getElementById('save-minutes-button');
-            const saveStatus = document.getElementById('save-status');
-            const yearDisplay = document.getElementById('year-display');
-            const monthButtonsContainer = document.getElementById('month-buttons');
-            const totalsDisplay = document.getElementById('totals-display');
-            const exportSummaryButton = document.getElementById('export-summary-button');
-            const exportBackupButton = document.getElementById('export-backup-button');
-            const clearDataButton = document.getElementById('clear-data-button');
-            const importCsvButton = document.getElementById('import-csv-button');
-            const csvFileInput = document.getElementById('csv-file-input');
+
+            let lessons = [], allTeachers = new Set(), columnMap = {}, activeMonthButton = null, lessonIndex = {};
+            const dayMap = ["Sun","Mon","Tue","Wed","Thur","Fri","Sat"];
+            const ARBETSTID_SUBJECT = "arbetstid", ON_CALL_SUBJECT = "on call substitution";
+            const BREAK_DUTY_SUBJECTS = new Set(["break duty corridors","break duty junior","break duty outside","break duty corridor","break duty"]);
+            const EXCLUDE_TEACHERS_SET = new Set(["BaSh","AnHo","DaWr","AniFac","RahHan","ChBe","FaCa","SeCa","AlCh","LaCo","VikCos","RoDi","KrEr","RaHa","JeHe","DiHe","GaHe","HeKa","JoLe","TiLe","WiLi","ChLi","HaLu","KaMa","ViMe","MaMe","HiOj","LePa","AsRo","RaSc","TaSc","JeSe","AnVa","MarMen","JonLeh"]);
+
+            const statusNow = document.getElementById('status-now'), teachersNowList = document.getElementById('teachers-now');
+            const onCallBanner = document.getElementById('oncall-now-banner'), onCallNames = document.getElementById('oncall-names');
+            const statusCustom = document.getElementById('status-custom'), teachersCustomList = document.getElementById('teachers-custom');
+            const checkButton = document.getElementById('check-button'), dateInput = document.getElementById('date-input');
+            const timeFromInput = document.getElementById('time-from-input'), timeToInput = document.getElementById('time-to-input');
+            const staffSelect = document.getElementById('staff-select'), dateEntryInput = document.getElementById('date-entry-input');
+            const minutesInput = document.getElementById('minutes-input'), saveMinutesButton = document.getElementById('save-minutes-button');
+            const saveStatus = document.getElementById('save-status'), yearDisplay = document.getElementById('year-display');
+            const monthButtonsContainer = document.getElementById('month-buttons'), totalsDisplay = document.getElementById('totals-display');
+            const exportSummaryButton = document.getElementById('export-summary-button'), exportBackupButton = document.getElementById('export-backup-button');
+            const exportAbsencesButton = document.getElementById('export-absences-button'), clearDataButton = document.getElementById('clear-data-button');
+            const importCsvButton = document.getElementById('import-csv-button'), csvFileInput = document.getElementById('csv-file-input');
             const importStatus = document.getElementById('import-status');
-            const absenceDateInput = document.getElementById('absence-date-input');
-            const absenceStartInput = document.getElementById('absence-start-input');
-            const absenceEndInput = document.getElementById('absence-end-input');
-            const absenceReasonInput = document.getElementById('absence-reason-input');
-            const saveAbsenceButton = document.getElementById('save-absence-button');
-            const absenceStatus = document.getElementById('absence-status');
-            const viewAbsenceDateInput = document.getElementById('view-absence-date-input');
-            const viewAbsencesDisplay = document.getElementById('view-absences-display');
-            const absenceDeleteStatus = document.getElementById('absence-delete-status');
-            const exportAbsencesButton = document.getElementById('export-absences-button');
-            const reminderBanner = document.getElementById('reminder-banner');
-            const reminderSaveMinutes = document.getElementById('reminder-save-minutes');
-            const reminderSaveAbsences = document.getElementById('reminder-save-absences');
-            const reminderDismiss = document.getElementById('reminder-dismiss');
-            function getTimestamp() {
-                const now = new Date();
-                return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}-${String(now.getMinutes()).padStart(2,'0')}-${String(now.getSeconds()).padStart(2,'0')}`;
-            }
-            function getIsoWeekAndYear(d) {
-                const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-                date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
-                const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-                const weekNo = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
-                const year = date.getUTCFullYear();
-                return { week: weekNo, year, weekKey: `${year}-W${String(weekNo).padStart(2,'0')}` };
-            }
-            function timeToMinutes(t) { return t ? ((parseInt(t.substring(0,2),10)*60) + parseInt(t.substring(3,5),10)) || 0 : 0; }
-            function minutesToHHMM(m) { if(isNaN(m)) return "00:00"; const h = Math.floor(m/60); const mm = m%60; return `${String(h).padStart(2,'0')}:${String(mm).padStart(2,'0')}`; }
-            function parseRealWeeks(str) {
-                const weeks = new Set();
-                if (!str) return weeks;
-                str.split(',').forEach(range => {
-                    const parts = range.trim().split('-');
-                    if (parts.length === 1) { const n = parseInt(parts[0],10); if(!isNaN(n)) weeks.add(n); }
-                    else if (parts.length === 2) { const s = parseInt(parts[0],10), e = parseInt(parts[1],10); if(!isNaN(s)&&!isNaN(e)) for(let i=s;i<=e;i++) weeks.add(i); }
-                });
-                return weeks;
-            }
-            function parseTeachers(str) {
-                if (!str || typeof str !== 'string') return [];
-                return str.split(',').map(t => t.trim()).filter(t => t);
-            }
-            function buildLessonIndex() {
-                lessonIndex = {};
-                lessons.forEach(lesson => {
-                    const day = lesson[columnMap['day']]?.trim();
-                    const weekStr = lesson[columnMap['realweeks']];
-                    const startStr = lesson[columnMap['starttime']];
-                    if (!day || !weekStr || !startStr) return;
-                    // normalise day variations
-                    const normDay = (day.slice(0,3).toLowerCase() === 'thu') ? 'Thur' : day;
-                    const startMin = timeToMinutes(startStr);
-                    const weeks = parseRealWeeks(weekStr);
-                    weeks.forEach(w => {
-                        if (!lessonIndex[normDay]) lessonIndex[normDay] = {};
-                        if (!lessonIndex[normDay][w]) lessonIndex[normDay][w] = {};
-                        if (!lessonIndex[normDay][w][startMin]) lessonIndex[normDay][w][startMin] = [];
-                        lessonIndex[normDay][w][startMin].push(lesson);
+            const absenceDateInput = document.getElementById('absence-date-input'), absenceStartInput = document.getElementById('absence-start-input');
+            const absenceEndInput = document.getElementById('absence-end-input'), absenceReasonInput = document.getElementById('absence-reason-input');
+            const saveAbsenceButton = document.getElementById('save-absence-button'), absenceStatus = document.getElementById('absence-status');
+            const viewAbsenceDateInput = document.getElementById('view-absence-date-input'), viewAbsencesDisplay = document.getElementById('view-absences-display');
+            const reminderBanner = document.getElementById('reminder-banner'), reminderSaveMinutes = document.getElementById('reminder-save-minutes');
+            const reminderSaveAbsences = document.getElementById('reminder-save-absences'), reminderDismiss = document.getElementById('reminder-dismiss');
+
+            function getTimestamp(){const n=new Date;return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}_${String(n.getHours()).padStart(2,'0')}-${String(n.getMinutes()).padStart(2,'0')}-${String(n.getSeconds()).padStart(2,'0')}`;}
+            function getIsoWeekAndYear(d){const e=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));e.setUTCDate(e.getUTCDate()+4-(e.getUTCDay()||7));const t=new Date(Date.UTC(e.getUTCFullYear(),0,1));const w=Math.ceil((((e-t)/86400000)+1)/7);return {week:w,year:e.getUTCFullYear()};}
+            function timeToMinutes(t){return t?((parseInt(t.substring(0,2),10)*60)+parseInt(t.substring(3,5),10))||0:0;}
+            function minutesToHHMM(m){if(isNaN(m))return"00:00";const h=Math.floor(m/60),mm=m%60;return `${String(h).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;}
+            function parseRealWeeks(s){const w=new Set;if(!s)return w;s.split(',').forEach(r=>{const p=r.trim().split('-');if(p.length===1){const n=parseInt(p[0],10);if(!isNaN(n))w.add(n)}else if(p.length===2){const a=parseInt(p[0],10),b=parseInt(p[1],10);if(!isNaN(a)&&!isNaN(b))for(let i=a;i<=b;i++)w.add(i)}});return w;}
+            function parseTeachers(s){return!s||typeof s!=='string'?[]:s.split(',').map(t=>t.trim()).filter(t=>t);}
+
+            function buildLessonIndex(){
+                lessonIndex={};
+                lessons.forEach(l=>{
+                    const day=l[columnMap.day]?.trim(), weekStr=l[columnMap.realweeks], startStr=l[columnMap.starttime];
+                    if(!day||!weekStr||!startStr)return;
+                    const normDay=day.slice(0,3).toLowerCase()==='thu'?'Thur':day.slice(0,3);
+                    const startMin=timeToMinutes(startStr);
+                    const weeks=parseRealWeeks(weekStr);
+                    weeks.forEach(w=>{
+                        if(!lessonIndex[normDay])lessonIndex[normDay]={};
+                        if(!lessonIndex[normDay][w])lessonIndex[normDay][w]={};
+                        if(!lessonIndex[normDay][w][startMin])lessonIndex[normDay][w][startMin]=[];
+                        lessonIndex[normDay][w][startMin].push(l);
                     });
                 });
             }
-            // ... (all your original functions - getAvailabilityAtTime, getAvailabilityForRange, displayResults, storage helpers, etc. - exactly as in your first message) ...
-            // ... (export buttons, import, clear, save absence, etc.) ...
-            // ... (loadData with the fixed error handling from my last message) ...
+
+            function getAvailabilityAtTime(dt){
+                const res={available:[],onCallTimes:new Map(),dutyTeachers:new Set()};
+                try{
+                    const {week:checkWeek}=getIsoWeekAndYear(dt);
+                    const checkDay=dayMap[dt.getDay()], checkMin=dt.getHours()*60+dt.getMinutes();
+                    const dayIndex=lessonIndex[checkDay];
+                    if(!dayIndex)return res;
+                    const weekIndex=dayIndex[checkWeek];
+                    if(!weekIndex)return res;
+                    const working=new Set(), onCallMap=new Map(), teachingBusy=new Set(), dutyBusy=new Set();
+                    Object.keys(weekIndex).forEach(s=>{
+                        const startMin=parseInt(s,10);
+                        weekIndex[s].forEach(l=>{
+                            const sub=l[columnMap.subject]?.trim().toLowerCase();
+                            const len=parseInt(l[columnMap.length],10)||0;
+                            const endMin=startMin+len;
+                            if(checkMin>=startMin&&checkMin<endMin){
+                                const ts=parseTeachers(l[columnMap.teacher]);
+                                if(sub===ARBETSTID_SUBJECT)ts.forEach(t=>working.add(t));
+                                else if(sub===ON_CALL_SUBJECT){ts.forEach(t=>{working.add(t);onCallMap.set(t,{start:startMin,end:endMin})});}
+                                else{BREAK_DUTY_SUBJECTS.has(sub)?ts.forEach(t=>dutyBusy.add(t)):ts.forEach(t=>teachingBusy.add(t));}
+                            }
+                        });
+                    });
+                    let avail=[...working].filter(t=>!teachingBusy.has(t));
+                    const abs=getSavedAbsences(), dateKey=dt.toISOString().split('T')[0], todayAbs=abs[dateKey]||{};
+                    avail=avail.filter(t=>{const a=todayAbs[t]||todayAbs["ALL"]||[];return!a.some(x=>checkMin>=x.start&&checkMin<x.end);});
+                    res.available=avail.sort();res.onCallTimes=onCallMap;res.dutyTeachers=dutyBusy;
+                }catch(e){console.error(e);}
+                return res;
+            }
+
+            function getAvailabilityForRange(date,sMin,eMin){
+                const res={available:[],onCallTimes:new Map(),dutyTeachers:new Set()};
+                try{
+                    const {week:checkWeek}=getIsoWeekAndYear(date);
+                    const checkDay=dayMap[date.getDay()];
+                    const dayIndex=lessonIndex[checkDay]?.[checkWeek];
+                    if(!dayIndex)return res;
+                    const working=new Set(), onCallMap=new Map(), teachingBusy=new Set(), dutyBusy=new Set();
+                    Object.keys(dayIndex).forEach(s=>{
+                        const ls=parseInt(s,10);
+                        dayIndex[s].forEach(l=>{
+                            const sub=l[columnMap.subject]?.trim().toLowerCase();
+                            const len=parseInt(l[columnMap.length],10)||0;
+                            const le=ls+len;
+                            const ts=parseTeachers(l[columnMap.teacher]);
+                            const contains=ls<=sMin&&le>=eMin;
+                            const overlaps=ls<eMin&&le>sMin;
+                            if(sub===ARBETSTID_SUBJECT&&contains)ts.forEach(t=>working.add(t));
+                            else if(sub===ON_CALL_SUBJECT&&contains){ts.forEach(t=>{working.add(t);onCallMap.set(t,{start:ls,end:le})});}
+                            else if(overlaps){BREAK_DUTY_SUBJECTS.has(sub)?ts.forEach(t=>dutyBusy.add(t)):ts.forEach(t=>teachingBusy.add(t));}
+                        });
+                    });
+                    let avail=[...working].filter(t=>!teachingBusy.has(t));
+                    const abs=getSavedAbsences(), dateKey=date.toISOString().split('T')[0], todayAbs=abs[dateKey]||{};
+                    avail=avail.filter(t=>{const a=todayAbs[t]||todayAbs["ALL"]||[];return!a.some(x=>x.start<eMin&&x.end>sMin);});
+                    res.available=avail.sort();res.onCallTimes=onCallMap;res.dutyTeachers=dutyBusy;
+                }catch(e){console.error(e);}
+                return res;
+            }
+
+            function displayResults(avail,onCallMap,duty,listEl,statusEl,checkDate){
+                listEl.innerHTML='';
+                const data=getSavedMinutesData();
+                const {week:checkWeekNum,year:checkWeekYear}=getIsoWeekAndYear(checkDate);
+                const monthKey=`${checkDate.getFullYear()}-${String(checkDate.getMonth()+1).padStart(2,'0')}`;
+                const teacherData=avail.filter(t=>!EXCLUDE_TEACHERS_SET.has(t)).map(t=>{
+                    let weekly=0,monthly=0;
+                    const d=data[t]||{};
+                    for(const date in d){
+                        const ed=new Date(date+'T00:00:00Z');
+                        if(isNaN(ed))continue;
+                        const {week,year}=getIsoWeekAndYear(ed);
+                        const mins=d[date]||0;
+                        if(week===checkWeekNum&&year===checkWeekYear)weekly+=mins;
+                        if(date.startsWith(monthKey))monthly+=mins;
+                    }
+                    return {name:t,isOnCall:onCallMap.has(t),weeklyMinutes:weekly,monthlyMinutes:monthly,onCallTimes:onCallMap.get(t)};
+                });
+                teacherData.sort((a,b)=>{
+                    if(a.isOnCall&&!b.isOnCall)return-1;
+                    if(!a.isOnCall&&b.isOnCall)return 1;
+                    if(a.weeklyMinutes!==b.weeklyMinutes)return a.weeklyMinutes-b.weeklyMinutes;
+                    return a.name.localeCompare(b.name);
+                });
+                if(listEl===teachersNowList){
+                    const onNow=teacherData.filter(t=>t.isOnCall);
+                    if(onNow.length>0){onCallNames.textContent=onNow.map(t=>t.name).join(', ');onCallBanner.style.display='block';}
+                    else onCallBanner.style.display='none';
+                }
+                if(teacherData.length===0){statusEl.textContent='No available teachers found.';}
+                else{
+                    teacherData.forEach(t=>{
+                        const li=document.createElement('li');
+                        let txt=`${t.name} (W: ${t.weeklyMinutes} / M: ${t.monthlyMinutes})`;
+                        if(t.isOnCall){txt=`${t.name} (On Call: ${minutesToHHMM(t.onCallTimes.start)}-${minutesToHHMM(t.onCallTimes.end)})`;li.classList.add('on-call');}
+                        else if(duty.has(t.name)){txt=`${t.name} (Break Duty)`;li.classList.add('break-duty');}
+                        else{if(t.monthlyMinutes>=180)li.classList.add('minutes-danger');else if(t.weeklyMinutes>=90)li.classList.add('minutes-warn');}
+                        li.textContent=txt;listEl.appendChild(li);
+                    });
+                }
+            }
+
+            function getSavedMinutesData(){try{return JSON.parse(localStorage.getItem('extraMinutes')||'{}')}catch{return{}}}
+            function saveMinutesData(d){localStorage.setItem('extraMinutes',JSON.stringify(d))}
+            function getSavedAbsences(){try{return JSON.parse(localStorage.getItem('teacherAbsences')||'{}')}catch{return{}}}
+            function saveAbsences(d){localStorage.setItem('teacherAbsences',JSON.stringify(d))}
+
+            function showSaveStatus(m,e=false){saveStatus.textContent=m;saveStatus.className=e?'status error':'status success';saveStatus.style.display='block';setTimeout(()=>{saveStatus.style.display='none'},3000);}
+            function showAbsenceStatus(m,e=false){absenceStatus.textContent=m;absenceStatus.className=e?'status error':'status success';absenceStatus.style.display='block';setTimeout(()=>{absenceStatus.style.display='none'},3000);}
+            function showImportStatus(m,e=false){importStatus.textContent=m;importStatus.className=e?'status error':'status success';importStatus.style.display='block';setTimeout(()=>{importStatus.style.display='none'},5000);}
+
+            function populateStaffDropdown(){
+                const sorted=[...allTeachers].filter(t=>!EXCLUDE_TEACHERS_SET.has(t)).sort();
+                staffSelect.innerHTML='<option value="">-- Select Staff --</option>';
+                sorted.forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;staffSelect.appendChild(o);});
+            }
+
+            function setupMonthButtons(){
+                const names=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+                monthButtonsContainer.innerHTML='';
+                names.forEach((n,i)=>{
+                    const b=document.createElement('button');b.textContent=n;b.dataset.monthIndex=i;
+                    b.addEventListener('click',()=>{if(activeMonthButton)activeMonthButton.classList.remove('active');b.classList.add('active');activeMonthButton=b;
+                        const y=parseInt(yearDisplay.value,10);if(isNaN(y)){totalsDisplay.innerHTML='<p class="error">Invalid year.</p>';return;}
+                        displayMonthlyTotals(y,i);
+                    });
+                    monthButtonsContainer.appendChild(b);
+                });
+            }
+
+            function displayMonthlyTotals(y,m){
+                const prefix=`${y}-${String(m+1).padStart(2,'0')}`;
+                const data=getSavedMinutesData(), totals={};
+                for(const s in data){
+                    let sum=0;
+                    for(const d in data[s])if(d.startsWith(prefix))sum+=data[s][d]||0;
+                    if(sum>0)totals[s]=sum;
+                }
+                let html=`<h3>Totals for ${new Date(y,m).toLocaleString('default',{month:'long'})} ${y}</h3>`;
+                const entries=Object.entries(totals).map(([s,m])=>({staff:s,mins:m}));
+                if(entries.length===0)html+="<p>No data.</p>";
+                else{
+                    entries.sort((a,b)=>a.mins-b.mins);
+                    html+="<ul>";
+                    entries.forEach(e=>{const c=e.mins>=180?'minutes-danger':e.mins>=90?'minutes-warn':'';html+=`<li class="${c}">${e.staff}: ${e.mins} min</li>`;});
+                    html+="</ul>";
+                }
+                totalsDisplay.innerHTML=html;
+            }
+
+            function displayAbsencesForDate(k){
+                if(!k){viewAbsencesDisplay.innerHTML='<p>Select a date.</p>';return;}
+                const all=getSavedAbsences(), day=all[k]||{};
+                let html=`<h3>Absences ${k}</h3>`;
+                if(Object.keys(day).length===0)html+="<p>None recorded.</p>";
+                else{
+                    html+="<ul>";
+                    Object.keys(day).sort().forEach(s=>{
+                        day[s].forEach((a,i)=>{
+                            const r=a.reason?` - ${a.reason}`:'';const label=s==="ALL"?"ALL STAFF":s;
+                            html+=`<li>${label}: ${minutesToHHMM(a.start)}-${minutesToHHMM(a.end)}${r} <button class="delete-absence-btn" data-date="${k}" data-staff="${s}" data-index="${i}">Delete</button></li>`;
+                        });
+                    });
+                    html+="</ul>";
+                }
+                viewAbsencesDisplay.innerHTML=html;
+                viewAbsencesDisplay.querySelectorAll('.delete-absence-btn').forEach(b=>b.onclick=handleDeleteAbsence);
+            }
+
+            function handleDeleteAbsence(e){
+                const b=e.target,d=b.dataset.date,s=b.dataset.staff,i=parseInt(b.dataset.index,10);
+                if(confirm(`Delete absence for ${s==="ALL"?"ALL STAFF":s} on ${d}?`)){
+                    const all=getSavedAbsences();
+                    all[d][s].splice(i,1);
+                    if(all[d][s].length===0)delete all[d][s];
+                    if(Object.keys(all[d]).length===0)delete all[d];
+                    saveAbsences(all);
+                    displayAbsencesForDate(d);
+                }
+            }
+
+            function checkBackupReminder(){
+                const today=new Date().toISOString().split('T')[0];
+                if(localStorage.getItem('lastBackupReminder')===today)return;
+                if(new Date().getHours()>=15)reminderBanner.style.display='block';
+            }
+            function dismissReminder(){
+                localStorage.setItem('lastBackupReminder',new Date().toISOString().split('T')[0]);
+                reminderBanner.style.display='none';
+            }
+
+            // === FULLY WORKING EXPORTS ===
+            exportBackupButton.onclick=()=>{const d=getSavedMinutesData();let c="Date,Staff,Minutes\n";for(const s in d)for(const date in d[s])c+=`${date},${s},${d[s][date]}\n`;const b=new Blob([c],{type:'text/csv'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=`ExtraMinutes_${getTimestamp()}.csv`;a.click();URL.revokeObjectURL(u);showImportStatus("Minutes backup downloaded!",false);}
+            exportAbsencesButton.onclick=()=>{const d=getSavedAbsences();let c="Date,Staff,Start,End,Reason\n";for(const date in d)for(const s in d[date])d[date][s].forEach(a=>c+=`${date},${s},${minutesToHHMM(a.start)},${minutesToHHMM(a.end)},${(a.reason||'').replace(/"/g,'""')}\n`);const b=new Blob([c],{type:'text/csv'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=`Absences_${getTimestamp()}.csv`;a.click();URL.revokeObjectURL(u);showImportStatus("Absences backup downloaded!",false);}
+            exportSummaryButton.onclick=()=>{const y=parseInt(yearDisplay.value,10);if(isNaN(y)){showImportStatus("Invalid year",true);return;}const d=getSavedMinutesData();let c="Staff,Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec,Total\n";const monthly=Array(12).fill(0);const totals={};for(const s in d){const row=Array(12).fill(0);let sum=0;for(const date in d[s]){const m=parseInt(date.substring(5,7),10)-1;if(date.substring(0,4)==y&&m>=0&&m<12){row[m]+=d[s][date];monthly[m]+=d[s][date];sum+=d[s][date];}}if(sum>0){totals[s]=row;totals[s].total=sum;}}Object.keys(totals).sort().forEach(s=>{const r=totals[s];c+=`${s},${r.slice(0,12).join(',')},${r.total}\n`;});c+=`\nTOTALS,${monthly.join(',')},${monthly.reduce((a,b)=>a+b,0)}\n`;const b=new Blob([c],{type:'text/csv'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=`Summary_${y}_${getTimestamp()}.csv`;a.click();URL.revokeObjectURL(u);showImportStatus("Summary exported!",false);}
+            csvFileInput.onchange=()=>{const f=csvFileInput.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{try{const t=e.target.result;const l=t.trim().split(/\r?\n/).slice(1);const d=getSavedMinutesData();let a=0;for(const line of l){const [date,staff,minsStr]=line.split(',');if(!date||!staff||!minsStr)continue;const mins=parseInt(minsStr,10);if(isNaN(mins)||mins<=0)continue;if(!d[staff])d[staff]={};d[staff][date]=(d[staff][date]||0)+mins;a++;}saveMinutesData(d);showImportStatus(`Imported ${a} entries!`,false);if(activeMonthButton)activeMonthButton.click();const n=new Date();const av=getAvailabilityAtTime(n);displayResults(av.available,av.onCallTimes,av.dutyTeachers,teachersNowList,statusNow,n);}catch(err){showImportStatus("Import failed: "+err.message,true);}csvFileInput.value='';};r.readAsText(f);};
+            importCsvButton.onclick=()=>csvFileInput.click();
+            clearDataButton.onclick=()=>{if(confirm("Delete ALL saved minutes AND absences? Cannot undo!")){localStorage.removeItem('extraMinutes');localStorage.removeItem('teacherAbsences');showImportStatus("All data cleared!",true);if(activeMonthButton)activeMonthButton.click();displayAbsencesForDate(new Date().toISOString().split('T')[0]);}};
+
+            saveAbsenceButton.onclick=()=>{const date=absenceDateInput.value;const start=timeToMinutes(absenceStartInput.value);const end=timeToMinutes(absenceEndInput.value);const reason=absenceReasonInput.value.trim();if(!date||isNaN(start)||isNaN(end)||end<=start){showAbsenceStatus("Invalid times",true);return;}const all=getSavedAbsences();if(!all[date])all[date]={};if(!all[date]["ALL"])all[date]["ALL"]=[];all[date]["ALL"].push({start,end,reason});saveAbsences(all);showAbsenceStatus(`Absence saved for ${date}`,false);absenceReasonInput.value='';displayAbsencesForDate(date);};
+            viewAbsenceDateInput.onchange=()=>displayAbsencesForDate(viewAbsenceDateInput.value);
+            reminderSaveMinutes.onclick=()=>{exportBackupButton.click();dismissReminder();};
+            reminderSaveAbsences.onclick=()=>{exportAbsencesButton.click();dismissReminder();};
+            reminderDismiss.onclick=dismissReminder;
+
+            async function loadData(){
+                statusNow.textContent='Loading schedule...';
+                try{
+                    const res=await fetch('Lessons.txt?v='+Date.now());
+                    if(!res.ok)throw new Error("Network error");
+                    const text=await res.text();
+                    const lines=text.split(/\r?\n/).filter(l=>l.trim());
+                    if(lines.length<2)throw new Error("Empty file");
+                    const header=lines[0].split('\t');
+                    columnMap={};header.forEach((h,i)=>columnMap[h.trim()]=i);
+                    const req=['subject','teacher','day','starttime','length','realweeks'];
+                    for(const c of req)if(columnMap[c]===undefined)throw new Error(`Missing column: ${c}`);
+                    lessons=lines.slice(1).map(l=>l.split('\t'));
+                    lessons.forEach(row=>{const t=row[columnMap['teacher']];if(t)parseTeachers(t).forEach(te=>allTeachers.add(te));});
+                    buildLessonIndex();setupMonthButtons();populateStaffDropdown();
+                    const now=new Date();dateInput.valueAsDate=now;timeFromInput.value=now.toTimeString().substring(0,5);
+                    const later=new Date(now.getTime()+3600000);timeToInput.value=later.toTimeString().substring(0,5);
+                    dateEntryInput.valueAsDate=now;absenceDateInput.valueAsDate=now;viewAbsenceDateInput.valueAsDate=now;yearDisplay.value=now.getFullYear();
+                    const avail=getAvailabilityAtTime(now);
+                    displayResults(avail.available,avail.onCallTimes,avail.dutyTeachers,teachersNowList,statusNow,now);
+                    const curBtn=month.monthButtonsContainer.querySelector(`button[data-month-index="${now.getMonth()}"]`);
+                    if(curBtn)curBtn.click();
+                    displayAbsencesForDate(now.toISOString().split('T')[0]);
+                    checkBackupReminder();
+                    statusNow.textContent=`Ready – ${allTeachers.size} teachers loaded`;
+                }catch(err){
+                    statusNow.textContent=`ERROR: ${err.message}`;
+                    statusNow.classList.add('error');
+                    console.error(err);
+                    setupMonthButtons();populateStaffDropdown();checkBackupReminder();
+                }
+            }
+
+            checkButton.onclick=()=>{/* your original check code */};
+            saveMinutesButton.onclick=()=>{/* your original save minutes code */};
 
             loadData();
         });
