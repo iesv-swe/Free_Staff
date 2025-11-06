@@ -423,7 +423,7 @@
             function saveAbsences(data) { try { localStorage.setItem('teacherAbsences', JSON.stringify(data)); } catch (e) { console.error("Failed to save absences data:", e); } }
             function showAbsenceStatus(message, isError = false) { absenceStatus.textContent = message; absenceStatus.className = isError ? 'status error' : 'status success'; absenceStatus.style.display = 'block'; setTimeout(() => { absenceStatus.style.display = 'none'; }, 3000); }
             function showAbsenceDeleteStatus(message, isError = false) { absenceDeleteStatus.textContent = message; absenceDeleteStatus.className = isError ? 'status error' : 'status success'; absenceDeleteStatus.style.display = 'block'; setTimeout(() => { absenceDeleteStatus.style.display = 'none'; }, 3000); }
-            function displayAbsencesForDate(dateKey) { if (!dateKey) { viewAbsencesDisplay.innerHTML = '<p>Select a date to view recorded absences.</p>'; return; } try { const allAbsences = getSavedAbsences(); const absencesForDay = allAbsences[dateKey] || {}; let html = `<h3>Absences for ${dateKey}</h3>`; let count = 0; const sortedStaff = Object.keys(absencesForDay).sort(); if (sortedStaff.length === 0) { html += "<p>No absences recorded for this date.</p>"; } else { html += "<ul>"; sortedStaff.forEach(staff => { const staffAbsences = absencesForDay[staff] || []; staffAbsences.forEach((absence, index) => { const startStr = minutesToHHMM(absence.start); const endStr = minutesToHHMM(absence.end); const reasonText = absence.reason ? ` - ${absence.reason}` : ''; html += `<li><span>${staff}: ${startStr} - ${endStr}${reasonText}</span><button class="delete-absence-btn" data-date="${dateKey}" data-staff="${staff}" data-index="${index}">Delete</button></li>`; count++; }); }); html += "</ul>"; } viewAbsencesDisplay.innerHTML = html; addDeleteButtonListeners(); } catch (error) { console.error("Error displaying absences for date:", dateKey, error); viewAbsencesDisplay.innerHTML = `<p class="error" style="color:red;">Error displaying absences.</bodyh>`; } }
+            function displayAbsencesForDate(dateKey) { if (!dateKey) { viewAbsencesDisplay.innerHTML = '<p>Select a date to view recorded absences.</p>'; return; } try { const allAbsences = getSavedAbsences(); const absencesForDay = allAbsences[dateKey] || {}; let html = `<h3>Absences for ${dateKey}</h3>`; let count = 0; const sortedStaff = Object.keys(absencesForDay).sort(); if (sortedStaff.length === 0) { html += "<p>No absences recorded for this date.</p>"; } else { html += "<ul>"; sortedStaff.forEach(staff => { const staffAbsences = absencesForDay[staff] || []; staffAbsences.forEach((absence, index) => { const startStr = minutesToHHMM(absence.start); const endStr = minutesToHHMM(absence.end); const reasonText = absence.reason ? ` - ${absence.reason}` : ''; html += `<li><span>${staff}: ${startStr} - ${endStr}${reasonText}</span><button class="delete-absence-btn" data-date="${dateKey}" data-staff="${staff}" data-index="${index}">Delete</button></li>`; count++; }); }); html += "</ul>"; } viewAbsencesDisplay.innerHTML = html; addDeleteButtonListeners(); } catch (error) { console.error("Error displaying absences for date:", dateKey, error); viewAbsencesDisplay.innerHTML = `<p class="error" style="color:red;">Error displaying absences.</p>`; } }
             function addDeleteButtonListeners() { try { const deleteButtons = viewAbsencesDisplay.querySelectorAll('.delete-absence-btn'); deleteButtons.forEach(button => { button.removeEventListener('click', handleDeleteAbsence); button.addEventListener('click', handleDeleteAbsence); }); } catch(error) { console.error("Error adding delete listeners:", error); } }
             function handleDeleteAbsence(event) { try { const button = event.target; const dateKey = button.dataset.date; const staff = button.dataset.staff; const index = parseInt(button.dataset.index, 10); if (!dateKey || !staff || isNaN(index)) { showAbsenceDeleteStatus("Error identifying absence.", true); return; } const spanText = button.closest('li').querySelector('span').textContent; const timeMatch = spanText.match(/(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})/); const timeText = timeMatch ? `${timeMatch[1]}-${timeMatch[2]}` : "entry"; if (confirm(`Delete absence for ${staff} on ${dateKey} (${timeText})?`)) { const allAbsences = getSavedAbsences(); if (allAbsences[dateKey]?.[staff]?.[index]) { allAbsences[dateKey][staff].splice(index, 1); if (allAbsences[dateKey][staff].length === 0) delete allAbsences[dateKey][staff]; if (Object.keys(allAbsences[dateKey]).length === 0) delete allAbsences[dateKey]; saveAbsences(allAbsences); showAbsenceDeleteStatus("Absence deleted.", false); displayAbsencesForDate(dateKey); } else { showAbsenceDeleteStatus("Could not find absence record.", true); } } } catch (error) { console.error("Error handling absence deletion:", error); showAbsenceDeleteStatus("Error deleting absence.", true); } }
 
@@ -469,18 +469,17 @@
              async function loadData() {
                  console.log("Starting application load..."); statusNow.textContent = 'Loading schedule...'; statusNow.classList.remove('error', 'success');
                  try {
-                     console.log("Fetching Lessons.txt...");
-                     const response = await fetch('Lessons.txt');
+                     // *** UPDATED: Use cache-busting and TextDecoder ***
+                     console.log("Fetching Lessons.txt with cache-buster...");
+                     const response = await fetch('Lessons.txt?v=' + new Date().getTime()); // Cache-buster
                      if (!response.ok) throw new Error(`Fetch failed: ${response.statusText} (${response.status})`);
-                     console.log("Fetched OK.");
-                     
-                     // *** UPDATED: Use TextDecoder to force UTF-8 (No BOM) ***
+                     console.log("Fetched OK. Decoding as UTF-8...");
                      const buffer = await response.arrayBuffer();
                      const decoder = new TextDecoder('utf-8'); // 'utf-8' handles BOM automatically
                      const text = decoder.decode(buffer);
-                     console.log("Decoded text as UTF-8.");
+                     console.log("Decoded text.");
                      // *** END UPDATE ***
-
+                     
                      const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
                      if (lines.length < 2) throw new Error('Lessons.txt is empty or invalid.');
                      console.log(`Read ${lines.length} lines.`);
@@ -541,7 +540,6 @@
                 totalsDisplay.innerHTML = '<p>Select a month to see totals.</p>'; if (activeMonthButton) { activeMonthButton.classList.remove('active'); /* No secondary add */ activeMonthButton = null; }
             });
             
-            // *** UPDATED CSV Import Listener (Semicolon/Quote/Date Format Fix) ***
             importCsvButton.addEventListener('click', () => { csvFileInput.click(); });
             csvFileInput.addEventListener('change', (event) => {
                  const file = event.target.files[0];
@@ -575,17 +573,15 @@
                                  const staff = columns[1];
                                  const minutes = parseInt(columns[2], 10);
                                  
-                                 // *** NEW: Date format conversion ***
                                  let formattedDateKey = dateKey;
                                  if (dateKey.match(/^\d{2}\/\d{2}\/\d{4}$/)) { // Check for DD/MM/YYYY
-                                    const parts = dateKey.split('/'); // ["06", "11", "2025"]
-                                    formattedDateKey = `${parts[2]}-${parts[1]}-${parts[0]}`; // Convert to "2025-11-06"
+                                    const parts = dateKey.split('/');
+                                    formattedDateKey = `${parts[2]}-${parts[1]}-${parts[0]}`; // Convert to YYYY-MM-DD
                                  }
-                                 // *** END NEW ***
 
-                                 if (formattedDateKey.match(/^\d{4}-\d{2}-\d{2}$/) && staff && !isNaN(minutes) && minutes >= 0) { // Validate the formatted key
+                                 if (formattedDateKey.match(/^\d{4}-\d{2}-\d{2}$/) && staff && !isNaN(minutes) && minutes >= 0) {
                                      if (!currentData[staff]) { currentData[staff] = {}; }
-                                     currentData[staff][formattedDateKey] = minutes; // Save with formatted key
+                                     currentData[staff][formattedDateKey] = minutes;
                                      importedCount++;
                                  } else { console.warn(`Skipping invalid import row ${i + 1}: ${lines[i]} (Parsed: ${dateKey}, ${staff}, ${minutes})`); }
                              } else { console.warn(`Skipping row ${i + 1} (import) due to incorrect column count: ${lines[i]}`); }
@@ -599,7 +595,6 @@
                  reader.onerror = () => { showImportStatus(`Error reading file: ${reader.error}`, true); csvFileInput.value = ''; };
                  reader.readAsText(file);
             });
-            // *** END UPDATED Import Listener ***
 
             saveAbsenceButton.addEventListener('click', () => {
                  const staff = absenceStaffSelect.value; const date = absenceDateInput.value; const startTime = absenceStartInput.value; const endTime = absenceEndInput.value; const reason = absenceReasonInput.value.trim(); if (!staff) { showAbsenceStatus("Select staff.", true); return; } if (!date) { showAbsenceStatus("Select date.", true); return; } if (!startTime || !endTime) { showAbsenceStatus("Select times.", true); return; } const startMinutes = timeToMinutes(startTime); const endMinutes = timeToMinutes(endTime); if (endMinutes <= startMinutes) { showAbsenceStatus("End time must be after start.", true); return; } const allAbsences = getSavedAbsences(); if (!allAbsences[date]) { allAbsences[date] = {}; } if (!allAbsences[date][staff]) { allAbsences[date][staff] = []; } allAbsences[date][staff].push({ start: startMinutes, end: endMinutes, reason: reason }); allAbsences[date][staff].sort((a, b) => a.start - b.start); saveAbsences(allAbsences); showAbsenceStatus(`Saved absence for ${staff} on ${date} from ${startTime} to ${endTime}.`, false); absenceStaffSelect.value = ''; absenceStartInput.value = ''; absenceEndInput.value = ''; absenceReasonInput.value = '';
