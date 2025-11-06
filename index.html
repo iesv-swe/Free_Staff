@@ -47,10 +47,10 @@
         .teacher-list li.break-duty{background:var(--pink);color:#000;border:2px solid var(--pink-border);font-weight:600;animation:pulse 2s infinite}
         @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,105,180,.4)}70%{box-shadow:0 0 0 10px rgba(255,105,180,0)}100%{box-shadow:0 0 0 0 rgba(255,105,180,0)}}
         #oncall-now-banner{margin:15px 0;padding:10px;background:rgba(46,164,79,.15);border:1px solid var(--success);border-radius:6px;font-weight:600;color:var(--success);text-align:center;display:none}
-        .month-buttons button{background:var(--input-bg);color:var(--text);border:1px solid var(--border);padding:8px 14px;margin:3px;border-radius:6px;cursor:pointer;transition:all .2s;font-size:0.9em}
+        .month-buttons button{background:var(--input-bg);color:var(--text);border:1px solid var(--border);padding:8px 12px;margin:2px;border-radius:6px;cursor:pointer;transition:all .2s;font-size:0.9em;min-width:48px}
         .month-buttons button:hover{background:var(--button-hover);color:white}
         .month-buttons button.active{background:#00a0df !important;color:white !important;border-color:#0088c0;font-weight:700;box-shadow:0 0 8px rgba(0,160,223,.6)}
-        .month-buttons{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:10px 0}
+        .month-buttons{display:flex;flex-wrap:nowrap;justify-content:center;gap:4px;overflow-x:auto;padding:8px 0}
         .status{margin-top:8px}.status.error{color:var(--danger);font-weight:600}.status.success{color:var(--success);font-weight:600}
         #csv-file-input{display:none}
         .button-group{display:flex;flex-wrap:wrap;gap:10px;margin-top:15px}
@@ -398,7 +398,7 @@
                     Object.keys(day).sort().forEach(s=>{
                         day[s].forEach((a,i)=>{
                             const r=a.reason?` - ${a.reason}`:''; 
-                            html+=`<li>${s}: ${minutesToHHMM(a.start)}-${minutesToHHMM(a.end)}${r} <button class="delete-absence-btn" data-date="${k}" data-staff="${s}" data-index="${i}">Delete</button></li>`;
+                            html+=`<li>${s}: ${minutesToAndHours(a.start)}-${minutesToHHMM(a.end)}${r} <button class="delete-absence-btn" data-date="${k}" data-staff="${s}" data-index="${i}">Delete</button></li>`;
                         });
                     });
                     html+="</ul>";
