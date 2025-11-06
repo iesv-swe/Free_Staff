@@ -9,20 +9,20 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             line-height: 1.6;
-            background-color: #102d69; /* Navy Blue background */
-            color: #dbdad8; /* Light Grey text */
+            background-color: #102d69;
+            color: #dbdad8;
             max-width: 800px;
             margin: 20px auto;
             padding: 20px;
         }
         /* --- Reminder Banner Style --- */
         #reminder-banner {
-            display: none; /* Hidden by default */
+            display: none;
             position: sticky;
             top: 10px;
             z-index: 100;
-            background-color: #f6f8fa; /* Light background */
-            color: #24292e; /* Dark text */
+            background-color: #f6f8fa;
+            color: #24292e;
             padding: 15px 20px;
             margin-bottom: 20px;
             border: 1px solid #d1d5da;
@@ -45,9 +45,9 @@
             margin-bottom: 10px;
         }
         h1 {
-            border-bottom: 2px solid #00a0df; /* IES Logo Blue border */
+            border-bottom: 2px solid #00a0df;
             padding-bottom: 10px;
-            color: #ffffff; /* White headings */
+            color: #ffffff;
         }
        
         h2 {
@@ -58,17 +58,15 @@
             border-bottom: 1px solid #d1d5da;
             border-radius: 6px 6px 0 0;
         }
-        /* Container Styling */
         .container {
-            background-color: #1a3a7f; /* Derived darker blue */
-            border: 1px solid #9a9b9d; /* IES Logo Grey border */
+            background-color: #1a3a7f;
+            border: 1px solid #9a9b9d;
             border-radius: 6px;
             padding: 24px;
             margin-bottom: 20px;
             color: #dbdad8;
         }
        
-        /* Helper text styles */
         .key-legend { list-style: none; padding: 0; margin: 10px 0 0 0; display: flex; flex-wrap: wrap; gap: 15px; font-size: 0.9em; }
         .key-legend li { display: flex; align-items: center; }
         .key-dot { width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; border: 1px solid rgba(0,0,0,0.2); }
@@ -77,13 +75,11 @@
         .key-dot.yellow { background-color: #ffc107; }
         .key-dot.pink { background-color: #ffc0cb; }
         .description-text { font-size: 0.9em; color: #c0c0c0; margin-top: -10px; margin-bottom: 15px; }
-        /* Input Fields */
         .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .input-group { margin-bottom: 15px; }
         .input-group label { display: block; font-weight: 600; margin-bottom: 5px; color: #ffffff; }
         .input-group input, .input-group select { width: 95%; padding: 8px 12px; border: 1px solid #9a9b9d; border-radius: 6px; background-color: #2a4a8f; color: #ffffff; }
         .input-group input::placeholder { color: #9a9b9d; }
-        /* Buttons */
         button { background-color: #00a0df; color: #ffffff; font-weight: 600; padding: 10px 16px; border: 1px solid #007ead; border-radius: 6px; cursor: pointer; margin-top: 10px; }
         button:hover { background-color: #007ead; border-color: #005c8a; }
         button.btn-green { background-color: #2ea44f; border-color: #2c974b; color: #ffffff; }
@@ -95,7 +91,6 @@
         button.primary { background-color: #6f42c1; color: #ffffff; border-color: #5833a6; }
         button.primary:hover { background-color: #5833a6; border-color: #442681; }
        
-        /* List styles */
         .button-group { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
         .results { margin-top: 20px; }
         .status { font-style: italic; color: #b0b0b0; }
@@ -106,9 +101,8 @@
         .teacher-list li.on-call { background-color: #2ea44f; color: #ffffff; border-color: #2c974b; font-weight: 600; }
         .teacher-list li.minutes-danger { background-color: #d73a49; color: #ffffff; border: 1px solid #cb2431; font-weight: 600; }
         .teacher-list li.minutes-warn { background-color: #ffc107; border: 1px solid #e0a800; color: #212529; }
-        .teacher-list li.break-duty { background-color: #ffc0cb; color: #000; border-color: #ffb6c1; }
+        .teacher-list li.break-duty { background-color: #ffc0cb; color: #000; border: 2px solid #ff69b4; font-weight: 600; }
        
-        /* Month/Totals styles */
         .month-buttons { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 15px; }
         .month-buttons button { flex-grow: 1; margin-top: 0; padding: 5px 8px; }
         .month-buttons button.active { background-color: #00a0df; color: #ffffff; border-color: #007ead; font-weight: 600; }
@@ -120,14 +114,12 @@
        
         #csv-file-input { display: none; }
        
-        /* Absence list styles */
         #view-absences-display ul { padding-left: 0; }
         #view-absences-display li { display: flex; justify-content: space-between; align-items: center; background-color: #2a4a8f; border: 1px solid #9a9b9d; padding: 8px 12px; margin-bottom: 5px; }
         #view-absences-display li span { flex-grow: 1; margin-right: 10px; color: #ffffff; }
         #view-absences-display .delete-absence-btn { background-color: #d73a49; color: white; border: none; padding: 3px 8px; font-size: 0.8em; border-radius: 4px; cursor: pointer; margin-top: 0; }
         #view-absences-display .delete-absence-btn:hover { background-color: #cb2431; }
 
-        /* On-call banner */
         #oncall-now-banner {
             margin: 15px 0;
             padding: 10px;
@@ -153,9 +145,9 @@
    
     <ul class="key-legend">
         <li><span class="key-dot green"></span>On Call</li>
-        <li><span class="key-dot red"></span>Monthly Limit (&gt;=180 min)</li>
-        <li><span class="key-dot yellow"></span>Weekly Limit (&gt;=90 min)</li>
-        <li><span class="key-dot pink"></span>Break Duty</li>
+        <li><span class="key-dot red"></span>Monthly Limit (greater than or equal to 180 min)</li>
+        <li><span class="key-dot yellow"></span>Weekly Limit (greater than or equal to 90 min)</li>
+        <li><span class="key-dot pink"></span>Break Duty (Corridor / Junior)</li>
     </ul>
     <div class="container">
         <h2>Who is Available Now?</h2>
@@ -254,13 +246,18 @@
             let allTeachers = new Set();
             let columnMap = {};
             let activeMonthButton = null;
-            let lessonIndex = {}; // Pre-indexed lessons for speed
+            let lessonIndex = {};
             const dayMap = ["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"];
 
             // --- CONFIGURATION ---
             const ARBETSTID_SUBJECT = "arbetstid";
             const ON_CALL_SUBJECT = "on call substitution";
-            const BREAK_DUTY_SUBJECTS = new Set(["break duty corridors", "break duty junior"]);
+            const BREAK_DUTY_SUBJECTS = new Set([
+                "break duty corridors",
+                "break duty junior",
+                "break duty outside",
+                "break duty corridor"
+            ]);
             const EXCLUDE_TEACHER_LIST = ["BaSh", "AnHo", "DaWr", "AniFac", "RahHan", "ChBe", "FaCa", "SeCa", "AlCh", "LaCo", "VikCos", "RoDi", "KrEr", "RaHa", "JeHe", "DiHe", "GaHe", "HeKa", "JoLe", "TiLe", "WiLi", "ChLi", "HaLu", "KaMa", "ViMe", "MaMe", "HiOj", "LePa", "AsRo", "RaSc", "TaSc", "JeSe", "AnVa", "MarMen", "JonLeh"];
             const EXCLUDE_TEACHERS_SET = new Set(EXCLUDE_TEACHER_LIST);
 
@@ -344,7 +341,7 @@
                 return str.split(',').map(t => t.trim()).filter(t => t);
             }
 
-            // --- PRE-INDEX LESSONS (10x speed) ---
+            // --- PRE-INDEX LESSONS ---
             function buildLessonIndex() {
                 lessonIndex = {};
                 lessons.forEach(lesson => {
@@ -489,7 +486,7 @@
                 }
             }
 
-            // --- DISPLAY RESULTS (fixed sorting + banner) ---
+            // --- DISPLAY RESULTS ---
             function displayResults(availableTeachers, onCallTimesMap, dutyTeachers, listElement, statusElement, checkDate) {
                 listElement.innerHTML = '';
                 const allData = getSavedMinutesData();
@@ -518,7 +515,6 @@
                         };
                     });
 
-                // Perfect sort: on-call > weekly asc > name
                 teacherData.sort((a, b) => {
                     if (a.isOnCall && !b.isOnCall) return -1;
                     if (!a.isOnCall && b.isOnCall) return 1;
@@ -526,7 +522,6 @@
                     return a.name.localeCompare(b.name);
                 });
 
-                // Update On-Call banner
                 if (listElement === teachersNowList) {
                     const onCallNow = teacherData.filter(t => t.isOnCall);
                     if (onCallNow.length > 0) {
@@ -549,6 +544,7 @@
                             text = `${t.name} (On Call: ${minutesToHHMM(times.start)}-${minutesToHHMM(times.end)})`;
                             li.classList.add('on-call');
                         } else if (dutyTeachers.has(t.name)) {
+                            text = `${t.name} (Break Duty)`;
                             li.classList.add('break-duty');
                         } else {
                             if (t.monthlyMinutes >= 180) li.classList.add('minutes-danger');
