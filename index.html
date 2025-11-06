@@ -190,8 +190,7 @@
             <label for="absence-reason-input">Reason (Optional):</label>
             <input type="text" id="absence-reason-input" style="width: 98%;" placeholder="e.g., Training">
         </div>
-        <button id="save-absence-button">Save Absence for ALL Staff</button>
-        <div id="absence-status" class="status" style="display:none; margin-top:10px;"></div>
+        <button id="save-absence-button">Save Absence</button> <div id="absence-status" class="status" style="display:none; margin-top:10px;"></div>
     </div>
 
     <div class="container">
@@ -283,7 +282,7 @@
             const importCsvButton = document.getElementById('import-csv-button');
             const csvFileInput = document.getElementById('csv-file-input');
             const importStatus = document.getElementById('import-status');
-            // *** REMOVED: const absenceStaffSelect = document.getElementById('absence-staff-select'); ***
+            // *** REMOVED: const absenceStaffSelect = ... ***
             const absenceDateInput = document.getElementById('absence-date-input');
             const absenceStartInput = document.getElementById('absence-start-input');
             const absenceEndInput = document.getElementById('absence-end-input');
@@ -431,21 +430,25 @@
                  if (!allTeachers || !(allTeachers instanceof Set) || allTeachers.size === 0) {
                      console.warn("Cannot populate dropdowns: allTeachers set empty/invalid.");
                      staffSelect.innerHTML = '<option value="">Error: No staff found</option>';
+                     // absenceStaffSelect.innerHTML = '<option value="">Error: No staff found</option>'; // REMOVED
                      return;
                  }
                  try {
                     const sortedTeachers = [...allTeachers].filter(teacher => teacher && !EXCLUDE_TEACHERS_SET.has(teacher)).sort();
                     staffSelect.innerHTML = '<option value="">-- Select Staff --</option>';
+                    // absenceStaffSelect.innerHTML = '<option value="">-- Select Staff --</option>'; // REMOVED
                     sortedTeachers.forEach(teacher => {
                         const option = document.createElement('option');
                         option.value = teacher;
                         option.textContent = teacher;
                         staffSelect.appendChild(option.cloneNode(true));
+                        // absenceStaffSelect.appendChild(option.cloneNode(true)); // REMOVED
                     });
                      console.log(`Dropdowns populated with ${sortedTeachers.length} teachers.`);
                  } catch (error) {
                       console.error("Error during populateStaffDropdown:", error);
                       staffSelect.innerHTML = '<option value="">Error populating</option>';
+                      // absenceStaffSelect.innerHTML = '<option value="">Error populating</option>'; // REMOVED
                  }
             }
             function showSaveStatus(message, isError = false) { saveStatus.textContent = message; saveStatus.className = isError ? 'status error' : 'status success'; saveStatus.style.display = 'block'; setTimeout(() => { saveStatus.style.display = 'none'; }, 3000); }
@@ -515,7 +518,11 @@
                      console.log("Displaying absences for today..."); displayAbsencesForDate(now.toISOString().split('T')[0]);
                      checkBackupReminder();
                      console.log("Initialization complete.");
-                 } catch (error) { statusNow.textContent = `Critical Error: ${error.message}. Cannot initialize fully. Check console (F12).`; statusNow.classList.add('error'); console.error("Load Data Error:", error); try { setupMonthButtons(); const now = new Date(); dateEntryInput.valueAsDate = now; yearDisplay.value = now.getFullYear(); populateStaffDropdown(); displayAbsencesForDate(now.toISOString().split('T')[0]); } catch (uiError) { console.error("Critical UI setup error:", uiError); document.body.innerHTML = `<div style="padding: 20px; color: red; font-weight: bold;">Critical Error: ${error.message}. Cannot initialize. Check console (F12).</div>`; } }
+                 } catch (error) { statusNow.textContent = `Critical Error: ${error.message}. Cannot initialize fully. Check console (F12).`; statusNow.classList.add('error'); console.error("Load Data Error:", error); 
+                     // *** UPDATED: Removed displayAbsencesForDate from catch block ***
+                     try { setupMonthButtons(); const now = new Date(); dateEntryInput.valueAsDate = now; yearDisplay.value = now.getFullYear(); populateStaffDropdown(); } 
+                     catch (uiError) { console.error("Critical UI setup error:", uiError); document.body.innerHTML = `<div style="padding: 20px; color: red; font-weight: bold;">Critical Error: ${error.message}. Cannot initialize. Check console (F12).</div>`; } 
+                 }
             }
 
 
