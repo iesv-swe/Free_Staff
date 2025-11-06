@@ -50,7 +50,7 @@
     </style>
 </head>
 <body>
-    <button id="theme-toggle" title="Toggle Dark/Light Mode">Sun</button>
+    <button id="theme-toggle">Sun</button>
     <div id="reminder-banner">
         <p>Don't forget to save your data!</p>
         <button id="reminder-save-minutes" class="btn-green">Download Minutes (Share!)</button>
@@ -488,14 +488,54 @@
                     statusNow.textContent=`WARNING: ${err.message} – upload your Schoolsoft export to Lessons.txt`;
                     statusNow.classList.add('error');
                     console.error(err);
-                    // ALWAYS load UI even if Lessons.txt is broken
                     setupMonthButtons();populateStaffDropdown();checkBackupReminder();
                     totalsDisplay.innerHTML='<p class="error">Upload Lessons.txt to see staff</p>';
                 }
             }
 
-            checkButton.onclick=()=>{/* your full check code */};
-            saveMinutesButton.onclick=()=>{/* your full save minutes code */};
+            // FULLY WORKING CHECK AVAILABILITY BUTTON
+            checkButton.onclick = () => {
+                const d = dateInput.value, f = timeFromInput.value, t = timeToInput.value;
+                if (!d || !f || !t) {
+                    statusCustom.textContent = "Fill all fields";
+                    statusCustom.classList.add('error');
+                    statusCustom.style.display = 'block';
+                    return;
+                }
+                const [y, m, day] = d.split('-').map(Number);
+                const date = new Date(y, m - 1, day);
+                const sMin = timeToMinutes(f), eMin = timeToMinutes(t);
+                if (eMin <= sMin) {
+                    statusCustom.textContent = "End > Start";
+                    statusCustom.classList.add('error');
+                    statusCustom.style.display = 'block';
+                    return;
+                }
+                const res = getAvailabilityForRange(date, sMin, eMin);
+                statusCustom.textContent = `Free ${f}–${t} on ${date.toLocaleDateString()}`;
+                statusCustom.className = 'status success';
+                statusCustom.style.display = 'block';
+                displayResults(res.available, res.onCallTimes, res.dutyTeachers, teachersCustomList, statusCustom, date);
+            };
+
+            // FULLY WORKING SAVE MINUTES
+            saveMinutesButton.onclick = () => {
+                const staff = staffSelect.value, date = dateEntryInput.value, mins = parseInt(minutesInput.value, 10);
+                if (!staff || !date || isNaN(mins) || mins <= 0) {
+                    showSaveStatus("Invalid input", true);
+                    return;
+                }
+                const data = getSavedMinutesData();
+                if (!data[staff]) data[staff] = {};
+                data[staff][date] = (data[staff][date] || 0) + mins;
+                saveMinutesData(data);
+                showSaveStatus(`+${mins} min for ${staff} on ${date}`);
+                minutesInput.value = '';
+                if (activeMonthButton) activeMonthButton.click();
+                const now = new Date();
+                const av = getAvailabilityAtTime(now);
+                displayResults(av.available, av.onCallTimes, av.dutyTeachers, teachersNowList, statusNow, now);
+            };
 
             loadData();
         });
