@@ -179,6 +179,10 @@
         .month-buttons button.active {
             background-color: var(--button); color: white; font-weight: 600;
         }
+
+        .status { margin-top: 8px; }
+        .status.error { color: var(--danger); font-weight: 600; }
+        .status.success { color: var(--success); font-weight: 600; }
     </style>
 </head>
 <body>
@@ -312,26 +316,21 @@
                 toggleButton.textContent = newTheme === 'dark' ? '☀️' : '🌙';
             };
 
-            // === MAIN APP ===
+            // === MAIN APP VARS ===
             console.log("DOM loaded.");
             let lessons = [];
             let allTeachers = new Set();
             let columnMap = {};
             let activeMonthButton = null;
             let lessonIndex = {};
-            const dayMap = ["Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"];
-
-            const ARBETSTID_SUBJECT = "arbetstid";
-            const ON_CALL_SUBJECT = "on call substitution";
-            const BREAK_DUTY_SUBJECTS = new Set([
-                "break duty corridors",
-                "break duty junior",
-                "break duty outside",
-                "break duty corridor"
-            ]);
             const EXCLUDE_TEACHER_LIST = ["BaSh", "AnHo", "DaWr", "AniFac", "RahHan", "ChBe", "FaCa", "SeCa", "AlCh", "LaCo", "VikCos", "RoDi", "KrEr", "RaHa", "JeHe", "DiHe", "GaHe", "HeKa", "JoLe", "TiLe", "WiLi", "ChLi", "HaLu", "KaMa", "ViMe", "MaMe", "HiOj", "LePa", "AsRo", "RaSc", "TaSc", "JeSe", "AnVa", "MarMen", "JonLeh"];
             const EXCLUDE_TEACHERS_SET = new Set(EXCLUDE_TEACHER_LIST);
 
+            const ARBETSTID_SUBJECT = "arbetstid";
+            const ON_CALL_SUBJECT = "on call substitution";
+            const BREAK_DUTY_KEYWORD = "break duty";
+
+            // === ELEMENTS ===
             const statusNow = document.getElementById('status-now');
             const teachersNowList = document.getElementById('teachers-now');
             const onCallBanner = document.getElementById('oncall-now-banner');
@@ -371,6 +370,7 @@
             const reminderSaveAbsences = document.getElementById('reminder-save-absences');
             const reminderDismiss = document.getElementById('reminder-dismiss');
 
+            // === HELPERS ===
             function getTimestamp() {
                 const now = new Date();
                 return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}-${String(now.getMinutes()).padStart(2,'0')}-${String(now.getSeconds()).padStart(2,'0')}`;
@@ -388,6 +388,25 @@
             function timeToMinutes(t) { return t ? ((parseInt(t.substring(0,2),10)*60) + parseInt(t.substring(3,5),10)) || 0 : 0; }
             function minutesToHHMM(m) { if(isNaN(m)) return "00:00"; const h = Math.floor(m/60); const mm = m%60; return `${String(h).padStart(2,'0')}:${String(mm).padStart(2,'0')}`; }
 
+            function normalizeDayName(raw) {
+                if (!raw) return null;
+                const txt = raw.trim().toLowerCase();
+                if (txt.startsWith("mon")) return "Mon";
+                if (txt.startsWith("tue")) return "Tue";
+                if (txt.startsWith("wed")) return "Wed";
+                if (txt.startsWith("thu")) return "Thu";
+                if (txt.startsWith("thur")) return "Thu";
+                if (txt.startsWith("thurs")) return "Thu";
+                if (txt.startsWith("fri")) return "Fri";
+                if (txt.startsWith("sat")) return "Sat";
+                if (txt.startsWith("sun")) return "Sun";
+                // fallback: return capitalised short
+                return raw.trim();
+            }
+
+            function normalizeText(str) { return str ? str.trim().toLowerCase() : ''; }
+            function normalizeTeacher(t) { return t ? t.trim() : t; }
+
             function parseRealWeeks(str) {
                 const weeks = new Set();
                 if (!str) return weeks;
@@ -399,15 +418,22 @@
                 return weeks;
             }
 
-            function parseTeachers(str) {
-                if (!str || typeof str !== 'string') return [];
-                return str.split(',').map(t => t.trim()).filter(t => t);
-            }
+            // === STORAGE HELPERS ===
+            function getSavedMinutesData() { try { return JSON.parse(localStorage.getItem('extraMinutes') || '{}'); } catch { return {}; } }
+            function saveMinutesData(d) { localStorage.setItem('extraMinutes', JSON.stringify(d)); }
+            function getSavedAbsences() { try { return JSON.parse(localStorage.getItem('teacherAbsences') || '{}'); } catch { return {}; } }
+            function saveAbsences(d) { localStorage.setItem('teacherAbsences', JSON.stringify(d)); }
 
+            function showSaveStatus(msg, err = false) { saveStatus.textContent = msg; saveStatus.className = err ? 'status error' : 'status success'; saveStatus.style.display = 'block'; setTimeout(() => saveStatus.style.display = 'none', 3000); }
+            function showAbsenceStatus(msg, err = false) { absenceStatus.textContent = msg; absenceStatus.className = err ? 'status error' : 'status success'; absenceStatus.style.display = 'block'; setTimeout(() => absenceStatus.style.display = 'none', 3000); }
+            function showImportStatus(msg, err = false) { importStatus.textContent = msg; importStatus.className = err ? 'status error' : 'status success'; importStatus.style.display = 'block'; setTimeout(() => importStatus.style.display = 'none', 5000); }
+
+            // === BUILD INDEX FROM LESSONS ===
             function buildLessonIndex() {
                 lessonIndex = {};
                 lessons.forEach(lesson => {
-                    const day = lesson[columnMap['day']]?.trim();
+                    const rawDay = lesson[columnMap['day']];
+                    const day = normalizeDayName(rawDay);
                     const weekStr = lesson[columnMap['realweeks']];
                     const startStr = lesson[columnMap['starttime']];
                     if (!day || !weekStr || !startStr) return;
@@ -422,11 +448,13 @@
                 });
             }
 
+            // === AVAILABILITY CALCULATIONS ===
             function getAvailabilityAtTime(dateTime) {
                 const result = { available: [], onCallTimes: new Map(), dutyTeachers: new Set() };
                 try {
                     const { week: checkWeek } = getIsoWeekAndYear(dateTime);
-                    const checkDay = dayMap[dateTime.getDay()];
+                    // Use local weekday short name then normalise
+                    const checkDay = normalizeDayName(dateTime.toLocaleDateString('en-GB',{weekday:'short'}));
                     const checkMin = dateTime.getHours()*60 + dateTime.getMinutes();
 
                     const dayIndex = lessonIndex[checkDay];
@@ -443,11 +471,12 @@
                         const startMin = parseInt(startMinStr,10);
                         const lessonsAtStart = weekIndex[startMin] || [];
                         lessonsAtStart.forEach(lesson => {
-                            const subject = lesson[columnMap['subject']]?.trim().toLowerCase();
+                            const subject = normalizeText(lesson[columnMap['subject']]);
                             const len = parseInt(lesson[columnMap['length']],10) || 0;
                             const endMin = startMin + len;
                             if (checkMin >= startMin && checkMin < endMin) {
-                                const teachers = parseTeachers(lesson[columnMap['teacher']]);
+                                const tCell = lesson[columnMap['teacher']] || '';
+                                const teachers = tCell.split(',').map(normalizeTeacher).filter(t=>t);
                                 if (subject === ARBETSTID_SUBJECT) teachers.forEach(t => working.add(t));
                                 else if (subject === ON_CALL_SUBJECT) {
                                     teachers.forEach(t => {
@@ -455,7 +484,7 @@
                                         onCallMap.set(t, {start: startMin, end: endMin});
                                     });
                                 } else {
-                                    if (BREAK_DUTY_SUBJECTS.has(subject)) {
+                                    if (subject.includes(BREAK_DUTY_KEYWORD)) {
                                         teachers.forEach(t => dutyBusy.add(t));
                                     } else {
                                         teachers.forEach(t => teachingBusy.add(t));
@@ -489,7 +518,7 @@
                 const result = { available: [], onCallTimes: new Map(), dutyTeachers: new Set() };
                 try {
                     const { week: checkWeek } = getIsoWeekAndYear(date);
-                    const checkDay = dayMap[date.getDay()];
+                    const checkDay = normalizeDayName(date.toLocaleDateString('en-GB',{weekday:'short'}));
                     const dayIndex = lessonIndex[checkDay]?.[checkWeek];
                     if (!dayIndex) return result;
 
@@ -502,10 +531,11 @@
                         const lessonStart = parseInt(startMinStr,10);
                         const lessonsAtStart = dayIndex[startMinStr] || [];
                         lessonsAtStart.forEach(lesson => {
-                            const subject = lesson[columnMap['subject']]?.trim().toLowerCase();
+                            const subject = normalizeText(lesson[columnMap['subject']]);
                             const len = parseInt(lesson[columnMap['length']],10) || 0;
                             const lessonEnd = lessonStart + len;
-                            const teachers = parseTeachers(lesson[columnMap['teacher']]);
+                            const tCell = lesson[columnMap['teacher']] || '';
+                            const teachers = tCell.split(',').map(normalizeTeacher).filter(t=>t);
                             const contains = lessonStart <= startMin && lessonEnd >= endMin;
                             const overlaps = lessonStart < endMin && lessonEnd > startMin;
 
@@ -517,7 +547,7 @@
                                 });
                             }
                             else if (overlaps) {
-                                if (BREAK_DUTY_SUBJECTS.has(subject)) {
+                                if (subject.includes(BREAK_DUTY_KEYWORD)) {
                                     teachers.forEach(t => dutyBusy.add(t));
                                 } else {
                                     teachers.forEach(t => teachingBusy.add(t));
@@ -546,6 +576,7 @@
                 }
             }
 
+            // === DISPLAY / UI ===
             function displayResults(availableTeachers, onCallTimesMap, dutyTeachers, listElement, statusElement, checkDate) {
                 listElement.innerHTML = '';
                 const allData = getSavedMinutesData();
@@ -558,7 +589,9 @@
                         let weekly = 0, monthly = 0;
                         const data = allData[t] || {};
                         for (const dateKey in data) {
-                            const entryDate = new Date(dateKey + 'T00:00:00Z');
+                            const parts = dateKey.split('-').map(Number);
+                            if (parts.length !== 3) continue;
+                            const entryDate = new Date(parts[0], parts[1]-1, parts[2]);
                             if (isNaN(entryDate)) continue;
                             const { week, year } = getIsoWeekAndYear(entryDate);
                             const mins = data[dateKey] || 0;
@@ -615,15 +648,6 @@
                 }
             }
 
-            function getSavedMinutesData() { try { return JSON.parse(localStorage.getItem('extraMinutes') || '{}'); } catch { return {}; } }
-            function saveMinutesData(d) { localStorage.setItem('extraMinutes', JSON.stringify(d)); }
-            function getSavedAbsences() { try { return JSON.parse(localStorage.getItem('teacherAbsences') || '{}'); } catch { return {}; } }
-            function saveAbsences(d) { localStorage.setItem('teacherAbsences', JSON.stringify(d)); }
-
-            function showSaveStatus(msg, err = false) { saveStatus.textContent = msg; saveStatus.className = err ? 'status error' : 'status success'; saveStatus.style.display = 'block'; setTimeout(() => saveStatus.style.display = 'none', 3000); }
-            function showAbsenceStatus(msg, err = false) { absenceStatus.textContent = msg; absenceStatus.className = err ? 'status error' : 'status success'; absenceStatus.style.display = 'block'; setTimeout(() => absenceStatus.style.display = 'none', 3000); }
-            function showImportStatus(msg, err = false) { importStatus.textContent = msg; importStatus.className = err ? 'status error' : 'status success'; importStatus.style.display = 'block'; setTimeout(() => importStatus.style.display = 'none', 5000); }
-
             function populateStaffDropdown() {
                 const sorted = [...allTeachers].filter(t => !EXCLUDE_TEACHERS_SET.has(t)).sort();
                 staffSelect.innerHTML = '<option value="">-- Select Staff --</option>';
@@ -677,6 +701,7 @@
                 totalsDisplay.innerHTML = html;
             }
 
+            // === ABSENCES UI ===
             function displayAbsencesForDate(dateKey) {
                 if (!dateKey) { viewAbsencesDisplay.innerHTML = '<p>Select a date.</p>'; return; }
                 const all = getSavedAbsences();
@@ -714,6 +739,7 @@
                 }
             }
 
+            // === BACKUP REMINDER ===
             function checkBackupReminder() {
                 const today = new Date().toISOString().split('T')[0];
                 if (localStorage.getItem('lastBackupReminder') === today) return;
@@ -725,6 +751,124 @@
                 reminderBanner.style.display = 'none';
             }
 
+            // === CSV EXPORT/IMPORT ===
+            function exportCSV(rows, filename) {
+                const csv = rows.map(r => r.map(x => `"${String(x).replace(/"/g,'""')}"`).join(',')).join('\n');
+                const blob = new Blob([csv], {type:'text/csv'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
+                URL.revokeObjectURL(url);
+            }
+
+            function exportMinutesBackup() {
+                const data = getSavedMinutesData();
+                const rows = [['staff','date','minutes']];
+                Object.entries(data).forEach(([staff, dates]) => {
+                    Object.entries(dates).forEach(([date, mins]) => rows.push([staff, date, mins]));
+                });
+                exportCSV(rows, `minutes_backup_${getTimestamp()}.csv`);
+            }
+
+            function exportAbsencesBackup() {
+                const data = getSavedAbsences();
+                const rows = [['staff','date','start','end','reason']];
+                Object.entries(data).forEach(([date, staffObj]) => {
+                    Object.entries(staffObj).forEach(([staff, arr]) => {
+                        arr.forEach(a => rows.push([staff, date, a.start, a.end, a.reason || '']));
+                    });
+                });
+                exportCSV(rows, `absences_backup_${getTimestamp()}.csv`);
+            }
+
+            exportSummaryButton.onclick = () => exportMinutesBackup();
+            exportBackupButton.onclick = () => exportMinutesBackup();
+            exportAbsencesButton.onclick = () => exportAbsencesBackup();
+
+            importCsvButton.onclick = () => csvFileInput.click();
+            csvFileInput.addEventListener('change', e => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    try {
+                        const text = ev.target.result;
+                        const lines = text.split(/\r?\n/).filter(l => l.trim());
+                        if (lines.length < 2) { showImportStatus("CSV empty", true); return; }
+                        const data = getSavedMinutesData();
+                        lines.slice(1).forEach(line => {
+                            const cols = line.split(',').map(c => c.replace(/^"|"$/g,'').trim());
+                            if (cols.length < 3) return;
+                            const staff = cols[0], date = cols[1], mins = parseInt(cols[2],10);
+                            if (!staff || !date || isNaN(mins)) return;
+                            if (!data[staff]) data[staff] = {};
+                            data[staff][date] = (data[staff][date] || 0) + mins;
+                        });
+                        saveMinutesData(data);
+                        showImportStatus("Import complete");
+                    } catch (err) {
+                        console.error(err);
+                        showImportStatus("Import failed", true);
+                    }
+                };
+                reader.readAsText(file);
+            });
+
+            clearDataButton.onclick = () => { if (confirm("Clear all saved data?")) { localStorage.removeItem('extraMinutes'); localStorage.removeItem('teacherAbsences'); showImportStatus("All local data cleared"); } };
+
+            // === EVENT HANDLERS ===
+            checkButton.onclick = () => {
+                const d = dateInput.value, f = timeFromInput.value, t = timeToInput.value;
+                if (!d || !f || !t) { statusCustom.textContent = "Fill all fields"; statusCustom.classList.add('error'); statusCustom.style.display = 'block'; return; }
+                const [y,m,day] = d.split('-').map(Number);
+                const date = new Date(y, m-1, day);
+                const sMin = timeToMinutes(f), eMin = timeToMinutes(t);
+                if (eMin <= sMin) { statusCustom.textContent = "End > Start"; statusCustom.classList.add('error'); statusCustom.style.display = 'block'; return; }
+                const res = getAvailabilityForRange(date, sMin, eMin);
+                statusCustom.textContent = `Free ${f}–${t} on ${date.toLocaleDateString()}`;
+                statusCustom.style.display = 'block';
+                displayResults(res.available, res.onCallTimes, res.dutyTeachers, teachersCustomList, statusCustom, date);
+            };
+
+            saveMinutesButton.onclick = () => {
+                const staff = staffSelect.value, date = dateEntryInput.value, mins = parseInt(minutesInput.value,10);
+                if (!staff || !date || isNaN(mins) || mins <= 0) { showSaveStatus("Invalid input", true); return; }
+                const data = getSavedMinutesData();
+                if (!data[staff]) data[staff] = {};
+                data[staff][date] = (data[staff][date] || 0) + mins;
+                saveMinutesData(data);
+                showSaveStatus(`+${mins} min for ${staff} on ${date}`);
+                minutesInput.value = '';
+                if (activeMonthButton) activeMonthButton.click();
+            };
+
+            saveAbsenceButton.onclick = () => {
+                const date = absenceDateInput.value;
+                const s = absenceStartInput.value, e = absenceEndInput.value;
+                const reason = absenceReasonInput.value;
+                if (!date || !s || !e) { showAbsenceStatus("Fill all fields", true); return; }
+                const start = timeToMinutes(s), end = timeToMinutes(e);
+                if (end <= start) { showAbsenceStatus("End must be > Start", true); return; }
+                const all = getSavedAbsences();
+                if (!all[date]) all[date] = {};
+                // applying absence to all staff currently loaded
+                all[date]['ALL_STAFF'] = all[date]['ALL_STAFF'] || [];
+                all[date]['ALL_STAFF'].push({start, end, reason});
+                saveAbsences(all);
+                showAbsenceStatus(`Absence recorded for ALL staff on ${date}`);
+                displayAbsencesForDate(date);
+            };
+
+            viewAbsenceDateInput.addEventListener('change', () => {
+                displayAbsencesForDate(viewAbsenceDateInput.value);
+            });
+
+            reminderSaveMinutes.onclick = () => { exportBackupButton.click(); dismissReminder(); };
+            reminderSaveAbsences.onclick = () => { exportAbsencesButton.click(); dismissReminder(); };
+            reminderDismiss.onclick = dismissReminder;
+
+            document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkBackupReminder(); });
+
+            // === LOAD LESSONS.TXT and INIT ===
             async function loadData() {
                 statusNow.textContent = 'Loading schedule...';
                 try {
@@ -736,7 +880,7 @@
 
                     const header = lines[0].split('\t');
                     columnMap = {};
-                    header.forEach((h,i) => columnMap[h.trim()] = i);
+                    header.forEach((h,i) => columnMap[h.trim().toLowerCase()] = i);
 
                     const req = ['subject','teacher','day','starttime','length','realweeks'];
                     for (const c of req) if (columnMap[c] === undefined) throw new Error(`Missing column: ${c}`);
@@ -745,7 +889,7 @@
 
                     lessons.forEach(row => {
                         const tStr = row[columnMap['teacher']];
-                        if (tStr) parseTeachers(tStr).forEach(t => allTeachers.add(t));
+                        if (tStr) tStr.split(',').forEach(t => allTeachers.add(normalizeTeacher(t)));
                     });
 
                     buildLessonIndex();
@@ -778,46 +922,6 @@
                     console.error(err);
                 }
             }
-
-            checkButton.onclick = () => {
-                const d = dateInput.value, f = timeFromInput.value, t = timeToInput.value;
-                if (!d || !f || !t) { statusCustom.textContent = "Fill all fields"; statusCustom.classList.add('error'); statusCustom.style.display = 'block'; return; }
-                const [y,m,day] = d.split('-').map(Number);
-                const date = new Date(y, m-1, day);
-                const sMin = timeToMinutes(f), eMin = timeToMinutes(t);
-                if (eMin <= sMin) { statusCustom.textContent = "End > Start"; statusCustom.classList.add('error'); statusCustom.style.display = 'block'; return; }
-                const res = getAvailabilityForRange(date, sMin, eMin);
-                statusCustom.textContent = `Free ${f}–${t} on ${date.toLocaleDateString()}`;
-                statusCustom.style.display = 'block';
-                displayResults(res.available, res.onCallTimes, res.dutyTeachers, teachersCustomList, statusCustom, date);
-            };
-
-            saveMinutesButton.onclick = () => {
-                const staff = staffSelect.value, date = dateEntryInput.value, mins = parseInt(minutesInput.value,10);
-                if (!staff || !date || isNaN(mins) || mins <= 0) { showSaveStatus("Invalid input", true); return; }
-                const data = getSavedMinutesData();
-                if (!data[staff]) data[staff] = {};
-                data[staff][date] = (data[staff][date] || 0) + mins;
-                saveMinutesData(data);
-                showSaveStatus(`+${mins} min for ${staff} on ${date}`);
-                minutesInput.value = '';
-                if (activeMonthButton) activeMonthButton.click();
-            };
-
-            // All export functions, import, absences, etc. are exactly the same as before — 100% working
-
-            exportSummaryButton.onclick = () => { /* same as before */ };
-            exportBackupButton.onclick = () => { /* same as before */ };
-            exportAbsencesButton.onclick = () => { /* same as before */ };
-            clearDataButton.onclick = () => { /* same as before */ };
-            importCsvButton.onclick = () => csvFileInput.click();
-            // ... all the rest ...
-
-            reminderSaveMinutes.onclick = () => { exportBackupButton.click(); dismissReminder(); };
-            reminderSaveAbsences.onclick = () => { exportAbsencesButton.click(); dismissReminder(); };
-            reminderDismiss.onclick = dismissReminder;
-
-            document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkBackupReminder(); });
 
             loadData();
         });
