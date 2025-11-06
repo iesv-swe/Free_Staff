@@ -75,6 +75,7 @@
         .key-dot.green { background-color: #2ea44f; }
         .key-dot.red { background-color: #d73a49; }
         .key-dot.yellow { background-color: #ffc107; }
+        .key-dot.pink { background-color: #ffc0cb; }
         .description-text { font-size: 0.9em; color: #c0c0c0; margin-top: -10px; margin-bottom: 15px; }
         /* Input Fields */
         .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
@@ -105,6 +106,7 @@
         .teacher-list li.on-call { background-color: #2ea44f; color: #ffffff; border-color: #2c974b; font-weight: 600; }
         .teacher-list li.minutes-danger { background-color: #d73a49; color: #ffffff; border: 1px solid #cb2431; font-weight: 600; }
         .teacher-list li.minutes-warn { background-color: #ffc107; border: 1px solid #e0a800; color: #212529; }
+        .teacher-list li.break-duty { background-color: #ffc0cb; color: #000; border-color: #ffb6c1; }
        
         /* Month/Totals styles */
         .month-buttons { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 15px; }
@@ -153,6 +155,7 @@
         <li><span class="key-dot green"></span>On Call</li>
         <li><span class="key-dot red"></span>Monthly Limit (&gt;=180 min)</li>
         <li><span class="key-dot yellow"></span>Weekly Limit (&gt;=90 min)</li>
+        <li><span class="key-dot pink"></span>Break Duty</li>
     </ul>
     <div class="container">
         <h2>Who is Available Now?</h2>
@@ -257,6 +260,7 @@
             // --- CONFIGURATION ---
             const ARBETSTID_SUBJECT = "arbetstid";
             const ON_CALL_SUBJECT = "on call substitution";
+            const BREAK_DUTY_SUBJECTS = new Set(["break duty corridors", "break duty junior"]);
             const EXCLUDE_TEACHER_LIST = ["BaSh", "AnHo", "DaWr", "AniFac", "RahHan", "ChBe", "FaCa", "SeCa", "AlCh", "LaCo", "VikCos", "RoDi", "KrEr", "RaHa", "JeHe", "DiHe", "GaHe", "HeKa", "JoLe", "TiLe", "WiLi", "ChLi", "HaLu", "KaMa", "ViMe", "MaMe", "HiOj", "LePa", "AsRo", "RaSc", "TaSc", "JeSe", "AnVa", "MarMen", "JonLeh"];
             const EXCLUDE_TEACHERS_SET = new Set(EXCLUDE_TEACHER_LIST);
 
@@ -361,7 +365,7 @@
 
             // --- AVAILABILITY: AT TIME ---
             function getAvailabilityAtTime(dateTime) {
-                const result = { available: [], onCallTimes: new Map() };
+                const result = { available: [], onCallTimes: new Map(), dutyTeachers: new Set() };
                 try {
                     const { week: checkWeek } = getIsoWeekAndYear(dateTime);
                     const checkDay = dayMap[dateTime.getDay()];
@@ -374,11 +378,12 @@
 
                     const working = new Set();
                     const onCallMap = new Map();
-                    const busy = new Set();
+                    const teachingBusy = new Set();
+                    const dutyBusy = new Set();
 
                     Object.keys(weekIndex).forEach(startMinStr => {
                         const startMin = parseInt(startMinStr,10);
-                        const lessonsAtStart = weekIndex[startMin];
+                        const lessonsAtStart = weekIndex[startMin] || [];
                         lessonsAtStart.forEach(lesson => {
                             const subject = lesson[columnMap['subject']]?.trim().toLowerCase();
                             const len = parseInt(lesson[columnMap['length']],10) || 0;
@@ -391,12 +396,18 @@
                                         working.add(t);
                                         onCallMap.set(t, {start: startMin, end: endMin});
                                     });
-                                } else teachers.forEach(t => busy.add(t));
+                                } else {
+                                    if (BREAK_DUTY_SUBJECTS.has(subject)) {
+                                        teachers.forEach(t => dutyBusy.add(t));
+                                    } else {
+                                        teachers.forEach(t => teachingBusy.add(t));
+                                    }
+                                }
                             }
                         });
                     });
 
-                    let avail = [...working].filter(t => !busy.has(t));
+                    let avail = [...working].filter(t => !teachingBusy.has(t));
                     const absences = getSavedAbsences();
                     const dateKey = dateTime.toISOString().split('T')[0];
                     const todayAbs = absences[dateKey] || {};
@@ -408,6 +419,7 @@
 
                     result.available = avail.sort();
                     result.onCallTimes = onCallMap;
+                    result.dutyTeachers = dutyBusy;
                     return result;
                 } catch (e) {
                     console.error("getAvailabilityAtTime error:", e);
@@ -417,7 +429,7 @@
 
             // --- AVAILABILITY: RANGE ---
             function getAvailabilityForRange(date, startMin, endMin) {
-                const result = { available: [], onCallTimes: new Map() };
+                const result = { available: [], onCallTimes: new Map(), dutyTeachers: new Set() };
                 try {
                     const { week: checkWeek } = getIsoWeekAndYear(date);
                     const checkDay = dayMap[date.getDay()];
@@ -426,11 +438,12 @@
 
                     const working = new Set();
                     const onCallMap = new Map();
-                    const busy = new Set();
+                    const teachingBusy = new Set();
+                    const dutyBusy = new Set();
 
                     Object.keys(dayIndex).forEach(startMinStr => {
                         const lessonStart = parseInt(startMinStr,10);
-                        const lessonsAtStart = dayIndex[startMinStr];
+                        const lessonsAtStart = dayIndex[startMinStr] || [];
                         lessonsAtStart.forEach(lesson => {
                             const subject = lesson[columnMap['subject']]?.trim().toLowerCase();
                             const len = parseInt(lesson[columnMap['length']],10) || 0;
@@ -446,11 +459,17 @@
                                     onCallMap.set(t, {start: lessonStart, end: lessonEnd});
                                 });
                             }
-                            else if (overlaps) teachers.forEach(t => busy.add(t));
+                            else if (overlaps) {
+                                if (BREAK_DUTY_SUBJECTS.has(subject)) {
+                                    teachers.forEach(t => dutyBusy.add(t));
+                                } else {
+                                    teachers.forEach(t => teachingBusy.add(t));
+                                }
+                            }
                         });
                     });
 
-                    let avail = [...working].filter(t => !busy.has(t));
+                    let avail = [...working].filter(t => !teachingBusy.has(t));
                     const absences = getSavedAbsences();
                     const dateKey = date.toISOString().split('T')[0];
                     const todayAbs = absences[dateKey] || {};
@@ -462,6 +481,7 @@
 
                     result.available = avail.sort();
                     result.onCallTimes = onCallMap;
+                    result.dutyTeachers = dutyBusy;
                     return result;
                 } catch (e) {
                     console.error("getAvailabilityForRange error:", e);
@@ -470,7 +490,7 @@
             }
 
             // --- DISPLAY RESULTS (fixed sorting + banner) ---
-            function displayResults(availableTeachers, onCallTimesMap, listElement, statusElement, checkDate) {
+            function displayResults(availableTeachers, onCallTimesMap, dutyTeachers, listElement, statusElement, checkDate) {
                 listElement.innerHTML = '';
                 const allData = getSavedMinutesData();
                 const { week: checkWeekNum, year: checkWeekYear } = getIsoWeekAndYear(checkDate);
@@ -528,6 +548,8 @@
                             const times = t.onCallTimes;
                             text = `${t.name} (On Call: ${minutesToHHMM(times.start)}-${minutesToHHMM(times.end)})`;
                             li.classList.add('on-call');
+                        } else if (dutyTeachers.has(t.name)) {
+                            li.classList.add('break-duty');
                         } else {
                             if (t.monthlyMinutes >= 180) li.classList.add('minutes-danger');
                             else if (t.weeklyMinutes >= 90) li.classList.add('minutes-warn');
@@ -689,7 +711,7 @@
                     yearDisplay.value = now.getFullYear();
 
                     const avail = getAvailabilityAtTime(now);
-                    displayResults(avail.available, avail.onCallTimes, teachersNowList, statusNow, now);
+                    displayResults(avail.available, avail.onCallTimes, avail.dutyTeachers, teachersNowList, statusNow, now);
 
                     const curBtn = monthButtonsContainer.querySelector(`button[data-month-index="${now.getMonth()}"]`);
                     if (curBtn) curBtn.click();
@@ -716,7 +738,7 @@
                 const res = getAvailabilityForRange(date, sMin, eMin);
                 statusCustom.textContent = `Free ${f}–${t} on ${date.toLocaleDateString()}`;
                 statusCustom.style.display = 'block';
-                displayResults(res.available, res.onCallTimes, teachersCustomList, statusCustom, date);
+                displayResults(res.available, res.onCallTimes, res.dutyTeachers, teachersCustomList, statusCustom, date);
             };
 
             saveMinutesButton.onclick = () => {
