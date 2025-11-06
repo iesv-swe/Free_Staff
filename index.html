@@ -45,7 +45,6 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* Theme Toggle */
         #theme-toggle {
             position: fixed;
             top: 15px;
@@ -67,7 +66,6 @@
             transform: scale(1.1);
         }
 
-        /* Reminder Banner */
         #reminder-banner {
             display: none;
             position: sticky;
@@ -228,7 +226,7 @@
 
     <div class="container">
         <h2>Record Staff Absence</h2>
-        <p class="description-text">Record an absence (e.g., meeting) for **all staff**. This data is saved in your browser.</p>
+        <p class="description-text">Record an absence (e.g., meeting) for <strong>all staff</strong>. This data is saved in your browser.</p>
         <div class="input-group">
             <label for="absence-date-input">Date of Absence:</label>
             <input type="date" id="absence-date-input" style="width: 98%;">
@@ -265,7 +263,7 @@
 
     <div class="container">
         <h2>Log Extra Minutes</h2>
-        <p class="description-text">Record extra minutes worked by staff. This data is saved **in your browser**.</p>
+        <p class="description-text">Record extra minutes worked by staff. This data is saved <strong>in your browser</strong>.</p>
         <div class="input-grid">
             <div class="input-group"><label for="staff-select">Staff Member:</label><select id="staff-select"><option value="">-- Select Staff --</option></select></div>
             <div class="input-group"><label for="date-entry-input">Date Worked:</label><input type="date" id="date-entry-input"></div>
@@ -503,7 +501,7 @@
                     Object.keys(dayIndex).forEach(startMinStr => {
                         const lessonStart = parseInt(startMinStr,10);
                         const lessonsAtStart = dayIndex[startMinStr] || [];
-                        lessonsAtStart.forEach(lesson => {
+                        lessons forEach(lesson => {
                             const subject = lesson[columnMap['subject']]?.trim().toLowerCase();
                             const len = parseInt(lesson[columnMap['length']],10) || 0;
                             const lessonEnd = lessonStart + len;
@@ -782,7 +780,7 @@
             }
 
             checkButton.onclick = () => {
-                const d = dateInput833.value, f = timeFromInput.value, t = timeToInput.value;
+                const d = dateInput.value, f = timeFromInput.value, t = timeToInput.value;
                 if (!d || !f || !t) { statusCustom.textContent = "Fill all fields"; statusCustom.classList.add('error'); statusCustom.style.display = 'block'; return; }
                 const [y,m,day] = d.split('-').map(Number);
                 const date = new Date(y, m-1, day);
@@ -932,7 +930,7 @@
                                 let dateKey = cols[0];
                                 if (dateKey.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
                                     const p = dateKey.split('/');
-                                    dateKey = `${p[2]}-${p[, p[1]}-${p[0]}`;
+                                    dateKey = `${p[2]}-${String(p[1]).padStart(2,'0')}-${String(p[0]).padStart(2,'0')}`;
                                 }
                                 const staff = cols[1];
                                 const mins = parseInt(cols[2],10);
