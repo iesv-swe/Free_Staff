@@ -189,8 +189,8 @@
   
     <ul class="key-legend">
         <li><span class="key-dot green"></span>On Call</li>
-        <li><span class="key-dot red"></span>Monthly Limit (greater than or equal to 180 min)</li>
-        <li><span class="key-dot yellow"></span>Weekly Limit (greater than or equal to 90 min)</li>
+        <li><span class="key-dot red"></span>Monthly Limit (≥180 min)</li>
+        <li><span class="key-dot yellow"></span>Weekly Limit (≥90 min)</li>
         <li><span class="key-dot pink"></span>Break Duty (Corridor / Junior / Outside)</li>
     </ul>
     <div class="container">
@@ -224,7 +224,7 @@
         <div class="input-grid">
             <div class="input-group">
                 <label for="absence-start-input">Start Time:</label>
-                <input type="time" type="time" id="absence-start-input">
+                <input type="time" id="absence-start-input">
             </div>
             <div class="input-group">
                 <label for="absence-end-input">End Time:</label>
@@ -242,7 +242,7 @@
         <h2>View & Delete Recorded Absences</h2>
         <div class="input-group">
             <label for="view-absence-date-input">Select Date to View:</label>
-            <input type="date" id="view-absence-date" style="width: 98%;">
+            <input type="date" id="view-absence-date-input" style="width: 98%;">
         </div>
         <div id="view-absences-display">
             <p>Select a date to view recorded absences.</p>
@@ -284,6 +284,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // === DARK/LIGHT MODE TOGGLE ===
             const toggleButton = document.getElementById('theme-toggle');
             const savedTheme = localStorage.getItem('theme') || 'dark';
             document.documentElement.setAttribute('data-theme', savedTheme);
@@ -296,6 +297,7 @@
                 toggleButton.textContent = newTheme === 'dark' ? 'Sun' : 'Moon';
             };
 
+            // === GLOBALS ===
             let lessons = [];
             let allTeachers = new Set();
             let columnMap = {};
@@ -310,6 +312,7 @@
             ]);
             const EXCLUDE_TEACHERS_SET = new Set(["BaSh","AnHo","DaWr","AniFac","RahHan","ChBe","FaCa","SeCa","AlCh","LaCo","VikCos","RoDi","KrEr","RaHa","JeHe","DiHe","GaHe","HeKa","JoLe","TiLe","WiLi","ChLi","HaLu","KaMa","ViMe","MaMe","HiOj","LePa","AsRo","RaSc","TaSc","JeSe","AnVa","MarMen","JonLeh"]);
 
+            // === DOM ELEMENTS ===
             const statusNow = document.getElementById('status-now');
             const teachersNowList = document.getElementById('teachers-now');
             const onCallBanner = document.getElementById('oncall-now-banner');
@@ -348,6 +351,7 @@
             const reminderSaveAbsences = document.getElementById('reminder-save-absences');
             const reminderDismiss = document.getElementById('reminder-dismiss');
 
+            // === UTILS ===
             function getTimestamp() {
                 const now = new Date();
                 return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}-${String(now.getMinutes()).padStart(2,'0')}-${String(now.getSeconds()).padStart(2,'0')}`;
@@ -376,6 +380,8 @@
                 if (!str || typeof str !== 'string') return [];
                 return str.split(',').map(t => t.trim()).filter(t => t);
             }
+
+            // === LESSON INDEX ===
             function buildLessonIndex() {
                 lessonIndex = {};
                 lessons.forEach(lesson => {
@@ -383,7 +389,7 @@
                     const weekStr = lesson[columnMap['realweeks']];
                     const startStr = lesson[columnMap['starttime']];
                     if (!day || !weekStr || !startStr) return;
-                    const normDay = (day.slice(0,3).toLowerCase() === 'thu') ? 'Thur' : day;
+                    const normDay = (day.slice(0,3).toLowerCase() === 'thu') ? 'Thur' : day.slice(0,3);
                     const startMin = timeToMinutes(startStr);
                     const weeks = parseRealWeeks(weekStr);
                     weeks.forEach(w => {
@@ -394,6 +400,8 @@
                     });
                 });
             }
+
+            // === AVAILABILITY ===
             function getAvailabilityAtTime(dateTime) {
                 const result = { available: [], onCallTimes: new Map(), dutyTeachers: new Set() };
                 try {
@@ -438,19 +446,19 @@
                     const dateKey = dateTime.toISOString().split('T')[0];
                     const todayAbs = absences[dateKey] || {};
                     avail = avail.filter(t => {
-                        const abs = todayAbs[t] || todayAbs["ALL"];
-                        if (!abs) return true;
-                        return !abs.some(a => checkMin >= a.start && checkMin < a.end);
+                        const absList = todayAbs[t] || todayAbs["ALL"] || [];
+                        return !absList.some(a => checkMin >= a.start && checkMin < a.end);
                     });
                     result.available = avail.sort();
                     result.onCallTimes = onCallMap;
                     result.dutyTeachers = dutyBusy;
                     return result;
                 } catch (e) {
-                    console.error("getAvailabilityAtTime error:", e);
+                    console.error(e);
                     return result;
                 }
             }
+
             function getAvailabilityForRange(date, startMin, endMin) {
                 const result = { available: [], onCallTimes: new Map(), dutyTeachers: new Set() };
                 try {
@@ -493,19 +501,19 @@
                     const dateKey = date.toISOString().split('T')[0];
                     const todayAbs = absences[dateKey] || {};
                     avail = avail.filter(t => {
-                        const abs = todayAbs[t] || todayAbs["ALL"];
-                        if (!abs) return true;
-                        return !abs.some(a => a.start < endMin && a.end > startMin);
+                        const absList = todayAbs[t] || todayAbs["ALL"] || [];
+                        return !absList.some(a => a.start < endMin && a.end > startMin);
                     });
                     result.available = avail.sort();
                     result.onCallTimes = onCallMap;
                     result.dutyTeachers = dutyBusy;
                     return result;
                 } catch (e) {
-                    console.error("getAvailabilityForRange error:", e);
+                    console.error(e);
                     return result;
                 }
             }
+
             function displayResults(availableTeachers, onCallTimesMap, dutyTeachers, listElement, statusElement, checkDate) {
                 listElement.innerHTML = '';
                 const allData = getSavedMinutesData();
@@ -570,13 +578,18 @@
                     });
                 }
             }
+
+            // === STORAGE ===
             function getSavedMinutesData() { try { return JSON.parse(localStorage.getItem('extraMinutes') || '{}'); } catch { return {}; } }
             function saveMinutesData(d) { localStorage.setItem('extraMinutes', JSON.stringify(d)); }
             function getSavedAbsences() { try { return JSON.parse(localStorage.getItem('teacherAbsences') || '{}'); } catch { return {}; } }
             function saveAbsences(d) { localStorage.setItem('teacherAbsences', JSON.stringify(d)); }
+
             function showSaveStatus(msg, err = false) { saveStatus.textContent = msg; saveStatus.className = err ? 'status error' : 'status success'; saveStatus.style.display = 'block'; setTimeout(() => saveStatus.style.display = 'none', 3000); }
             function showAbsenceStatus(msg, err = false) { absenceStatus.textContent = msg; absenceStatus.className = err ? 'status error' : 'status success'; absenceStatus.style.display = 'block'; setTimeout(() => absenceStatus.style.display = 'none', 3000); }
             function showImportStatus(msg, err = false) { importStatus.textContent = msg; importStatus.className = err ? 'status error' : 'status success'; importStatus.style.display = 'block'; setTimeout(() => importStatus.style.display = 'none', 5000); }
+
+            // === UI SETUP ===
             function populateStaffDropdown() {
                 const sorted = [...allTeachers].filter(t => !EXCLUDE_TEACHERS_SET.has(t)).sort();
                 staffSelect.innerHTML = '<option value="">-- Select Staff --</option>';
@@ -586,6 +599,7 @@
                     staffSelect.appendChild(opt);
                 });
             }
+
             function setupMonthButtons() {
                 const names = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
                 monthButtonsContainer.innerHTML = '';
@@ -604,6 +618,7 @@
                     monthButtonsContainer.appendChild(btn);
                 });
             }
+
             function displayMonthlyTotals(year, monthIdx) {
                 const prefix = `${year}-${String(monthIdx+1).padStart(2,'0')}`;
                 const data = getSavedMinutesData();
@@ -627,22 +642,22 @@
                 }
                 totalsDisplay.innerHTML = html;
             }
+
             function displayAbsencesForDate(dateKey) {
                 if (!dateKey) { viewAbsencesDisplay.innerHTML = '<p>Select a date.</p>'; return; }
                 const all = getSavedAbsences();
                 const day = all[dateKey] || {};
                 let html = `<h3>Absences ${dateKey}</h3>`;
-                const staffList = Object.keys(day).sort();
-                if (staffList.length === 0) html += "<p>None recorded.</p>";
-                else {
+                if (Object.keys(day).length === 0) {
+                    html += "<p>None recorded.</p>";
+                } else {
                     html += "<ul>";
-                    staffList.forEach(staff => {
-                        const entries = staff === "ALL" ? day[staff] : day[staff];
-                        entries.forEach((a, i) => {
+                    Object.keys(day).sort().forEach(staff => {
+                        day[staff].forEach((a, i) => {
                             const reason = a.reason ? ` - ${a.reason}` : '';
-                            const isAll = staff === "ALL" ? " (ALL STAFF)" : "";
-                            html += `<li><span>${staff}${isAll}: ${minutesToHHMM(a.start)}-${minutesToHHMM(a.end)}${reason}</span>
-                                     <button class="delete-absence-btn" data-date="${dateKey}" data-staff="${staff}" data-index="${i}">Delete</button></li>`;
+                            const label = staff === "ALL" ? "ALL STAFF" : staff;
+                            html += `<li>${label}: ${minutesToHHMM(a.start)}-${minutesToHHMM(a.end)}${reason}
+                                <button class="delete-absence-btn" data-date="${dateKey}" data-staff="${staff}" data-index="${i}">Delete</button></li>`;
                         });
                     });
                     html += "</ul>";
@@ -650,6 +665,7 @@
                 viewAbsencesDisplay.innerHTML = html;
                 viewAbsencesDisplay.querySelectorAll('.delete-absence-btn').forEach(b => b.onclick = handleDeleteAbsence);
             }
+
             function handleDeleteAbsence(e) {
                 const btn = e.target;
                 const date = btn.dataset.date;
@@ -664,6 +680,8 @@
                     displayAbsencesForDate(date);
                 }
             }
+
+            // === REMINDER ===
             function checkBackupReminder() {
                 const today = new Date().toISOString().split('T')[0];
                 if (localStorage.getItem('lastBackupReminder') === today) return;
@@ -674,7 +692,7 @@
                 reminderBanner.style.display = 'none';
             }
 
-            // EXPORT MINUTES BACKUP
+            // === EXPORTS ===
             exportBackupButton.onclick = () => {
                 const data = getSavedMinutesData();
                 let csv = "Date,Staff,Minutes\n";
@@ -693,7 +711,6 @@
                 showImportStatus("Minutes backup downloaded!", false);
             };
 
-            // EXPORT ABSENCES
             exportAbsencesButton.onclick = () => {
                 const data = getSavedAbsences();
                 let csv = "Date,Staff,Start,End,Reason\n";
@@ -714,7 +731,6 @@
                 showImportStatus("Absences backup downloaded!", false);
             };
 
-            // EXPORT SUMMARY
             exportSummaryButton.onclick = () => {
                 const year = parseInt(yearDisplay.value,10);
                 if (isNaN(year)) { showImportStatus("Invalid year", true); return; }
@@ -753,7 +769,6 @@
                 showImportStatus("Summary exported!", false);
             };
 
-            // IMPORT CSV
             csvFileInput.onchange = () => {
                 const file = csvFileInput.files[0];
                 if (!file) return;
@@ -788,7 +803,6 @@
             };
             importCsvButton.onclick = () => csvFileInput.click();
 
-            // CLEAR ALL
             clearDataButton.onclick = () => {
                 if (confirm("Delete ALL saved minutes AND absences? This cannot be undone!")) {
                     localStorage.removeItem('extraMinutes');
@@ -802,7 +816,6 @@
                 }
             };
 
-            // SAVE ABSENCE
             saveAbsenceButton.onclick = () => {
                 const date = absenceDateInput.value;
                 const start = timeToMinutes(absenceStartInput.value);
@@ -819,10 +832,9 @@
                 showAbsenceStatus(`Absence saved for ${date}`, false);
                 absenceReasonInput.value = '';
                 displayAbsencesForDate(date);
-                const now = new Date();
-                if (now.toISOString().split('T')[0] === date) {
-                    const avail = getAvailabilityAtTime(now);
-                    displayResults(avail.available, avail.onCallTimes, avail.dutyTeachers, teachersNowList, statusNow, now);
+                if (new Date().toISOString().split('T')[0] === date) {
+                    const avail = getAvailabilityAtTime(new Date());
+                    displayResults(avail.available, avail.onCallTimes, avail.dutyTeachers, teachersNowList, statusNow, new Date());
                 }
             };
 
@@ -833,6 +845,7 @@
             reminderDismiss.onclick = dismissReminder;
             document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkBackupReminder(); });
 
+            // === LOAD DATA ===
             async function loadData() {
                 statusNow.textContent = 'Loading schedule...';
                 try {
