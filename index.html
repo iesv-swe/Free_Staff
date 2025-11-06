@@ -311,8 +311,6 @@
              console.log("All critical DOM elements found.");
 
             // --- Helper Functions ---
-            
-            // *** NEW: Timestamp generator ***
             function getTimestamp() {
                 const now = new Date();
                 const year = now.getFullYear();
@@ -323,7 +321,6 @@
                 const seconds = String(now.getSeconds()).padStart(2, '0');
                 return `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
             }
-
             function getIsoWeekAndYear(d) {
                 const defaultWeek = { week: 0, year: 0, weekKey: '0000-W00'};
                 try {
@@ -529,6 +526,7 @@
                 totalsDisplay.innerHTML = '<p>Select a month to see totals.</p>'; if (activeMonthButton) { activeMonthButton.classList.remove('active'); /* No secondary add */ activeMonthButton = null; }
             });
             
+            // *** UPDATED CSV Import Listener (Semicolon/Quote/Date Format Fix) ***
             importCsvButton.addEventListener('click', () => { csvFileInput.click(); });
             csvFileInput.addEventListener('change', (event) => {
                  const file = event.target.files[0];
@@ -558,13 +556,21 @@
                              const columns = lines[i].split(delimiter).map(col => col.trim().replace(/^"|"$/g, ''));
                              
                              if (columns.length >= 3) {
-                                 const dateKey = columns[0];
+                                 let dateKey = columns[0];
                                  const staff = columns[1];
                                  const minutes = parseInt(columns[2], 10);
+                                 
+                                 // *** NEW: Date format conversion ***
+                                 let formattedDateKey = dateKey;
+                                 if (dateKey.match(/^\d{2}\/\d{2}\/\d{4}$/)) { // Check for DD/MM/YYYY
+                                    const parts = dateKey.split('/'); // ["06", "11", "2025"]
+                                    formattedDateKey = `${parts[2]}-${parts[1]}-${parts[0]}`; // Convert to "2025-11-06"
+                                 }
+                                 // *** END NEW ***
 
-                                 if (dateKey.match(/^\d{4}-\d{2}-\d{2}$/) && staff && !isNaN(minutes) && minutes >= 0) {
+                                 if (formattedDateKey.match(/^\d{4}-\d{2}-\d{2}$/) && staff && !isNaN(minutes) && minutes >= 0) { // Validate the formatted key
                                      if (!currentData[staff]) { currentData[staff] = {}; }
-                                     currentData[staff][dateKey] = minutes;
+                                     currentData[staff][formattedDateKey] = minutes; // Save with formatted key
                                      importedCount++;
                                  } else { console.warn(`Skipping invalid import row ${i + 1}: ${lines[i]} (Parsed: ${dateKey}, ${staff}, ${minutes})`); }
                              } else { console.warn(`Skipping row ${i + 1} (import) due to incorrect column count: ${lines[i]}`); }
@@ -578,6 +584,7 @@
                  reader.onerror = () => { showImportStatus(`Error reading file: ${reader.error}`, true); csvFileInput.value = ''; };
                  reader.readAsText(file);
             });
+            // *** END UPDATED Import Listener ***
 
             saveAbsenceButton.addEventListener('click', () => {
                  const staff = absenceStaffSelect.value; const date = absenceDateInput.value; const startTime = absenceStartInput.value; const endTime = absenceEndInput.value; const reason = absenceReasonInput.value.trim(); if (!staff) { showAbsenceStatus("Select staff.", true); return; } if (!date) { showAbsenceStatus("Select date.", true); return; } if (!startTime || !endTime) { showAbsenceStatus("Select times.", true); return; } const startMinutes = timeToMinutes(startTime); const endMinutes = timeToMinutes(endTime); if (endMinutes <= startMinutes) { showAbsenceStatus("End time must be after start.", true); return; } const allAbsences = getSavedAbsences(); if (!allAbsences[date]) { allAbsences[date] = {}; } if (!allAbsences[date][staff]) { allAbsences[date][staff] = []; } allAbsences[date][staff].push({ start: startMinutes, end: endMinutes, reason: reason }); allAbsences[date][staff].sort((a, b) => a.start - b.start); saveAbsences(allAbsences); showAbsenceStatus(`Saved absence for ${staff} on ${date} from ${startTime} to ${endTime}.`, false); absenceStaffSelect.value = ''; absenceStartInput.value = ''; absenceEndInput.value = ''; absenceReasonInput.value = '';
