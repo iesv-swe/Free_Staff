@@ -20,14 +20,22 @@
             width: 180px;
             height: auto;
             margin-bottom: 10px;
-            /* Optional: Add filter if logo looks better inverted on dark bg */
-            /* filter: invert(1) hue-rotate(180deg); */
         }
 
-        h1, h2 {
+        h1 {
             border-bottom: 2px solid #00a0df; /* IES Logo Blue border */
             padding-bottom: 10px;
             color: #ffffff; /* White headings */
+        }
+        
+        /* Blue banner style for headers */
+        h2 {
+            background-color: #0366d6; 
+            color: #ffffff; 
+            margin: -24px -24px 20px -24px; /* Go edge-to-edge of container */
+            padding: 12px 24px;
+            border-bottom: 1px solid #d1d5da;
+            border-radius: 6px 6px 0 0; /* Match container corners */
         }
 
         /* Container Styling */
@@ -38,6 +46,35 @@
             padding: 24px;
             margin-bottom: 20px;
             color: #dbdad8; /* Ensure text inside container is light */
+        }
+        
+        /* Helper text styles */
+        .key-legend {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0 0 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            font-size: 0.9em;
+        }
+        .key-legend li { display: flex; align-items: center; }
+        .key-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 6px;
+            border: 1px solid rgba(0,0,0,0.2);
+        }
+        .key-dot.green { background-color: #2ea44f; }
+        .key-dot.red { background-color: #d73a49; }
+        .key-dot.yellow { background-color: #ffc107; }
+        
+        .description-text {
+            font-size: 0.9em;
+            color: #c0c0c0; /* Lighter grey for descriptions */
+            margin-top: -10px;
+            margin-bottom: 15px;
         }
 
         /* Input Fields */
@@ -181,14 +218,20 @@
 
     <img src="logo.png" alt="Logo" class="logo">
     <h1>Teacher Availability</h1>
+    
+    <ul class="key-legend">
+        <li><span class="key-dot green"></span>On Call</li>
+        <li><span class="key-dot red"></span>Monthly Limit (&gt;=180 min)</li>
+        <li><span class="key-dot yellow"></span>Weekly Limit (&gt;=90 min)</li>
+    </ul>
 
     <div class="container">
-        <h2>Available Right Now</h2>
+        <h2>Who is Available Now?</h2>
         <div id="status-now" class="status">Loading schedule...</div>
         <div id="results-now" class="results"><ul id="teachers-now" class="teacher-list"></ul></div>
     </div>
     <div class="container">
-        <h2>Check Availability for a Time Range</h2>
+        <h2>Check Availability for a Specific Time</h2>
         <div class="input-group"><label for="date-input">Date:</label><input type="date" id="date-input"></div>
         <div class="input-grid">
             <div class="input-group"><label for="time-from-input">Time (From):</label><input type="time" id="time-from-input"></div>
@@ -200,8 +243,8 @@
     </div>
 
     <div class="container">
-        <h2>Record Absence</h2>
-        <p>Record meetings, training, or other absences not in the main schedule.</p>
+        <h2>Record Staff Absence</h2>
+        <p class="description-text">Record meetings, training, or other absences not in the main schedule. This data is saved in your browser.</p>
         <div class="input-grid">
             <div class="input-group">
                 <label for="absence-staff-select">Staff Member:</label>
@@ -231,7 +274,7 @@
     </div>
 
     <div class="container">
-        <h2>View & Delete Absences</h2>
+        <h2>View & Delete Recorded Absences</h2>
         <div class="input-group">
             <label for="view-absence-date-input">Select Date to View:</label>
             <input type="date" id="view-absence-date-input">
@@ -243,8 +286,8 @@
     </div>
 
     <div class="container">
-        <h2>Extra Minutes Tracker</h2>
-        <p>Record extra minutes worked by staff. This data is saved in your browser.</p>
+        <h2>Log Extra Minutes</h2>
+        <p class="description-text">Record extra minutes worked by staff. This data is saved **in your browser**.</p>
         <div class="input-grid">
             <div class="input-group"><label for="staff-select">Staff Member:</label><select id="staff-select"><option value="">-- Select Staff --</option></select></div>
             <div class="input-group"><label for="date-entry-input">Date Worked:</label><input type="date" id="date-entry-input"></div>
@@ -255,13 +298,25 @@
     </div>
 
     <div class="container">
-        <h2>Extra Minutes Totals</h2>
+        <h2>View Extra Minutes & Data Management</h2>
         <div class="input-group"><label for="year-display">Select Year:</label><input type="number" id="year-display" value="2025"></div>
         <div class="month-buttons" id="month-buttons"></div>
         <div id="totals-display"><p>Select a month to see totals.</p></div>
+        
+        <hr style="border-color: #9a9b9d; margin-top: 25px;">
+        <p class="description-text" style="margin-top: 15px; margin-bottom: 0;">
+            Use the buttons below to manage your saved data.
+            <br>• <b>Import CSV (Min)</b> only accepts the `Date,Staff,Minutes` format from the "Export CSV (Min)" file.
+            <br>• <b>Export Summary</b> is for viewing totals and cannot be re-imported.
+        </p>
         <div class="button-group">
-            <button id="export-backup-button" class="btn-green">Export CSV (Min)</button> <button id="export-absences-button" class="btn-green">Export Absences CSV</button> <button id="export-summary-button" class="primary">Export Summary CSV</button> <button id="import-csv-button" class="secondary">Import CSV (Min)</button> <input type="file" id="csv-file-input" accept=".csv">
-            <button id="clear-data-button" class="danger">Clear All Saved Data</button> </div>
+            <button id="export-backup-button" class="btn-green">Export CSV (Min)</button>
+            <button id="export-absences-button" class="btn-green">Export Absences CSV</button>
+            <button id="export-summary-button" class="primary">Export Summary CSV</button>
+            <button id="import-csv-button" class="secondary">Import CSV (Min)</button>
+            <input type="file" id="csv-file-input" accept=".csv">
+            <button id="clear-data-button" class="danger">Clear All Saved Data</button>
+        </div>
         <div id="import-status" class="status" style="display:none; margin-top:10px;"></div>
         </div>
 
@@ -448,7 +503,7 @@
             function setupMonthButtons() {
                  console.log("Attempting to set up month buttons...");
                  if (!monthButtonsContainer) { console.error("Critical Error: Month buttons container not found."); return; }
-                 try { const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]; monthButtonsContainer.innerHTML = ''; console.log("Month button container cleared."); monthNames.forEach((name, index) => { const button = document.createElement('button'); if (!button) { console.error(`Failed to create button for month ${index}`); return; } button.textContent = name; button.classList.add('secondary'); button.dataset.monthIndex = index; button.addEventListener('click', (e) => { try { if (activeMonthButton) { activeMonthButton.classList.remove('active'); activeMonthButton.classList.add('secondary'); } const clickedButton = e.target; clickedButton.classList.remove('secondary'); clickedButton.classList.add('active'); activeMonthButton = clickedButton; const yearVal = parseInt(yearDisplay.value, 10); if (isNaN(yearVal)) { totalsDisplay.innerHTML = '<p class="error">Enter valid year.</p>'; return; } displayMonthlyTotals(yearVal, index); } catch (clickHandlerError) { console.error("Error in month button click:", clickHandlerError); totalsDisplay.innerHTML = '<p class="error">Error displaying totals.</p>'; } }); monthButtonsContainer.appendChild(button); }); console.log("Finished setupMonthButtons loop successfully."); }
+                 try { const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]; monthButtonsContainer.innerHTML = ''; console.log("Month button container cleared."); monthNames.forEach((name, index) => { const button = document.createElement('button'); if (!button) { console.error(`Failed to create button for month ${index}`); return; } button.textContent = name; button.classList.add('secondary'); button.dataset.monthIndex = index; button.addEventListener('click', (e) => { try { if (activeMonthButton) { activeMonthButton.classList.remove('active'); /* No secondary add needed */ } const clickedButton = e.target; /* No secondary remove needed */ clickedButton.classList.add('active'); activeMonthButton = clickedButton; const yearVal = parseInt(yearDisplay.value, 10); if (isNaN(yearVal)) { totalsDisplay.innerHTML = '<p class="error">Enter valid year.</p>'; return; } displayMonthlyTotals(yearVal, index); } catch (clickHandlerError) { console.error("Error in month button click:", clickHandlerError); totalsDisplay.innerHTML = '<p class="error">Error displaying totals.</p>'; } }); monthButtonsContainer.appendChild(button); }); console.log("Finished setupMonthButtons loop successfully."); }
                  catch (error) { console.error("Critical Error during setupMonthButtons loop:", error); monthButtonsContainer.innerHTML = '<p class="error" style="color: red;">Error creating month buttons.</p>'; }
              }
 
@@ -493,7 +548,7 @@
                  const allData = getSavedMinutesData(); let csvContent = "data:text/csv;charset=utf-8,Date,Staff,Minutes\n"; let rowCount = 0; const sortedStaff = Object.keys(allData).sort(); for (const staff of sortedStaff) { const staffData = allData[staff]; const sortedDates = Object.keys(staffData).sort(); for (const dateKey of sortedDates) { csvContent += `${dateKey},${staff},${staffData[dateKey]}\n`; rowCount++; } } if (rowCount === 0) { alert("No data to export for backup."); return; } const encodedUri = encodeURI(csvContent); const link = document.createElement("a"); link.setAttribute("href", encodedUri); link.setAttribute("download", "extra_minutes_backup.csv"); document.body.appendChild(link); link.click(); document.body.removeChild(link);
             });
             clearDataButton.addEventListener('click', () => {
-                if (confirm("Delete ALL extra minutes AND absence data?")) {
+                if (confirm("Delete ALL extra minutes AND absence data? This cannot be undone.")) {
                     localStorage.removeItem('extraMinutes');
                     localStorage.removeItem('teacherAbsences'); // Clear absences
                     showSaveStatus("All saved data cleared.", false);
@@ -503,7 +558,7 @@
                 }
             });
             yearDisplay.addEventListener('change', () => {
-                totalsDisplay.innerHTML = '<p>Select a month to see totals.</p>'; if (activeMonthButton) { activeMonthButton.classList.remove('active'); activeMonthButton.classList.add('secondary'); activeMonthButton = null; }
+                totalsDisplay.innerHTML = '<p>Select a month to see totals.</p>'; if (activeMonthButton) { activeMonthButton.classList.remove('active'); /* No secondary add */ activeMonthButton = null; }
             });
             
             // *** UPDATED CSV Import Listener (Semicolon/Quote Fix) ***
