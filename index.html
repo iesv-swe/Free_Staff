@@ -382,7 +382,7 @@
                 else{
                     entries.sort((a,b)=>a.mins-b.mins);
                     html+="<ul>";
-                    entries.forEach(e=>{const c=e.mins>=180?'minutes-danger':e.mins>=90?'minutes-warn':'';html+=`<li class="${c}">${e.staff}: ${e.mins} min</li>`;});
+                    entries.forEach(e=>{const c=e.mins>=180?'minutes-danger':e.mins>=90?'minutes-warn':'';html+=`<li class="${c}">${.staff}: ${e.mins} min</li>`;});
                     html+="</ul>";
                 }
                 totalsDisplay.innerHTML=html;
@@ -398,7 +398,7 @@
                     Object.keys(day).sort().forEach(s=>{
                         day[s].forEach((a,i)=>{
                             const r=a.reason?` - ${a.reason}`:''; 
-                            html+=`<li>${s}: ${minutesToAndHours(a.start)}-${minutesToHHMM(a.end)}${r} <button class="delete-absence-btn" data-date="${k}" data-staff="${s}" data-index="${i}">Delete</button></li>`;
+                            html+=`<li>${s}: ${minutesToHHMM(a.start)}-${minutesToHHMM(a.end)}${r} <button class="delete-absence-btn" data-date="${k}" data-staff="${s}" data-index="${i}">Delete</button></li>`;
                         });
                     });
                     html+="</ul>";
