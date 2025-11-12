@@ -280,8 +280,8 @@ id	subject	day	starttime	length	teacher	group	room	period	experiod	inweek	exweek
 3013069	Lunch	Mon	1135	20	BjJo,ChLa	8B	Big Lunch Room B				40	0	34-39, 41-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
 3013783	Lunch	Mon	1135	20	AsRo,HaTh	8C,8C: Support	Big Lunch Room C				40	0	34-39, 41-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
 3105975	Lunch Duty	Mon	1135	20	VilBya							0	34-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
+3137020	Support Session - Maths	Mon	1135	30	AnPe		A15					0	34-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
 3011786	Break Senior	Mon	1140	20		7A,7B,7C	Outside Senior,Student Lounge				40	0	34-39, 41-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
-3012789	Break Duty Senior	Mon	1140	20	AnPe		Outside Senior,Student Lounge					0	34-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
 3013064	Break Duty Corridors	Mon	1140	20	ReRy							0	34-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
 3011619	Changing Time	Mon	1145	5	ChPl	4B	Changing Room				34, 40	0	35-39, 41-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
 3011624	On Call Substitution	Mon	1145	60	RaHa							0	34-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
@@ -337,6 +337,7 @@ id	subject	day	starttime	length	teacher	group	room	period	experiod	inweek	exweek
 3105960	Student Council	Mon	1200	60	JeHe,DiHe,AsRo,JeSe,LaCo,ErWi,DaWr	Student Council	Auditorium			39		0	39	
 3105972	Rast	Mon	1200	30	VilBya							0	34-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
 3012019	Rast	Mon	1205	30	SaSk							0	34-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
+3013253	Rast	Mon	1205	30	AnPe							0	34-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
 3011854	Rast	Mon	1210	30	ReRy							0	34-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
 3011645	Break Senior	Mon	1215	20		9A,9B,9C,9D	Outside Senior,Student Lounge				40, 43	0	34-39, 41-42, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
 3011695	Rast	Mon	1215	30	ChBe							0	34-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
@@ -354,7 +355,6 @@ id	subject	day	starttime	length	teacher	group	room	period	experiod	inweek	exweek
 3012918	TK	Mon	1215	60	KeSt	8C	A17			16-19		0	16-19	
 3012919	BI	Mon	1215	60	KeSt	8C	A17			20, 22-23		0	20, 22-23	
 3013011	SH	Mon	1215	60	BjJo	8A	B26			34-41	40	0	34-39, 41	
-3013253	Rast	Mon	1215	30	AnPe							0	34-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
 3013358	GE	Mon	1215	60	BjJo	8A	B26			13-14, 16-20, 22-23		0	13-14, 16-20, 22-23	
 3013367	On Call Substitution	Mon	1215	60	MeAb							0	34-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
 3013377	BI	Mon	1215	60	FarHil	8B	A12			34-43, 45-47	40	0	34-39, 41-43, 45-47	
@@ -371,7 +371,7 @@ id	subject	day	starttime	length	teacher	group	room	period	experiod	inweek	exweek
 3011721	Rast	Mon	1230	30	ErWi							0	34-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
 3012132	Rast	Mon	1230	30	JaOm							0	34-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
 3012202	Rast	Mon	1230	30	LilCor							0	34-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
-3085145	Student Support	Mon	1230	180	VikCos	8A:Support,9C: Support AH,9C: Support MH	D46 Conference				40	0	34-39, 41-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
+3085145	Student Support	Mon	1230	180	VikCos	8A:Support,9C: Support MH	D46 Conference				40	0	34-39, 41-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
 3125887	SV	Mon	1230	60	VikCos	9B:Support	D46 Conference	Ht,Vt				0	34-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-23	
 3128520	NT Year 9 English - Speaking	Mon	1230	30	MeAb	9NTE1	C38			46		0	46	
 3011760	HI	Mon	1235	55	MaEn	9B	B24			34-45	40, 43	0	34-39, 41-42, 44-45	
@@ -385,6 +385,7 @@ id	subject	day	starttime	length	teacher	group	room	period	experiod	inweek	exweek
 3013122	HI	Mon	1235	55	JoGu	9A	B27			34-45	40, 43	0	34-39, 41-42, 44-45	
 3013143	SH	Mon	1235	55	JoGu	9A	B27			4-8, 10-12		0	4-8, 10-12	
 3013154	GE	Mon	1235	55	JoGu	9A	B27			13-14, 16-20, 22-23		0	13-14, 16-20, 22-23	
+3013471	HoY Time	Mon	1235	60	AnPe							0	34-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
 3013491	RE	Mon	1235	55	MaEn	9B	B24			46-47, 49-51, 3-4		0	46-47, 49-51, 3-4	
 3013550	SH	Mon	1235	55	JoGu	9A	B27			46-47, 49-51, 3-4		0	46-47, 49-51, 3-4	
 3013575	GE	Mon	1235	55	MaEn	9B	B24			13-14, 16-20, 22-23		0	13-14, 16-20, 22-23	
@@ -463,7 +464,7 @@ id	subject	day	starttime	length	teacher	group	room	period	experiod	inweek	exweek
 3100718	Break Duty Junior	Mon	1330	10	LinRau		Outside Junior					0	34-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
 3109065	Junior Club	Mon	1330	210	LaCh,ChLi	Junior Club	Junior club			34-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	40	1	34-39, 41-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
 3128522	NT Year 9 English - Speaking	Mon	1330	30	MeAb	9NTE3	C38			46		0	46	
-3011656	Changing Time	Mon	1335	5	ChPl	9C					40, 43	0	34-39, 41-42, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
+3011656	Changing Time	Mon	1335	5	ChPl	9C,9C: Support AH					40, 43	0	34-39, 41-42, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
 3012066	Team Teaching	Mon	1335	55	AnPe	9B	C33				40, 43	0	34-39, 41-42, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
 3012762	MA	Mon	1335	55	RyHa	9B	A11				40, 43	0	34-39, 41-42, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
 3012996	HoD Time	Mon	1335	25	JoGe							0	34-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
@@ -482,7 +483,7 @@ id	subject	day	starttime	length	teacher	group	room	period	experiod	inweek	exweek
 3012551	IDH	Mon	1340	105	OlGo	9A	B24,Outside	Uv			43	0	35, 37, 39, 41, 45, 47, 49, 51, 3, 5, 7, 11, 13-14, 16-17, 19, 23	
 3013298	KE	Mon	1340	45	RoSt	5B	D42			34-39		0	34-39	
 3013387	Rast	Mon	1340	30	JoGu							0	34-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
-3013671	IDH	Mon	1340	105	ChPl	9C	Gym Hall,Gym Training Room	Uv			43	0	35, 37, 39, 41, 45, 47, 49, 51, 3, 5, 7, 11, 13-14, 16-17, 19, 23	
+3013671	IDH	Mon	1340	105	ChPl	9C,9C: Support AH	Gym Hall,Gym Training Room	Uv			43	0	35, 37, 39, 41, 45, 47, 49, 51, 3, 5, 7, 11, 13-14, 16-17, 19, 23	
 3013672	IDH	Mon	1340	105	OlGo	9A	Gym Hall,Gym Training Room	Jv			40	0	34, 36, 38, 42, 46, 50, 4, 6, 8, 10, 12, 18, 20, 22	
 3013797	EN	Mon	1340	45	PhGh	5A	D41				40	0	34-39, 41-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
 3012414	Rast	Mon	1345	30	CaSk							0	34-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
@@ -540,7 +541,7 @@ id	subject	day	starttime	length	teacher	group	room	period	experiod	inweek	exweek
 3125893	EN	Mon	1440	55	VikCos	9B:Support	D46 Conference	Ht,Vt				0	34-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-23	
 3013805	HoY Time	Mon	1500	30	EmLa							0	34-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
 3011858	Changing Time	Mon	1525	10	OlGo	9A	Changing Room				40, 43	0	34-39, 41-42, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
-3013518	Changing Time	Mon	1525	10	ChPl	9C					40, 43	0	34-39, 41-42, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
+3013518	Changing Time	Mon	1525	10	ChPl	9C,9C: Support AH					40, 43	0	34-39, 41-42, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
 3056367	Department Meeting- Admin	Mon	1530	60	SeCa,DiHe,TiLe,RaSc,TaSc,BaSh,LaCo		Conference Room Admin			34-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24		0	34-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
 3012344	Year Team Meeting	Mon	1535	50	LilCor,JoEn,BjJo,ChLa,MaFu,JaOm,HaTh,AvdM		B28					0	34-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
 3012562	Year Team Meeting	Mon	1535	50	PhGh,LoGl,RaHa,ChPl,TrPl,GiPr,CaSk,SaSk,LSt,RoSt,AlWe		D41					0	34-43, 45-47, 49-51, 3-8, 10-14, 16-20, 22-24	
@@ -897,7 +898,6 @@ id	subject	day	starttime	length	teacher	group	room	period	experiod	inweek	exweek
 3012503	Rast	Tue	1120	30	LaCo							0	34-43, 45-51, 3-8, 10-14, 16-20, 22-24	
 3013394	Lunch	Tue	1120	20	MiJä,TaSc	7A	Big Lunch Room E					0	34-43, 45-51, 3-8, 10-14, 16-20, 22-24	
 3130923	NT Year 9 Swedish - Speaking	Tue	1120	60	JoEn	9NTS12	A16 Conference			47		0	47	
-3130931	NT Year 9 Swedish - Speaking	Tue	1120	60	EmLa	9NTS20	B27			47		0	47	
 3011818	Rast	Tue	1125	30	AnaBon							0	34-43, 45-51, 3-8, 10-14, 16-20, 22-24	
 3011907	Break Senior	Tue	1125	20		6A,6B	Outside Senior,Student Lounge					0	34-43, 45-51, 3-8, 10-14, 16-20, 22-24	
 3013153	Break Duty Junior	Tue	1125	20	AlWe		Outside Junior					0	34-43, 45-51, 3-8, 10-14, 16-20, 22-24	
@@ -916,7 +916,7 @@ id	subject	day	starttime	length	teacher	group	room	period	experiod	inweek	exweek
 3012518	Lunch	Tue	1135	20	TiLe,MaFu	8B	Big Lunch Room B					0	34-43, 45-51, 3-8, 10-14, 16-20, 22-24	
 3013369	Lunch	Tue	1135	20	LilCor,JaOm	8A	Big Lunch Room A					0	34-43, 45-51, 3-8, 10-14, 16-20, 22-24	
 3013371	Lunch	Tue	1135	20	AsRo,HaTh	8C,8C: Support	Big Lunch Room C					0	34-43, 45-51, 3-8, 10-14, 16-20, 22-24	
-3012083	Break Activity Senior	Tue	1140	20	AnPe		Outside Senior,Student Lounge					0	34-43, 45-51, 3-8, 10-14, 16-20, 22-24	
+3137021	Support Session - Maths	Tue	1135	30	AnPe		A15					0	34-43, 45-51, 3-8, 10-14, 16-20, 22-24	
 3012465	Break Duty Corridors	Tue	1140	20	ReRy							0	34-43, 45-51, 3-8, 10-14, 16-20, 22-24	
 3012561	Rast	Tue	1140	30	TaSc							0	34-43, 45-51, 3-8, 10-14, 16-20, 22-24	
 3013036	Break Senior	Tue	1140	20		7A,7B,7C	Outside Senior,Student Lounge					0	34-43, 45-51, 3-8, 10-14, 16-20, 22-24	
@@ -962,6 +962,7 @@ id	subject	day	starttime	length	teacher	group	room	period	experiod	inweek	exweek
 3107506	Lunch	Tue	1155	20		9C: Support AH						0	34-43, 45-51, 3-8, 10-14, 16-20, 22-24	
 3119207	Break Duty Corridors	Tue	1155	20	AsRo							0	34-43, 45-51, 3-8, 10-14, 16-20, 22-24	
 3125882	Lunch	Tue	1155	35		9B:Support		Ht,Vt				0	34-43, 45-51, 3-8, 10-14, 16-20, 22-23	
+3130931	NT Year 9 Swedish - Speaking	Tue	1155	60	EmLa	9NTS20	B27			47		0	47	
 3011651	HI	Tue	1200	60	MiJä	7A	B25			34-43		0	34-43	
 3011691	Rast	Tue	1200	30	ChBe							0	34-43, 45-51, 3-8, 10-14, 16-20, 22-24	
 3011740	On Call Substitution	Tue	1200	60	DaCa,AniSha							0	34-43, 45-51, 3-8, 10-14, 16-20, 22-24	
@@ -1338,12 +1339,11 @@ id	subject	day	starttime	length	teacher	group	room	period	experiod	inweek	exweek
 3056359	Passing Time	Wed	0925	10		9A					43	0	34-37, 39-42, 45-51, 3-8, 10-14, 16-24	
 3056409	Passing Time	Wed	0925	10		9B					43	0	34-37, 39-42, 45-51, 3-8, 10-14, 16-24	
 3012938	Arbetstid	Wed	0930	320	AnPe							0	34-37, 39-43, 45-51, 3-8, 10-14, 16-24	
-3013471	HoY Time	Wed	0930	60	AnPe							0	34-37, 39-43, 45-51, 3-8, 10-14, 16-24	
 3014058	Mentor Day	Wed	0930	150	JoGu,EmLa,DaCa	9A	B27			33		0	33	
 3014060	Mentor Day	Wed	0930	150	MaEn,RyHa,EmLa	9B	B24			33		0	33	
 3014061	Mentor Day	Wed	0930	150	MeAb,EmLa,LePa	9C	C38			33		0	33	
 3014062	Mentor Day	Wed	0930	150	MaBe,EmLa,KeSt	9D	A17			33		0	33	
-3056493	Passing Time	Wed	0930	5		9C					43	0	34-37, 39-42, 45-51, 3-8, 10-14, 16-24	
+3056493	Passing Time	Wed	0930	10		9C					43	0	34-37, 39-42, 45-51, 3-8, 10-14, 16-24	
 3056700	Passing Time	Wed	0930	5		9D					43	0	34-37, 39-42, 45-51, 3-8, 10-14, 16-24	
 3128525	NT Year 9 English - Speaking	Wed	0930	30	MeAb	9NTE11	A19			46		0	46	
 3128534	NT Year 9 English - Speaking	Wed	0930	30	HaTh	9NTE20	B25			46		0	46	
@@ -1353,20 +1353,20 @@ id	subject	day	starttime	length	teacher	group	room	period	experiod	inweek	exweek
 3012191	Arbetstid	Wed	0935	365	FaCa							0	34-37, 39-43, 45-51, 3-8, 10-14, 16-24	
 3012354	Arbetstid	Wed	0935	355	KaMa							0	34-37, 39-43, 45-51, 3-8, 10-14, 16-24	
 3012424	HoD Time	Wed	0935	60	GiPr							0	34-37, 39-43, 45-51, 3-8, 10-14, 16-24	
-3012486	GE	Wed	0935	60	JoGu	9C	B27			13-14, 16-23		0	13-14, 16-23	
 3012712	SH	Wed	0935	60	JoGu	9D	B27			5-8, 10-13		0	5-8, 10-13	
 3012752	SV	Wed	0935	60	LiJä	9BSV	B23				43	0	34-37, 39-42, 45-51, 3-8, 10-14, 16-24	
 3012925	SVA	Wed	0935	60	EmLa	9Prep1,9SVA1	B29				43	0	34-37, 39-42, 45-51, 3-8, 10-14, 16-24	
 3012995	HI	Wed	0935	60	MaEn	9D	B24			34-37, 39-45	43	0	34-37, 39-42, 44-45	
 3013156	HI	Wed	0935	60	JoGu	9C	B27			34-37, 39-45	43	0	34-37, 39-42, 44-45	
-3013273	SH	Wed	0935	60	JoGu	9C,9C: Support AH	B27			46-51, 3-4		0	46-51, 3-4	
 3013353	GE	Wed	0935	60	MaEn	9D	B24			13-14, 16-23		0	13-14, 16-23	
 3013582	SV	Wed	0935	60	JoEn	9ASV	B22				43	0	34-37, 39-42, 45-51, 3-8, 10-14, 16-24	
 3013743	RE	Wed	0935	60	MaEn	9D	B24			46-51, 3-4		0	46-51, 3-4	
-3013791	SH	Wed	0935	60	JoGu	9C	B27			4-8, 10-12		0	4-8, 10-12	
 3119172	Photograpphy	Wed	0935	50		6B	Gym Hall			41		0	41	
+3012486	GE	Wed	0940	60	JoGu	9C	B27			13-14, 16-23		0	13-14, 16-23	
 3013040	Planning Time	Wed	0940	60	HayAlj,MaFu							0	34-37, 39-43, 45-51, 3-8, 10-14, 16-24	
+3013273	SH	Wed	0940	60	JoGu	9C,9C: Support AH	B27			46-51, 3-4		0	46-51, 3-4	
 3013297	Rast	Wed	0940	30	MeAb							0	34-37, 39-43, 45-51, 3-8, 10-14, 16-24	
+3013791	SH	Wed	0940	60	JoGu	9C	B27			4-8, 10-12		0	4-8, 10-12	
 3105980	Arbetstid	Wed	0945	360	VilBya							0	34-37, 39-43, 45-51, 3-8, 10-14, 16-24	
 3128181	Academic Team Meeting	Wed	0945	55	AsRo,ErWi,DaWr		A118					0	34-37, 39-43, 45-51, 3-8, 10-14, 16-24	
 3011955	SLTX	Wed	0950	70	KaMa	6A:1	Textiles	Ht				0	34-37, 39-43, 45-51	
@@ -1403,6 +1403,7 @@ id	subject	day	starttime	length	teacher	group	room	period	experiod	inweek	exweek
 3012943	On Call Substitution	Wed	1015	60	MiJä							0	34-37, 39-43, 45-51, 3-8, 10-14, 16-24	
 3013397	MA	Wed	1015	60	ReRy	7B	A15					0	34-37, 39-43, 45-51, 3-8, 10-14, 16-24	
 3128862	PRAO in school	Wed	1015	10	EmLa	PRAO in school	B27			43		0	43	
+3137013	Team Teaching	Wed	1015	45	AnPe	7B	A15				40, 43	0	34-37, 39, 41-42, 45-51, 3-8, 10-14, 16-24	
 3012025	Passing Time	Wed	1020	10		8A						0	34-37, 39-43, 45-51, 3-8, 10-14, 16-24	
 3012702	Passing Time	Wed	1020	10		8B					49, 11, 21	0	34-37, 39-43, 45-48, 50-51, 3-8, 10, 12-14, 16-20, 22-24	
 3107478	Student Support	Wed	1020	100	VikCos	8A:Support				34-37, 39-43		0	34-37, 39-43	
@@ -1428,9 +1429,9 @@ id	subject	day	starttime	length	teacher	group	room	period	experiod	inweek	exweek
 3013632	SH	Wed	1035	55	BjJo	8C	B26			34-37, 39-41		0	34-37, 39-41	
 3052793	Break Senior	Wed	1035	30		6B						0	34-37, 39-43, 45-51, 3-8, 10-14, 16-24	
 3056361	Break Senior	Wed	1035	15		9A					43	0	34-37, 39-42, 45-51, 3-8, 10-14, 16-24	
-3056494	Break Senior	Wed	1035	15		9C					43	0	34-37, 39-42, 45-51, 3-8, 10-14, 16-24	
 3056701	Break Senior	Wed	1035	15		9D					43	0	34-37, 39-42, 45-51, 3-8, 10-14, 16-24	
 3013661	Rast	Wed	1040	30	DaCa,AniSha							0	34-37, 39-43, 45-51, 3-8, 10-14, 16-24	
+3056494	Break Senior	Wed	1040	10		9C					43	0	34-37, 39-42, 45-51, 3-8, 10-14, 16-24	
 2991683	Lunch	Wed	1045	20	ChPl,TrPl,GiPr,CaSk,AlWe	4A,4B				33		0	33	
 2991686	Lunch	Wed	1045	30	PhGh,RaHa,CaSk,LSt,RoSt	5A,5B				33		0	33	
 3011664	Lunch	Wed	1045	25	JeHe,ChPl,BaSh,SaSk,AlWe	4A	Big Lunch Room A					0	34-37, 39-43, 45-51, 3-8, 10-14, 16-24	
@@ -2132,6 +2133,7 @@ id	subject	day	starttime	length	teacher	group	room	period	experiod	inweek	exweek
 3013081	Lunch	Thur	1135	20	LilCor,JaOm,LaCo	8A	Big Lunch Room A					0	34-43, 45-51, 2-8, 10-14, 16-19, 21-23	
 3012564	Rast	Thur	1140	30	TaSc							0	34-43, 45-51, 2-8, 10-14, 16-19, 21-23	
 3013713	Break Senior	Thur	1140	20		7A,7B,7C	Outside Senior					0	34-43, 45-51, 2-8, 10-14, 16-19, 21-23	
+3137022	Support Session - Maths	Thur	1140	30	AnPe		A15					0	34-43, 45-51, 2-8, 10-14, 16-19, 21-23	
 3011639	HKK	Thur	1145	60	ViMe	6A:2	Home Economics	Vt				0	2-8, 10-14, 16-19, 21-23	
 3011666	Rast	Thur	1145	30	AnHo							0	34-43, 45-51, 2-8, 10-14, 16-19, 21-23	
 3011898	Changing Time	Thur	1145	5	ChPl	6B						0	34-43, 45-51, 2-8, 10-14, 16-19, 21-23	
@@ -2708,6 +2710,7 @@ id	subject	day	starttime	length	teacher	group	room	period	experiod	inweek	exweek
 3012722	Lunch	Fri	1135	20	JaOm,LaCo	8A	Big Lunch Room A					0	33-41, 43, 45-51, 2-8, 10-13, 16-17, 19, 21-23	
 3013023	Lunch	Fri	1135	20	JoEn,HaTh	8C,8C: Support	Big Lunch Room C					0	33-41, 43, 45-51, 2-8, 10-13, 16-17, 19, 21-23	
 3013460	Lunch	Fri	1135	20	BjJo	8B	Big Lunch Room B					0	33-41, 43, 45-51, 2-8, 10-13, 16-17, 19, 21-23	
+3137023	Support Session - Maths	Fri	1135	30	AnPe		A15					0	33-41, 43, 45-51, 2-8, 10-13, 16-17, 19, 21-23	
 3011654	Rast	Fri	1140	30	OlGo							0	33-41, 43, 45-51, 2-8, 10-13, 16-17, 19, 21-23	
 3012291	Break Senior	Fri	1140	20		7A,7B,7C	Outside Senior,Student Lounge					0	33-41, 43, 45-51, 2-8, 10-13, 16-17, 19, 21-23	
 3013057	Break Duty Corridors	Fri	1140	20	FarHil							0	33-41, 43, 45-51, 2-8, 10-13, 16-17, 19, 21-23	
@@ -2751,7 +2754,6 @@ id	subject	day	starttime	length	teacher	group	room	period	experiod	inweek	exweek
 3125885	Lunch	Fri	1155	40		9B:Support		Ht,Vt				0	33-41, 43, 45-51, 2-8, 10-13, 16-17, 19, 21-23	
 3011705	Rast	Fri	1200	30	ChLi							0	33-41, 43, 45-51, 2-8, 10-13, 16-17, 19, 21-23	
 3011922	Rast	Fri	1200	30	HaTh							0	33-41, 43, 45-51, 2-8, 10-13, 16-17, 19, 21-23	
-3012175	Rast	Fri	1200	30	AnPe							0	33-41, 43, 45-51, 2-8, 10-13, 16-17, 19, 21-23	
 3012217	On Call Substitution	Fri	1200	60	JoEn							0	33-41, 43, 45-51, 2-8, 10-13, 16-17, 19, 21-23	
 3012306	Rast	Fri	1200	30	RahHan							0	33-41, 43, 45-51, 2-8, 10-13, 16-17, 19, 21-23	
 3012372	HI	Fri	1200	60	MiJä	7C	B25			33-41, 43		0	33-41, 43	
@@ -2765,6 +2767,7 @@ id	subject	day	starttime	length	teacher	group	room	period	experiod	inweek	exweek
 3092432	Student Lounge	Fri	1200	40	LaCh							0	33-41, 43, 45-51, 2-8, 10-13, 16-17, 19, 21-23	
 3119168	Photograpphy	Fri	1200	50		7B	Gym Hall			41		0	41	
 3134411	Student Support	Fri	1200	60	VikCos,JoEn	8C: MV Support	D46 Conference					0	33-41, 43, 45-51, 2-8, 10-13, 16-17, 19, 21-23	
+3012175	Rast	Fri	1205	30	AnPe							0	33-41, 43, 45-51, 2-8, 10-13, 16-17, 19, 21-23	
 3012480	Rast	Fri	1205	30	JaOm							0	33-41, 43, 45-51, 2-8, 10-13, 16-17, 19, 21-23	
 3012468	Rast	Fri	1210	30								0	33-41, 43, 45-51, 2-8, 10-13, 16-17, 19, 21-23	
 3013046	Rast	Fri	1210	30	AvdM							0	33-41, 43, 45-51, 2-8, 10-13, 16-17, 19, 21-23	
@@ -2940,6 +2943,7 @@ id	subject	day	starttime	length	teacher	group	room	period	experiod	inweek	exweek
 3128897	#movewithIES	Sat	0700	40	TimCom							0		
 3134415	EN	Sat	0700	40	HaTh	8C: MV Support						1		
 3134416	SV	Sat	0700	40	JoEn	8C: MV Support						1		
+3136217	#movewithIES	Sat	0700	40	DraAnd							0		
 3085157	SV	Sat	0730	10	JoEn	8C: Support,9C: Support MH						1		
 3085158	BI	Sat	0730	10	JoGe	9C: Support MH						1		
 3085159	FY	Sat	0730	10	JoGe	9C: Support MH						1		
